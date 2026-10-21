@@ -42,9 +42,9 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -62,7 +62,10 @@ jobs:
         run: npm run typecheck
 
       - name: Generate a throw-away auth secret
-        run: echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+        run: |
+          secret="$(openssl rand -base64 32)"
+          echo "::add-mask::$secret"
+          echo "BETTER_AUTH_SECRET=$secret" >> "$GITHUB_ENV"
 
       - name: Unit and integration tests
         run: npm test

@@ -64,7 +64,8 @@ let storage: FileStorage | undefined;
 export function getStorage(): FileStorage {
   if (!storage) {
     const config = env();
-    storage = new LocalFileStorage(path.resolve(process.cwd(), config.STORAGE_LOCAL_DIR));
+    // Uploads are runtime data, not build inputs: keep the bundler from tracing the directory.
+    storage = new LocalFileStorage(path.resolve(/* turbopackIgnore: true */ process.cwd(), config.STORAGE_LOCAL_DIR));
   }
   return storage;
 }
