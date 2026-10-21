@@ -27,7 +27,7 @@ export async function uploadProductImage(
   file: File | null,
   altInput: unknown,
 ): Promise<{ id: string }> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const alt = parseInput(altSchema, altInput);
   if (!file || file.size === 0) throw new ValidationError({ file: ["images.invalidFile"] });
   if (file.size > MAX_IMAGE_BYTES) throw new ValidationError({ file: ["images.tooLarge"] });
@@ -89,7 +89,7 @@ export async function uploadProductImage(
 }
 
 export async function removeProductImage(ctx: ServiceContext, imageId: string): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const image = await db.productImage.findUnique({ where: { id: imageId }, include: { product: { select: { nameEn: true } } } });
   if (!image) throw new NotFoundError("product_image");
   await db.$transaction(async (tx) => {
@@ -108,7 +108,7 @@ export async function removeProductImage(ctx: ServiceContext, imageId: string): 
 }
 
 export async function makePrimaryImage(ctx: ServiceContext, imageId: string): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const image = await db.productImage.findUnique({ where: { id: imageId } });
   if (!image) throw new NotFoundError("product_image");
   await db.$transaction(async (tx) => {

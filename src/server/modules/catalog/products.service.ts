@@ -221,7 +221,7 @@ function mapProductConflict(error: unknown): never {
 }
 
 export async function createProduct(ctx: ServiceContext, input: unknown): Promise<{ id: string }> {
-  assertCan(ctx.actor, "products.create", "global-write");
+  assertCan(ctx.actor, "products.create", "global");
   const data = parseInput(productSchema, input);
   await assertReferencesUsable(db, data, null);
   const { slug } = await resolveSlug({
@@ -258,7 +258,7 @@ export async function createProduct(ctx: ServiceContext, input: unknown): Promis
 }
 
 export async function updateProduct(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(productSchema, input);
   const existing = await db.product.findUnique({ where: { id }, include: { categories: { select: { categoryId: true } } } });
   if (!existing) throw new NotFoundError("product");
@@ -294,7 +294,7 @@ export async function updateProduct(ctx: ServiceContext, id: string, input: unkn
 }
 
 export async function updateProductContent(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(productContentSchema, input);
   const existing = await db.product.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("product");
@@ -315,7 +315,7 @@ export async function updateProductContent(ctx: ServiceContext, id: string, inpu
 }
 
 export async function updateProductNotes(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(productNotesSchema, input);
   const existing = await db.product.findUnique({
     where: { id },
@@ -369,7 +369,7 @@ export async function changeProductStatus(ctx: ServiceContext, id: string, input
   if (!isProductTransitionAllowed(product.status, data.status)) {
     throw new InvalidStateError("errors.invalidState.transition", { from: product.status, to: data.status });
   }
-  assertCan(ctx.actor, productTransitionPermission(product.status, data.status), "global-write");
+  assertCan(ctx.actor, productTransitionPermission(product.status, data.status), "global");
 
   await db.$transaction(async (tx) => {
     if (data.status === "PUBLISHED") {

@@ -52,7 +52,7 @@ export function navigationFor(actor: UserActor): NavSection[] {
   return NAVIGATION.map((section) => ({
     section: section.section,
     items: section.items
-      .filter((item) => can(actor, item.permission, "any"))
+      .filter((item) => can(actor, item.permission, item.permission === "audit.view" ? "global" : "any"))
       .map(({ permission: _permission, ...item }) => item),
   })).filter((section) => section.items.length > 0);
 }

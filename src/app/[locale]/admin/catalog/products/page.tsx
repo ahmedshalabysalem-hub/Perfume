@@ -52,7 +52,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
   const statusLabels = await getTranslations("status");
   const typeLabels = await getTranslations("productType");
   const format = await getFormatter();
-  const canCreate = can(actor, "products.create", "global-write");
+  const canCreate = can(actor, "products.create", "global");
   const { query } = result;
 
   return (

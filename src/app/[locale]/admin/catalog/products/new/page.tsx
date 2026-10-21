@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/ca
 export default async function NewProductPage({ params }: PageProps<"/[locale]/admin/catalog/products/new">) {
   await initLocale(params);
   const actor = await getAdminPageActor("products.view");
-  if (!actor || !can(actor, "products.create", "global-write")) return <NoAccess />;
+  if (!actor || !can(actor, "products.create", "global")) return <NoAccess />;
   const options = await productEditorOptions({ actor, meta: await getRequestMeta() });
   const t = await getTranslations("products");
   return (

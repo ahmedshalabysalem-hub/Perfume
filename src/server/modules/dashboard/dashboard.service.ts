@@ -77,7 +77,8 @@ export async function getDashboardData(ctx: ServiceContext): Promise<DashboardDa
     : null;
 
   let recentActivity: DashboardData["recentActivity"] = null;
-  if (can(ctx.actor, "audit.view")) {
+  // The audit log is not partitioned by country: only GLOBAL auditors see it.
+  if (can(ctx.actor, "audit.view", "global")) {
     const entries = await db.auditLog.findMany({ orderBy: { occurredAt: "desc" }, take: 8 });
     const actorIds = [...new Set(entries.map((entry) => entry.actorUserId).filter((id): id is string => !!id))];
     const actors = await db.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true } });

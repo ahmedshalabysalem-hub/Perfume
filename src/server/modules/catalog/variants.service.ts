@@ -41,7 +41,7 @@ function mapVariantConflict(error: unknown): never {
 }
 
 export async function createVariant(ctx: ServiceContext, productId: string, input: unknown): Promise<{ id: string }> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(variantSchema, input);
   const product = await db.product.findUnique({ where: { id: productId }, select: { id: true, status: true, nameEn: true } });
   if (!product) throw new NotFoundError("product");
@@ -66,7 +66,7 @@ export async function createVariant(ctx: ServiceContext, productId: string, inpu
 }
 
 export async function updateVariant(ctx: ServiceContext, variantId: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(variantSchema, input);
   const existing = await db.productVariant.findUnique({ where: { id: variantId } });
   if (!existing) throw new NotFoundError("product_variant");
@@ -95,7 +95,7 @@ export async function updateVariant(ctx: ServiceContext, variantId: string, inpu
 }
 
 export async function changeVariantStatus(ctx: ServiceContext, variantId: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(variantStatusChangeSchema, input);
   const variant = await db.productVariant.findUnique({
     where: { id: variantId },
@@ -125,7 +125,7 @@ export async function changeVariantStatus(ctx: ServiceContext, variantId: string
 
 /** Propose an unused internal Code 128 value (prefix "PF"); not reserved until saved. */
 export async function suggestInternalBarcode(ctx: ServiceContext): Promise<string> {
-  assertCan(ctx.actor, "products.update", "global-write");
+  assertCan(ctx.actor, "products.update", "global");
   for (let attempt = 0; attempt < 10; attempt += 1) {
     const candidate = generateInternalBarcode();
     const taken = await db.productVariant.count({ where: { barcode: candidate } });

@@ -23,7 +23,7 @@ export default async function CategoriesPage({ params }: PageProps<"/[locale]/ad
   if (!actor) return <NoAccess />;
 
   const tree = await listCategoryTree({ actor, meta: await getRequestMeta() });
-  const canManage = can(actor, "catalog.categories.manage", "global-write");
+  const canManage = can(actor, "catalog.categories.manage", "global");
   const t = await getTranslations("categories");
   const common = await getTranslations("common");
   const options = tree.map(({ id, parentId, nameEn, nameAr, depth, isActive }) => ({ id, parentId, nameEn, nameAr, depth, isActive }));

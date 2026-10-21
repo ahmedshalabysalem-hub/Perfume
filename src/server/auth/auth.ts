@@ -56,6 +56,11 @@ function createAuth() {
       cookiePrefix: AUTH_COOKIE_PREFIX,
       useSecureCookies: isProduction(),
       database: { generateId: "uuid" },
+      // Better Auth silently disables origin/CSRF checks when NODE_ENV=test
+      // (or TEST=true). Pin them on so a misconfigured environment can never
+      // run without CSRF protection; tests exercise the real checks.
+      disableOriginCheck: false,
+      disableCSRFCheck: false,
     },
     databaseHooks: {
       session: {

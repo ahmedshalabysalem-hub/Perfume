@@ -41,7 +41,7 @@ function actor(assignments: ActorUserRow["roleAssignments"], overrides: Partial<
 
 describe("scope coverage", () => {
   it("GLOBAL covers every target", () => {
-    expect(scopeCovers({ type: "GLOBAL" }, "global-write")).toBe(true);
+    expect(scopeCovers({ type: "GLOBAL" }, "global")).toBe(true);
     expect(scopeCovers({ type: "GLOBAL" }, { countryCode: "EG" })).toBe(true);
   });
 
@@ -50,7 +50,7 @@ describe("scope coverage", () => {
     expect(scopeCovers(sa, { countryCode: "SA" })).toBe(true);
     expect(scopeCovers(sa, { countryCode: "SA", storeId: STORE_RIYADH, legalEntityId: ENTITY_SA })).toBe(true);
     expect(scopeCovers(sa, { countryCode: "EG" })).toBe(false);
-    expect(scopeCovers(sa, "global-write")).toBe(false);
+    expect(scopeCovers(sa, "global")).toBe(false);
     expect(scopeCovers(sa, "any")).toBe(true);
   });
 
@@ -82,9 +82,9 @@ describe("can / assertCan", () => {
   it("global catalogue writes require a GLOBAL grant", () => {
     const countryManager = actor([assignment({ scopeType: "COUNTRY", countryCode: "SA" }, ["products.update", "products.view"])]);
     expect(can(countryManager, "products.view", "any")).toBe(true);
-    expect(can(countryManager, "products.update", "global-write")).toBe(false);
+    expect(can(countryManager, "products.update", "global")).toBe(false);
     const globalEditor = actor([assignment({ scopeType: "GLOBAL" }, ["products.update"])]);
-    expect(can(globalEditor, "products.update", "global-write")).toBe(true);
+    expect(can(globalEditor, "products.update", "global")).toBe(true);
   });
 
   it("country-scoped price permission is limited to that market", () => {
@@ -95,13 +95,13 @@ describe("can / assertCan", () => {
 
   it("denies when the permission is missing", () => {
     const cashier = actor([assignment({ scopeType: "STORE", storeId: STORE_RIYADH }, ["pos.sell", "products.view"])]);
-    expect(can(cashier, "products.create", "global-write")).toBe(false);
-    expect(() => assertCan(cashier, "products.create", "global-write")).toThrow(ForbiddenError);
+    expect(can(cashier, "products.create", "global")).toBe(false);
+    expect(() => assertCan(cashier, "products.create", "global")).toThrow(ForbiddenError);
   });
 
   it("denies customers even if they somehow hold grants", () => {
     const customer = actor([assignment({ scopeType: "GLOBAL" }, ["products.create"])], { type: "CUSTOMER" });
-    expect(can(customer, "products.create", "global-write")).toBe(false);
+    expect(can(customer, "products.create", "global")).toBe(false);
   });
 
   it("gives no actor to inactive users and ignores inactive roles", () => {
@@ -127,7 +127,7 @@ describe("can / assertCan", () => {
   });
 
   it("trusts system actors only", () => {
-    expect(can({ kind: "system", label: "seed" }, "users.manage", "global-write")).toBe(true);
+    expect(can({ kind: "system", label: "seed" }, "users.manage", "global")).toBe(true);
     expect(can(null, "admin.access")).toBe(false);
   });
 });

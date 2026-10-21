@@ -62,7 +62,7 @@ function conflict(kind: AttributeKind, error: unknown): never {
 }
 
 export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, input: unknown): Promise<{ id: string }> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   try {
     if (kind === "note") {
       const data = parseInput(fragranceNoteSchema, input);
@@ -91,7 +91,7 @@ export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, 
 }
 
 export async function updateAttribute(ctx: ServiceContext, kind: AttributeKind, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   try {
     if (kind === "note") {
       const data = parseInput(fragranceNoteSchema, input);
@@ -124,7 +124,7 @@ export async function updateAttribute(ctx: ServiceContext, kind: AttributeKind, 
 }
 
 export async function setAttributeActive(ctx: ServiceContext, kind: AttributeKind, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const { isActive } = parseInput(activationSchema, input);
   await db.$transaction(async (tx) => {
     let name: string;

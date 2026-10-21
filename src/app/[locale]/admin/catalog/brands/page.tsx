@@ -25,7 +25,7 @@ export default async function BrandsPage({ params, searchParams }: PageProps<"/[
   const q = typeof query.q === "string" ? query.q.slice(0, 100) : undefined;
 
   const brands = await listBrands({ actor, meta: await getRequestMeta() }, { q });
-  const canManage = can(actor, "catalog.brands.manage", "global-write");
+  const canManage = can(actor, "catalog.brands.manage", "global");
   const t = await getTranslations("brands");
   const common = await getTranslations("common");
 

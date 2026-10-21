@@ -79,7 +79,7 @@ function mapConflict(error: unknown): never {
 }
 
 export async function createCategory(ctx: ServiceContext, input: unknown): Promise<{ id: string }> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const data = parseInput(categorySchema, input);
   if (data.parentId) {
     const parent = await db.category.findUnique({ where: { id: data.parentId }, select: { isActive: true } });
@@ -111,7 +111,7 @@ export async function createCategory(ctx: ServiceContext, input: unknown): Promi
 }
 
 export async function updateCategory(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const data = parseInput(categorySchema, input);
   const existing = await db.category.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("category");
@@ -135,7 +135,7 @@ export async function updateCategory(ctx: ServiceContext, id: string, input: unk
 }
 
 export async function setCategoryActive(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const { isActive } = parseInput(activationSchema, input);
   const existing = await db.category.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("category");

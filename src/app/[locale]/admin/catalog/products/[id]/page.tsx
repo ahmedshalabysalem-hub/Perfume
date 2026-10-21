@@ -60,9 +60,9 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
   const requestedTab = typeof query.tab === "string" ? query.tab : "general";
   const defaultTab = (TABS as readonly string[]).includes(requestedTab) ? requestedTab : "general";
 
-  const canEdit = can(actor, "products.update", "global-write");
+  const canEdit = can(actor, "products.update", "global");
   const transitions = allowedProductTransitions(product.status).filter((target) =>
-    can(actor, productTransitionPermission(product.status, target), "global-write"),
+    can(actor, productTransitionPermission(product.status, target), "global"),
   );
   const markets: MarketDto[] = options.countries.map((country) => ({
     ...country,

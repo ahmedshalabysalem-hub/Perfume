@@ -40,7 +40,7 @@ function mapConflict(error: unknown): never {
 }
 
 export async function createBrand(ctx: ServiceContext, input: unknown): Promise<{ id: string }> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const data = parseInput(brandSchema, input);
   const { slug } = await resolveSlug({
     explicit: data.slug,
@@ -66,7 +66,7 @@ export async function createBrand(ctx: ServiceContext, input: unknown): Promise<
 }
 
 export async function updateBrand(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const data = parseInput(brandSchema, input);
   const existing = await db.brand.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("brand");
@@ -93,7 +93,7 @@ export async function updateBrand(ctx: ServiceContext, id: string, input: unknow
 }
 
 export async function setBrandActive(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
-  assertCan(ctx.actor, PERMISSION, "global-write");
+  assertCan(ctx.actor, PERMISSION, "global");
   const { isActive } = parseInput(activationSchema, input);
   const existing = await db.brand.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("brand");

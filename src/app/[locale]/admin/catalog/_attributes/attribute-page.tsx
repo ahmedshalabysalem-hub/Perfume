@@ -21,7 +21,7 @@ export async function AttributePage({ kind, locale }: { kind: AttributeKind; loc
   const actor = await getAdminPageActor("products.view");
   if (!actor) return <NoAccess />;
   const rows = await listAttributes({ actor, meta: await getRequestMeta() }, kind);
-  const canManage = can(actor, "catalog.attributes.manage", "global-write");
+  const canManage = can(actor, "catalog.attributes.manage", "global");
   const t = await getTranslations("attributes");
   const common = await getTranslations("common");
   const [title, subtitle] = TITLES[kind];

@@ -22,14 +22,15 @@ export type ResourceScope = {
 
 /**
  * The target of an authorisation check:
- *  - "global-write": changes to organisation-wide master data (catalogue,
- *    roles). Requires the permission at GLOBAL scope.
+ *  - "global": organisation-wide data that is not partitioned by scope —
+ *    writes to master data (catalogue, roles) and reads of unpartitioned
+ *    records such as the full audit log. Requires the permission at GLOBAL scope.
  *  - "any": reading organisation-wide master data. The permission held at any
  *    scope is sufficient.
  *  - a ResourceScope: a record that belongs to a country / entity / store /
  *    warehouse. Requires an assignment whose scope covers the record.
  */
-export type AuthorizationTarget = "global-write" | "any" | ResourceScope;
+export type AuthorizationTarget = "global" | "any" | ResourceScope;
 
 export function scopeKey(scope: AssignmentScope): string {
   switch (scope.type) {
@@ -50,7 +51,7 @@ export function scopeKey(scope: AssignmentScope): string {
 export function scopeCovers(scope: AssignmentScope, target: AuthorizationTarget): boolean {
   if (scope.type === "GLOBAL") return true;
   if (target === "any") return true;
-  if (target === "global-write") return false;
+  if (target === "global") return false;
   switch (scope.type) {
     case "COUNTRY":
       return target.countryCode !== undefined && target.countryCode === scope.countryCode;
