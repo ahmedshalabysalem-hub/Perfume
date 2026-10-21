@@ -74,7 +74,8 @@
     "reasonPlaceholder": "لماذا تجري هذا التغيير؟",
     "goToStore": "عرض المتجر",
     "goToAdmin": "لوحة الإدارة",
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "activateConfirm": "هل تريد إتاحة هذا السجل مرة أخرى؟"
   },
   "errors": {
     "unauthenticated": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",

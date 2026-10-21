@@ -1,5 +1,5 @@
 import "server-only";
-import sharp from "sharp";
+import sharp, { type OutputInfo } from "sharp";
 import { optionalText } from "@/lib/schemas/fields";
 import { z } from "@/lib/validation/zod";
 import { recordAudit } from "@/server/audit/audit";
@@ -42,7 +42,7 @@ export async function uploadProductImage(
     throw new ValidationError({ file: [`validation.tooManyItems|${JSON.stringify({ max: MAX_IMAGES_PER_PRODUCT })}`] });
   }
 
-  let output: { data: Buffer; info: sharp.OutputInfo };
+  let output: { data: Buffer; info: OutputInfo };
   try {
     const input = Buffer.from(await file.arrayBuffer());
     output = await sharp(input, { limitInputPixels: 40_000_000, failOn: "error" })

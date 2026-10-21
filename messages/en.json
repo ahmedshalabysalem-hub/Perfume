@@ -74,7 +74,8 @@
     "reasonPlaceholder": "Why are you making this change?",
     "goToStore": "View storefront",
     "goToAdmin": "Back office",
-    "home": "Home"
+    "home": "Home",
+    "activateConfirm": "Make this record available again?"
   },
   "errors": {
     "unauthenticated": "Your session has expired. Please sign in again.",

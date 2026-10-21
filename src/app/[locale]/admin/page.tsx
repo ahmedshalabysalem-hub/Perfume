@@ -21,9 +21,7 @@ function Kpi({ label, value, href }: { label: string; value: number | string; hr
     <Card className="h-full transition-colors hover:border-gold/50">
       <CardContent className="grid gap-1">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="font-display text-4xl tabular-nums" data-testid={`kpi-${label}`}>
-          {value}
-        </p>
+        <p className="font-display text-4xl lining-nums tabular-nums">{value}</p>
       </CardContent>
     </Card>
   );
