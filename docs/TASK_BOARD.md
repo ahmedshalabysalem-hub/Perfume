@@ -7,42 +7,43 @@ with evidence (commands run, tests passing). Phases and milestones: `docs/IMPLEM
 
 ## Open tasks
 
-| ID       | Title                                                     | Status      | Pri               | Depends on                                   |
-| -------- | --------------------------------------------------------- | ----------- | ----------------- | -------------------------------------------- |
-| GOV-001  | Project governance and session handoff                    | In Progress | P1                | —                                            |
-| COMP-001 | Country compliance register (KSA, Egypt)                  | Ready       | P1                | —                                            |
-| DOC-001  | README and local development setup                        | Ready       | P1                | —                                            |
-| OPS-001  | docker-compose for local PostgreSQL                       | Ready       | P1                | —                                            |
-| CI-001   | GitHub Actions CI pipeline                                | Ready       | P1                | —                                            |
-| DOC-002  | PRD, architecture and business rules documents            | Ready       | P1                | —                                            |
-| DOC-003  | Database, ERD, RBAC, API spec and test plan documents     | Ready       | P1                | —                                            |
-| PUR-001  | Supplier register                                         | Backlog     | P2                | Phase 1 closed                               |
-| INV-001  | Inventory ledger and stock levels                         | Backlog     | P2                | Phase 1 closed, ADR-018                      |
-| INV-002  | Batches, lots and expiry (FEFO)                           | Backlog     | P2                | INV-001                                      |
-| PUR-002  | Purchase orders and goods receipt                         | Backlog     | P2                | INV-001, PUR-001                             |
-| INV-003  | Stock transfers and stock counts                          | Backlog     | P2                | INV-001                                      |
-| CAT-002  | Refuse GS1 demo-range barcodes outside development/test   | Backlog     | P2                | —                                            |
-| OPS-002  | S3-compatible storage adapter                             | Backlog     | P2                | —                                            |
-| SEC-002  | Multi-factor authentication for staff                     | Backlog     | P2                | —                                            |
-| PRC-001  | Tax rates and price calculation engine                    | Backlog     | P2                | CAT-001                                      |
-| CUST-001 | Customer accounts, addresses and consent                  | Backlog     | P2                | AUTH-001, COMP-001                           |
-| SHIP-001 | Shipping zones, methods and fees                          | Backlog     | P2                | ORG-001                                      |
-| ORD-001  | Cart, checkout and order lifecycle with stock reservation | Backlog     | P2                | INV-001, PRC-001, CUST-001, SHIP-001         |
-| PAY-001  | Cash on delivery and bank-transfer verification           | Backlog     | P2                | ORD-001                                      |
-| PAY-002  | Online card payments via a payment provider               | Blocked     | P2                | PAY-001; provider + credentials              |
-| ORD-002  | Fulfilment, returns and refunds                           | Backlog     | P2                | ORD-001, PAY-001                             |
-| POS-001  | Point of sale and cashier sessions                        | Backlog     | P3                | INV-001, PRC-001, PAY-001                    |
-| FIN-001  | Accounting foundation (chart of accounts, journals)       | Backlog     | P3                | ADR-018 confirmed, ORD-001, PUR-002, POS-001 |
-| EINV-001 | ZATCA e-invoicing (FATOORA, integration phase)            | Blocked     | P3                | ORD-001, POS-001, PRC-001; ZATCA onboarding  |
-| EINV-002 | Egypt ETA e-invoice and e-receipt                         | Blocked     | P3                | ORD-001, POS-001, PRC-001; ETA registration  |
-| MKT-001  | Coupons and promotions                                    | Backlog     | P3                | PRC-001, ORD-001                             |
-| LOY-001  | Loyalty points                                            | Backlog     | P3                | ORD-001, POS-001                             |
-| RPT-001  | Operational and financial reports                         | Backlog     | P3                | FIN-001 (financial part)                     |
-| INT-001  | Integration API and webhooks (n8n)                        | Backlog     | P3                | ORD-001                                      |
-| AI-001   | AI-assisted features behind business rules                | Backlog     | P3                | INT-001                                      |
-| OPS-003  | Production deployment, backups and observability          | Backlog     | P1 before release | OPS-002                                      |
-| SEC-003  | Pre-release security review                               | Backlog     | P0 before release | all release scope                            |
-| SEC-001  | Dev-dependency audit follow-up                            | Backlog     | P3                | —                                            |
+| ID        | Title                                                     | Status  | Pri               | Depends on                                   |
+| --------- | --------------------------------------------------------- | ------- | ----------------- | -------------------------------------------- |
+| GOV-001   | Project governance and session handoff                    | Done    | P1                | —                                            |
+| COMP-001  | Country compliance register (KSA, Egypt)                  | Done    | P1                | —                                            |
+| DOC-001   | README and local development setup                        | Ready   | P1                | —                                            |
+| OPS-001   | docker-compose for local PostgreSQL                       | Ready   | P1                | —                                            |
+| CI-001    | GitHub Actions CI pipeline                                | Ready   | P1                | —                                            |
+| DOC-002   | PRD, architecture and business rules documents            | Ready   | P1                | —                                            |
+| DOC-003   | Database, ERD, RBAC, API spec and test plan documents     | Ready   | P1                | —                                            |
+| PUR-001   | Supplier register                                         | Backlog | P2                | Phase 1 closed                               |
+| INV-001   | Inventory ledger and stock levels                         | Backlog | P2                | Phase 1 closed, ADR-018                      |
+| INV-002   | Batches, lots and expiry (FEFO)                           | Backlog | P2                | INV-001                                      |
+| PUR-002   | Purchase orders and goods receipt                         | Backlog | P2                | INV-001, PUR-001                             |
+| INV-003   | Stock transfers and stock counts                          | Backlog | P2                | INV-001                                      |
+| CAT-002   | Refuse GS1 demo-range barcodes outside development/test   | Backlog | P2                | —                                            |
+| OPS-002   | S3-compatible storage adapter                             | Backlog | P2                | —                                            |
+| SEC-002   | Multi-factor authentication for staff                     | Backlog | P2                | —                                            |
+| PRC-001   | Tax rates and price calculation engine                    | Backlog | P2                | CAT-001                                      |
+| CUST-001  | Customer accounts, addresses and consent                  | Backlog | P2                | AUTH-001, COMP-001                           |
+| SHIP-001  | Shipping zones, methods and fees                          | Backlog | P2                | ORG-001                                      |
+| STORE-002 | Seller identification and legal pages per market          | Backlog | P2                | ORG-001, COMP-001                            |
+| ORD-001   | Cart, checkout and order lifecycle with stock reservation | Backlog | P2                | INV-001, PRC-001, CUST-001, SHIP-001         |
+| PAY-001   | Cash on delivery and bank-transfer verification           | Backlog | P2                | ORD-001                                      |
+| PAY-002   | Online card payments via a payment provider               | Blocked | P2                | PAY-001; provider + credentials              |
+| ORD-002   | Fulfilment, returns and refunds                           | Backlog | P2                | ORD-001, PAY-001                             |
+| POS-001   | Point of sale and cashier sessions                        | Backlog | P3                | INV-001, PRC-001, PAY-001                    |
+| FIN-001   | Accounting foundation (chart of accounts, journals)       | Backlog | P3                | ADR-018 confirmed, ORD-001, PUR-002, POS-001 |
+| EINV-001  | ZATCA e-invoicing (FATOORA, integration phase)            | Blocked | P3                | ORD-001, POS-001, PRC-001; ZATCA onboarding  |
+| EINV-002  | Egypt ETA e-invoice and e-receipt                         | Blocked | P3                | ORD-001, POS-001, PRC-001; ETA registration  |
+| MKT-001   | Coupons and promotions                                    | Backlog | P3                | PRC-001, ORD-001                             |
+| LOY-001   | Loyalty points                                            | Backlog | P3                | ORD-001, POS-001                             |
+| RPT-001   | Operational and financial reports                         | Backlog | P3                | FIN-001 (financial part)                     |
+| INT-001   | Integration API and webhooks (n8n)                        | Backlog | P3                | ORD-001                                      |
+| AI-001    | AI-assisted features behind business rules                | Backlog | P3                | INT-001                                      |
+| OPS-003   | Production deployment, backups and observability          | Backlog | P1 before release | OPS-002                                      |
+| SEC-003   | Pre-release security review                               | Backlog | P0 before release | all release scope                            |
+| SEC-001   | Dev-dependency audit follow-up                            | Backlog | P3                | —                                            |
 
 ## Done
 
@@ -162,6 +163,9 @@ Turn an outline into a full specification (template) before moving it to Ready.
 - **CUST-001 Customers** — storefront sign-up/sign-in, e-mail verification, addresses (KSA national
   address fields, Egyptian governorates), marketing consent, data export/erasure requests.
 - **SHIP-001 Shipping** — zones by country/city, methods, fees, COD availability rules.
+- **STORE-002 Seller identification and legal pages** — per-market footer and pages showing the legal
+  entity's name, address, contact, CR and VAT/tax numbers (KSA-COM-01), terms of sale, returns, privacy
+  notice (PDPL); content managed by staff, bilingual. Required before live sales.
 - **ORD-001 Orders** — cart, checkout, price/tax snapshot, stock reservation with expiry, order numbers
   per country, status workflow, notifications.
 - **PAY-001 COD and bank transfer** — payment records, manual bank-transfer verification with proof,
