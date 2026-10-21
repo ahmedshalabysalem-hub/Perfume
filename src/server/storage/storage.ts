@@ -69,6 +69,4 @@ export function getStorage(): FileStorage {
   return storage;
 }
 
-export function publicFileUrl(key: string): string {
-  return `/api/files/${key}`;
-}
+export { publicFileUrl } from "@/lib/files";
