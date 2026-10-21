@@ -1,0 +1,196 @@
+// ─── Identity & access ───────────────────────────────────────────────────────
+// `User`, `Session`, `Account`, `Verification` and `RateLimit` follow the
+// Better Auth core schema (field names must match). Business fields on `User`
+// all have database defaults so Better Auth can create rows without knowing them.
+
+enum UserType {
+  STAFF
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+/// Level at which a role assignment applies. GLOBAL covers everything; the
+/// other scopes cover records that belong to that country / legal entity /
+/// store / warehouse (see docs/RBAC.md).
+enum ScopeType {
+  GLOBAL
+  COUNTRY
+  LEGAL_ENTITY
+  STORE
+  WAREHOUSE
+}
+
+model User {
+  id                 String     @id @default(uuid(7)) @db.Uuid
+  name               String     @db.VarChar(120)
+  /// Always stored lower-cased (Better Auth and our services normalise it).
+  email              String     @unique @db.VarChar(254)
+  emailVerified      Boolean    @default(false) @map("email_verified")
+  image              String?
+  type               UserType   @default(CUSTOMER)
+  status             UserStatus @default(ACTIVE)
+  preferredLocale    String?    @map("preferred_locale") @db.VarChar(5)
+  mustChangePassword Boolean    @default(false) @map("must_change_password")
+  lastLoginAt        DateTime?  @map("last_login_at") @db.Timestamptz(3)
+  deactivatedAt      DateTime?  @map("deactivated_at") @db.Timestamptz(3)
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions        Session[]
+  accounts        Account[]
+  roleAssignments UserRole[] @relation("UserRoleAssignee")
+  assignedRoles   UserRole[] @relation("UserRoleAssigner")
+
+  @@index([type, status])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address") @db.VarChar(64)
+  userAgent String?  @map("user_agent") @db.VarChar(512)
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Credential / provider accounts. For email+password users, providerId is
+/// "credential" and `password` holds the scrypt hash (never the password).
+model Account {
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+/// Authentication rate-limit counters (shared across app instances).
+model RateLimit {
+  id          String @id @default(uuid(7)) @db.Uuid
+  key         String @unique
+  count       Int
+  lastRequest BigInt @map("last_request")
+
+  @@map("rate_limits")
+}
+
+/// Permission catalogue. Keys are defined in code (src/server/rbac/permissions.ts)
+/// and synchronised by `npm run db:sync-rbac` / the seed.
+model Permission {
+  key           String  @id @db.VarChar(100)
+  module        String  @db.VarChar(50)
+  descriptionEn String  @map("description_en")
+  descriptionAr String  @map("description_ar")
+  /// Sensitive permissions (approvals, financial posting, user management)
+  /// are highlighted in the UI and audited more strictly.
+  isSensitive   Boolean @default(false) @map("is_sensitive")
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model Role {
+  id                String      @id @default(uuid(7)) @db.Uuid
+  key               String      @unique @db.VarChar(64)
+  nameEn            String      @map("name_en") @db.VarChar(120)
+  nameAr            String      @map("name_ar") @db.VarChar(120)
+  descriptionEn     String?     @map("description_en")
+  descriptionAr     String?     @map("description_ar")
+  /// System roles are defined in code; their permission sets are managed by
+  /// the RBAC sync and cannot be edited from the UI.
+  isSystem          Boolean     @default(false) @map("is_system")
+  /// Which scopes this role may be assigned at (e.g. Cashier → STORE only).
+  allowedScopeTypes ScopeType[] @map("allowed_scope_types")
+  isActive          Boolean     @default(true) @map("is_active")
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  permissions RolePermission[]
+  assignments UserRole[]
+
+  @@map("roles")
+}
+
+model RolePermission {
+  roleId        String   @map("role_id") @db.Uuid
+  permissionKey String   @map("permission_key") @db.VarChar(100)
+  grantedAt     DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([roleId, permissionKey])
+  @@index([permissionKey])
+  @@map("role_permissions")
+}
+
+/// A role granted to a user at a scope. Exactly the FK column matching
+/// `scopeType` is set (enforced by a CHECK constraint in the migration).
+/// `scopeKey` is a canonical string ("GLOBAL", "COUNTRY:SA", "STORE:<uuid>", …)
+/// used to make assignments unique.
+model UserRole {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  roleId        String    @map("role_id") @db.Uuid
+  scopeType     ScopeType @map("scope_type")
+  scopeKey      String    @map("scope_key") @db.VarChar(80)
+  countryCode   String?   @map("country_code") @db.Char(2)
+  legalEntityId String?   @map("legal_entity_id") @db.Uuid
+  storeId       String?   @map("store_id") @db.Uuid
+  warehouseId   String?   @map("warehouse_id") @db.Uuid
+  assignedById  String?   @map("assigned_by_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user        User         @relation("UserRoleAssignee", fields: [userId], references: [id], onDelete: Cascade)
+  role        Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  assignedBy  User?        @relation("UserRoleAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  country     Country?     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  legalEntity LegalEntity? @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  store       Store?       @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  warehouse   Warehouse?   @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, roleId, scopeKey])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}

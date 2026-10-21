@@ -1,0 +1,16 @@
+// Prisma schema entry point. Models are split by business domain in this
+// folder. Conventions (see docs/DATABASE.md):
+//   * Model names are PascalCase singular; tables are snake_case plural (@@map).
+//   * Columns are snake_case (@map); Prisma fields stay camelCase.
+//   * Business entities use UUIDv7 primary keys (time-ordered for index locality).
+//   * ISO reference data (countries, currencies) use the ISO code as primary key.
+//   * Money is NUMERIC, never floating point. Timestamps are timestamptz.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

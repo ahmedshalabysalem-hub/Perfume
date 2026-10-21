@@ -1,0 +1,34 @@
+// ─── Governance ──────────────────────────────────────────────────────────────
+// Append-only audit trail. UPDATE is blocked by a trigger and DELETE is only
+// possible through the retention procedure (see the initial migration).
+
+enum ActorType {
+  USER
+  SYSTEM
+  INTEGRATION
+}
+
+model AuditLog {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  occurredAt    DateTime  @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  actorType     ActorType @map("actor_type")
+  actorUserId   String?   @map("actor_user_id") @db.Uuid
+  /// e.g. "catalog.product.create", "auth.login", "users.role.assign"
+  action        String    @db.VarChar(100)
+  entityType    String    @map("entity_type") @db.VarChar(64)
+  entityId      String?   @map("entity_id") @db.VarChar(64)
+  summary       String?   @db.VarChar(300)
+  /// Redacted snapshots (secrets and credentials are never stored).
+  before        Json?
+  after         Json?
+  reason        String?   @db.VarChar(500)
+  correlationId String?   @map("correlation_id") @db.VarChar(64)
+  ipAddress     String?   @map("ip_address") @db.VarChar(64)
+  userAgent     String?   @map("user_agent") @db.VarChar(512)
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([occurredAt])
+  @@index([action])
+  @@map("audit_logs")
+}

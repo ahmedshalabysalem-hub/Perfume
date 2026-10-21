@@ -1,0 +1,146 @@
+// ─── Organisation ────────────────────────────────────────────────────────────
+// Countries and currencies are ISO reference data keyed by their ISO codes.
+// Legal entities belong to exactly one country; stores and warehouses belong to
+// a legal entity and inherit its country. The composite foreign keys on
+// (legal_entity_id, country_code) make it impossible at the database level for
+// a store or warehouse to sit in a different country from its legal entity.
+
+enum StoreType {
+  ONLINE
+  RETAIL
+}
+
+model Currency {
+  code       String   @id @db.Char(3)
+  nameEn     String   @map("name_en") @db.VarChar(80)
+  nameAr     String   @map("name_ar") @db.VarChar(80)
+  symbolEn   String   @map("symbol_en") @db.VarChar(8)
+  symbolAr   String   @map("symbol_ar") @db.VarChar(8)
+  /// ISO 4217 minor units (SAR = 2 halalas, EGP = 2 piastres).
+  minorUnits Int      @default(2) @map("minor_units") @db.SmallInt
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  countries Country[]
+  stores    Store[]
+  prices    ProductPrice[]
+
+  @@map("currencies")
+}
+
+model Country {
+  code             String   @id @db.Char(2)
+  nameEn           String   @map("name_en") @db.VarChar(80)
+  nameAr           String   @map("name_ar") @db.VarChar(80)
+  /// Selling currency for this market.
+  currencyCode     String   @map("currency_code") @db.Char(3)
+  defaultLocale    String   @map("default_locale") @db.VarChar(5)
+  /// IANA time zone, e.g. Asia/Riyadh, Africa/Cairo.
+  timezone         String   @db.VarChar(64)
+  phoneCode        String   @map("phone_code") @db.VarChar(6)
+  /// Whether catalogue prices in this market are entered tax-inclusive.
+  pricesIncludeTax Boolean  @default(true) @map("prices_include_tax")
+  /// Whether the market is open for selling on the storefront.
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  currency      Currency            @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
+  legalEntities LegalEntity[]
+  stores        Store[]
+  warehouses    Warehouse[]
+  prices        ProductPrice[]
+  compliance    ProductCompliance[]
+  roleScopes    UserRole[]
+
+  /// Target of product_prices(country_code, currency_code): a price is always
+  /// in its market's currency.
+  @@unique([code, currencyCode])
+  @@map("countries")
+}
+
+model LegalEntity {
+  id                       String   @id @default(uuid(7)) @db.Uuid
+  code                     String   @unique @db.VarChar(32)
+  countryCode              String   @map("country_code") @db.Char(2)
+  legalNameEn              String   @map("legal_name_en") @db.VarChar(200)
+  legalNameAr              String   @map("legal_name_ar") @db.VarChar(200)
+  tradeNameEn              String?  @map("trade_name_en") @db.VarChar(200)
+  tradeNameAr              String?  @map("trade_name_ar") @db.VarChar(200)
+  /// Commercial registration (KSA CR / Egypt commercial register) number.
+  commercialRegistrationNo String?  @map("commercial_registration_no") @db.VarChar(40)
+  /// VAT / tax registration number as issued by the tax authority.
+  taxRegistrationNo        String?  @map("tax_registration_no") @db.VarChar(40)
+  addressLine1             String?  @map("address_line1") @db.VarChar(200)
+  addressLine2             String?  @map("address_line2") @db.VarChar(200)
+  city                     String?  @db.VarChar(100)
+  district                 String?  @db.VarChar(100)
+  postalCode               String?  @map("postal_code") @db.VarChar(20)
+  buildingNumber           String?  @map("building_number") @db.VarChar(20)
+  email                    String?  @db.VarChar(254)
+  phone                    String?  @db.VarChar(32)
+  isActive                 Boolean  @default(true) @map("is_active")
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  country    Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  stores     Store[]
+  warehouses Warehouse[]
+  roleScopes UserRole[]
+
+  @@unique([id, countryCode])
+  @@index([countryCode])
+  @@map("legal_entities")
+}
+
+model Store {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  code          String    @unique @db.VarChar(32)
+  legalEntityId String    @map("legal_entity_id") @db.Uuid
+  countryCode   String    @map("country_code") @db.Char(2)
+  type          StoreType
+  nameEn        String    @map("name_en") @db.VarChar(120)
+  nameAr        String    @map("name_ar") @db.VarChar(120)
+  timezone      String    @db.VarChar(64)
+  currencyCode  String    @map("currency_code") @db.Char(3)
+  addressLine1  String?   @map("address_line1") @db.VarChar(200)
+  city          String?   @db.VarChar(100)
+  phone         String?   @db.VarChar(32)
+  email         String?   @db.VarChar(254)
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  legalEntity LegalEntity @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country     Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  currency    Currency    @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  roleScopes  UserRole[]
+
+  @@index([legalEntityId])
+  @@index([countryCode])
+  @@map("stores")
+}
+
+model Warehouse {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  code          String   @unique @db.VarChar(32)
+  legalEntityId String   @map("legal_entity_id") @db.Uuid
+  countryCode   String   @map("country_code") @db.Char(2)
+  nameEn        String   @map("name_en") @db.VarChar(120)
+  nameAr        String   @map("name_ar") @db.VarChar(120)
+  timezone      String   @db.VarChar(64)
+  addressLine1  String?  @map("address_line1") @db.VarChar(200)
+  city          String?  @db.VarChar(100)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  legalEntity LegalEntity @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country     Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  roleScopes  UserRole[]
+
+  @@index([legalEntityId])
+  @@index([countryCode])
+  @@map("warehouses")
+}
