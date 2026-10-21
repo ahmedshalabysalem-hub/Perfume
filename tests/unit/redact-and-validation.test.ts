@@ -40,6 +40,12 @@ describe("validation message descriptors", () => {
     expect(tooLong.error!.issues[0]!.message).toBe(vmsg("tooLong", { max: 5 }));
   });
 
+  it("surfaces the specific branch error of a union", () => {
+    const schema = z.object({ id: z.union([z.uuid({ error: vmsg("invalidReference") }), z.literal(""), z.null()]).optional() });
+    expect(schema.safeParse({ id: "not-a-uuid" }).error!.issues[0]!.message).toBe("validation.invalidReference");
+    expect(schema.safeParse({}).success).toBe(true);
+  });
+
   it("keeps explicit schema messages", () => {
     const schema = z.string().regex(/^[A-Z]+$/, { error: vmsg("skuFormat") });
     expect(schema.safeParse("abc").error!.issues[0]!.message).toBe("validation.skuFormat");

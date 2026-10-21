@@ -41,6 +41,15 @@ z.config({
         return vmsg("invalidFormat");
       case "invalid_value":
         return vmsg("invalidOption");
+      case "invalid_union": {
+        // Surface the most specific branch error (e.g. "invalidReference" for
+        // a malformed id) instead of a generic message.
+        const nested = (issue.errors ?? []).flat();
+        const specific = nested.find(
+          (inner) => inner.code !== "invalid_type" && inner.code !== "invalid_value" && inner.message.startsWith("validation."),
+        );
+        return specific?.message ?? vmsg("invalidFormat");
+      }
       default:
         // Keep messages supplied explicitly by schemas (refinements etc.).
         return undefined;
