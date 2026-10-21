@@ -30,7 +30,9 @@ import { VariantsPanel } from "./variants-panel";
 
 const TABS = ["general", "fragrance", "variants", "content", "images", "compliance", "history"] as const;
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/admin/catalog/products/[id]">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/admin/catalog/products/[id]">): Promise<Metadata> {
   const locale = await metadataLocale(params);
   const { id } = await params;
   const t = await getTranslations({ locale, namespace: "products" });
@@ -40,7 +42,10 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/admin/ca
   return { title: product ? localized(locale, product.nameAr, product.nameEn) : t("title") };
 }
 
-export default async function ProductPage({ params, searchParams }: PageProps<"/[locale]/admin/catalog/products/[id]">) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/admin/catalog/products/[id]">) {
   const locale = await initLocale(params);
   const { id } = await params;
   const actor = await getAdminPageActor("products.view");
@@ -51,7 +56,11 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
   const product = await getProductForAdmin(ctx, id).catch(() => null);
   if (!product) notFound();
   const options = await productEditorOptions(ctx);
-  const history = await getProductHistory(ctx, product.id, product.variants.map((variant) => variant.id));
+  const history = await getProductHistory(
+    ctx,
+    product.id,
+    product.variants.map((variant) => variant.id),
+  );
 
   const t = await getTranslations("products");
   const historyT = await getTranslations("history");
@@ -106,7 +115,9 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
     notes: entry.notes,
     editable: can(actor, "products.compliance.manage", { countryCode: entry.countryCode }),
   }));
-  const complianceMarkets = markets.filter((market) => can(actor, "products.compliance.manage", { countryCode: market.code }));
+  const complianceMarkets = markets.filter((market) =>
+    can(actor, "products.compliance.manage", { countryCode: market.code }),
+  );
   const notesByLayer = (layer: "TOP" | "HEART" | "BASE") =>
     product.notes.filter((note) => note.layer === layer).map((note) => note.noteId);
 
@@ -131,7 +142,11 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
           </>
         }
       />
-      {product.status === "DRAFT" ? <Alert variant="info" className="mb-4">{t("notPublishedHint")}</Alert> : null}
+      {product.status === "DRAFT" ? (
+        <Alert variant="info" className="mb-4">
+          {t("notPublishedHint")}
+        </Alert>
+      ) : null}
       {!canEdit ? <Alert className="mb-4">{t("readOnlyHint")}</Alert> : null}
 
       <Tabs defaultValue={defaultTab}>
@@ -188,7 +203,13 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
         </TabsContent>
 
         <TabsContent value="variants">
-          <VariantsPanel productId={product.id} variants={variants} markets={markets} canEdit={canEdit} canEditPrices={canEditPrices} />
+          <VariantsPanel
+            productId={product.id}
+            variants={variants}
+            markets={markets}
+            canEdit={canEdit}
+            canEditPrices={canEditPrices}
+          />
         </TabsContent>
 
         <TabsContent value="content">
@@ -230,7 +251,12 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
         </TabsContent>
 
         <TabsContent value="compliance">
-          <CompliancePanel productId={product.id} entries={compliance} markets={complianceMarkets} canAdd={complianceMarkets.length > 0} />
+          <CompliancePanel
+            productId={product.id}
+            entries={compliance}
+            markets={complianceMarkets}
+            canAdd={complianceMarkets.length > 0}
+          />
         </TabsContent>
 
         <TabsContent value="history">
@@ -243,7 +269,7 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                   {history.map((entry) => (
                     <li key={entry.id} className="rounded-lg border p-3 text-sm">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs ltr-value">{entry.action}</code>
+                        <code className="ltr-value rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
                         <span className="text-xs text-muted-foreground">
                           {format.dateTime(entry.occurredAt, "long")} ·{" "}
                           {entry.actorName ? historyT("by", { name: entry.actorName }) : historyT("system")}

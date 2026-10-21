@@ -3,7 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { initLocale, metadataLocale } from "@/i18n/params";
 import { LocationsPage } from "../locations";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/admin/organization/stores">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/admin/organization/stores">): Promise<Metadata> {
   const t = await getTranslations({ locale: await metadataLocale(params), namespace: "organization" });
   return { title: t("storesTitle") };
 }

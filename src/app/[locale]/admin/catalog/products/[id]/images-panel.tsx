@@ -14,7 +14,15 @@ import type { ImageDto } from "./types";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
-export function ImagesPanel({ productId, images, canEdit }: { productId: string; images: ImageDto[]; canEdit: boolean }) {
+export function ImagesPanel({
+  productId,
+  images,
+  canEdit,
+}: {
+  productId: string;
+  images: ImageDto[];
+  canEdit: boolean;
+}) {
   const t = useTranslations("images");
   const common = useTranslations("common");
   const formRef = useRef<HTMLFormElement>(null);
@@ -93,7 +101,9 @@ export function ImagesPanel({ productId, images, canEdit }: { productId: string;
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => startTransition(async () => void (await submit(() => makePrimaryImageAction(image.id))))}
+                      onClick={() =>
+                        startTransition(async () => void (await submit(() => makePrimaryImageAction(image.id))))
+                      }
                     >
                       <Star /> {t("makePrimary")}
                     </Button>

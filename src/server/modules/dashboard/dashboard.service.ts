@@ -40,16 +40,23 @@ export type DashboardData = {
 export async function getDashboardData(ctx: ServiceContext): Promise<DashboardData> {
   assertCan(ctx.actor, "dashboard.view");
 
-  const [publishedProducts, draftProducts, activeVariants, activeBrands, activeCategories, variantsWithoutBarcode, productsMissingArabic] =
-    await Promise.all([
-      db.product.count({ where: { status: "PUBLISHED" } }),
-      db.product.count({ where: { status: "DRAFT" } }),
-      db.productVariant.count({ where: { status: "ACTIVE" } }),
-      db.brand.count({ where: { isActive: true } }),
-      db.category.count({ where: { isActive: true } }),
-      db.productVariant.count({ where: { status: "ACTIVE", barcode: null } }),
-      db.product.count({ where: { status: { in: ["DRAFT", "PUBLISHED"] }, descriptionAr: null } }),
-    ]);
+  const [
+    publishedProducts,
+    draftProducts,
+    activeVariants,
+    activeBrands,
+    activeCategories,
+    variantsWithoutBarcode,
+    productsMissingArabic,
+  ] = await Promise.all([
+    db.product.count({ where: { status: "PUBLISHED" } }),
+    db.product.count({ where: { status: "DRAFT" } }),
+    db.productVariant.count({ where: { status: "ACTIVE" } }),
+    db.brand.count({ where: { isActive: true } }),
+    db.category.count({ where: { isActive: true } }),
+    db.productVariant.count({ where: { status: "ACTIVE", barcode: null } }),
+    db.product.count({ where: { status: { in: ["DRAFT", "PUBLISHED"] }, descriptionAr: null } }),
+  ]);
 
   const countries = await db.country.findMany({ where: { isActive: true }, orderBy: { code: "desc" } });
   const markets = await Promise.all(

@@ -32,7 +32,15 @@ export const EMPTY_BRAND: BrandFormValues = {
   websiteUrl: "",
 };
 
-export function BrandForm({ brandId, defaults, onDone }: { brandId?: string; defaults: BrandFormValues; onDone: () => void }) {
+export function BrandForm({
+  brandId,
+  defaults,
+  onDone,
+}: {
+  brandId?: string;
+  defaults: BrandFormValues;
+  onDone: () => void;
+}) {
   const t = useTranslations("brands");
   const common = useTranslations("common");
   const form = useForm<Values>({ resolver: formResolver(brandSchema), defaultValues: defaults });
@@ -54,7 +62,15 @@ export function BrandForm({ brandId, defaults, onDone }: { brandId?: string; def
       <TextInput form={form} name="slug" label={common("slug")} description={common("slugHint")} dir="ltr" />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput form={form} name="countryOfOriginCode" label={t("countryOfOrigin")} dir="ltr" placeholder="FR" />
-        <TextInput form={form} name="websiteUrl" label={t("website")} dir="ltr" type="url" inputMode="url" placeholder="https://" />
+        <TextInput
+          form={form}
+          name="websiteUrl"
+          label={t("website")}
+          dir="ltr"
+          type="url"
+          inputMode="url"
+          placeholder="https://"
+        />
       </div>
       <TextAreaInput form={form} name="descriptionEn" label={common("descriptionEn")} dir="ltr" />
       <TextAreaInput form={form} name="descriptionAr" label={common("descriptionAr")} dir="rtl" />

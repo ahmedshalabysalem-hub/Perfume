@@ -16,7 +16,7 @@ export default function LocaleError({ error, reset }: { error: Error & { digest?
       <div className="max-w-md text-center">
         <h1 className="font-display text-3xl">{t("unexpected")}</h1>
         <p className="mt-3 text-muted-foreground">{t("unexpectedHint")}</p>
-        {error.digest ? <p className="mt-2 font-mono text-xs text-muted-foreground ltr-value">{error.digest}</p> : null}
+        {error.digest ? <p className="ltr-value mt-2 font-mono text-xs text-muted-foreground">{error.digest}</p> : null}
         <Button className="mt-8" variant="outline" onClick={() => reset()}>
           {t("tryAgain")}
         </Button>

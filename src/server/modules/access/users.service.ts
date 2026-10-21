@@ -1,5 +1,10 @@
 import "server-only";
-import { createStaffUserSchema, resetPasswordSchema, roleAssignmentSchema, updateStaffUserSchema } from "@/lib/schemas/access";
+import {
+  createStaffUserSchema,
+  resetPasswordSchema,
+  roleAssignmentSchema,
+  updateStaffUserSchema,
+} from "@/lib/schemas/access";
 import { z } from "@/lib/validation/zod";
 import { recordAudit } from "@/server/audit/audit";
 import { checkPasswordPolicy, revokeAllSessions, setCredentialPassword } from "@/server/auth/credentials";
@@ -86,11 +91,27 @@ export async function getStaffUser(ctx: ServiceContext, id: string) {
 export async function getAssignmentOptions(ctx: ServiceContext) {
   assertCan(ctx.actor, "users.view");
   const [roles, countries, legalEntities, stores, warehouses] = await Promise.all([
-    db.role.findMany({ where: { isActive: true }, orderBy: { nameEn: "asc" }, select: { id: true, key: true, nameEn: true, nameAr: true, allowedScopeTypes: true } }),
+    db.role.findMany({
+      where: { isActive: true },
+      orderBy: { nameEn: "asc" },
+      select: { id: true, key: true, nameEn: true, nameAr: true, allowedScopeTypes: true },
+    }),
     db.country.findMany({ orderBy: { code: "desc" }, select: { code: true, nameEn: true, nameAr: true } }),
-    db.legalEntity.findMany({ where: { isActive: true }, orderBy: { code: "asc" }, select: { id: true, code: true, legalNameEn: true, legalNameAr: true } }),
-    db.store.findMany({ where: { isActive: true }, orderBy: { code: "asc" }, select: { id: true, code: true, nameEn: true, nameAr: true } }),
-    db.warehouse.findMany({ where: { isActive: true }, orderBy: { code: "asc" }, select: { id: true, code: true, nameEn: true, nameAr: true } }),
+    db.legalEntity.findMany({
+      where: { isActive: true },
+      orderBy: { code: "asc" },
+      select: { id: true, code: true, legalNameEn: true, legalNameAr: true },
+    }),
+    db.store.findMany({
+      where: { isActive: true },
+      orderBy: { code: "asc" },
+      select: { id: true, code: true, nameEn: true, nameAr: true },
+    }),
+    db.warehouse.findMany({
+      where: { isActive: true },
+      orderBy: { code: "asc" },
+      select: { id: true, code: true, nameEn: true, nameAr: true },
+    }),
   ]);
   return { roles: roles.filter((role) => role.key !== "customer"), countries, legalEntities, stores, warehouses };
 }
@@ -100,10 +121,16 @@ export async function getAssignmentOptions(ctx: ServiceContext) {
 type ParsedAssignment = ReturnType<typeof roleAssignmentSchema.parse>;
 
 /** Resolve the assignment scope against the database (existence + hierarchy). */
-async function resolveAssignment(client: DbClient, input: ParsedAssignment): Promise<{
+async function resolveAssignment(
+  client: DbClient,
+  input: ParsedAssignment,
+): Promise<{
   scope: AssignmentScope;
   target: AuthorizationTarget;
-  columns: Pick<Prisma.UserRoleUncheckedCreateInput, "scopeType" | "scopeKey" | "countryCode" | "legalEntityId" | "storeId" | "warehouseId">;
+  columns: Pick<
+    Prisma.UserRoleUncheckedCreateInput,
+    "scopeType" | "scopeKey" | "countryCode" | "legalEntityId" | "storeId" | "warehouseId"
+  >;
 }> {
   const none = { countryCode: null, legalEntityId: null, storeId: null, warehouseId: null };
   switch (input.scopeType) {
@@ -115,7 +142,11 @@ async function resolveAssignment(client: DbClient, input: ParsedAssignment): Pro
       const country = await client.country.findUnique({ where: { code: input.countryCode ?? "" } });
       if (!country) throw new ValidationError({ countryCode: ["validation.invalidReference"] });
       const scope: AssignmentScope = { type: "COUNTRY", countryCode: country.code };
-      return { scope, target: { countryCode: country.code }, columns: { scopeType: "COUNTRY", scopeKey: scopeKey(scope), ...none, countryCode: country.code } };
+      return {
+        scope,
+        target: { countryCode: country.code },
+        columns: { scopeType: "COUNTRY", scopeKey: scopeKey(scope), ...none, countryCode: country.code },
+      };
     }
     case "LEGAL_ENTITY": {
       const entity = await client.legalEntity.findUnique({ where: { id: input.legalEntityId ?? "" } });
@@ -143,7 +174,11 @@ async function resolveAssignment(client: DbClient, input: ParsedAssignment): Pro
       const scope: AssignmentScope = { type: "WAREHOUSE", warehouseId: warehouse.id };
       return {
         scope,
-        target: { countryCode: warehouse.countryCode, legalEntityId: warehouse.legalEntityId, warehouseId: warehouse.id },
+        target: {
+          countryCode: warehouse.countryCode,
+          legalEntityId: warehouse.legalEntityId,
+          warehouseId: warehouse.id,
+        },
         columns: { scopeType: "WAREHOUSE", scopeKey: scopeKey(scope), ...none, warehouseId: warehouse.id },
       };
     }
@@ -152,13 +187,19 @@ async function resolveAssignment(client: DbClient, input: ParsedAssignment): Pro
 
 /** Validate an assignment request and insert it (inside the caller's transaction). */
 async function insertAssignment(tx: Tx, ctx: ServiceContext, userId: string, input: ParsedAssignment) {
-  const role = await tx.role.findUnique({ where: { id: input.roleId }, include: { permissions: { select: { permissionKey: true } } } });
+  const role = await tx.role.findUnique({
+    where: { id: input.roleId },
+    include: { permissions: { select: { permissionKey: true } } },
+  });
   if (!role || !role.isActive) throw new ValidationError({ roleId: ["validation.invalidReference"] });
-  if (!role.allowedScopeTypes.includes(input.scopeType)) throw new InvalidStateError("errors.invalidState.scopeNotAllowed");
+  if (!role.allowedScopeTypes.includes(input.scopeType))
+    throw new InvalidStateError("errors.invalidState.scopeNotAllowed");
   const { target, columns } = await resolveAssignment(tx, input);
 
   assertCan(ctx.actor, "users.manage", target);
-  const escalation = role.permissions.some(({ permissionKey }) => isPermissionKey(permissionKey) && !can(ctx.actor, permissionKey, target));
+  const escalation = role.permissions.some(
+    ({ permissionKey }) => isPermissionKey(permissionKey) && !can(ctx.actor, permissionKey, target),
+  );
   if (escalation) throw new InvalidStateError("errors.invalidState.privilegeEscalation");
 
   try {
@@ -219,7 +260,8 @@ export async function createStaffUser(ctx: ServiceContext, input: unknown): Prom
       return { id: user.id };
     });
   } catch (error) {
-    if (isUniqueViolationOn(error, "email")) throw new ConflictError("errors.conflict.email", { email: ["errors.conflict.email"] });
+    if (isUniqueViolationOn(error, "email"))
+      throw new ConflictError("errors.conflict.email", { email: ["errors.conflict.email"] });
     throw error;
   }
 }
@@ -231,7 +273,13 @@ export async function updateStaffUser(ctx: ServiceContext, id: string, input: un
   if (!existing) throw new NotFoundError("user");
   await db.$transaction(async (tx) => {
     await tx.user.update({ where: { id }, data: { name: data.name } });
-    await recordAudit(tx, ctx, { action: "users.update", entityType: "user", entityId: id, before: { name: existing.name }, after: { name: data.name } });
+    await recordAudit(tx, ctx, {
+      action: "users.update",
+      entityType: "user",
+      entityId: id,
+      before: { name: existing.name },
+      after: { name: data.name },
+    });
   });
 }
 
@@ -256,7 +304,10 @@ export async function resetStaffPassword(ctx: ServiceContext, id: string, input:
   });
 }
 
-const statusSchema = z.object({ status: z.enum(["ACTIVE", "SUSPENDED", "DEACTIVATED"]), reason: z.string().trim().max(500).nullish() });
+const statusSchema = z.object({
+  status: z.enum(["ACTIVE", "SUSPENDED", "DEACTIVATED"]),
+  reason: z.string().trim().max(500).nullish(),
+});
 
 export async function setStaffUserStatus(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
   assertCan(ctx.actor, "users.manage", "global");
@@ -268,29 +319,34 @@ export async function setStaffUserStatus(ctx: ServiceContext, id: string, input:
     throw new InvalidStateError("errors.invalidState.selfDeactivation");
   }
   // Serializable: two administrators cannot concurrently remove the last two Super Admins.
-  await db.$transaction(async (tx) => {
-    if (data.status !== "ACTIVE" && user.status === "ACTIVE") {
-      const isSuperAdmin =
-        (await tx.userRole.count({ where: { userId: id, scopeType: "GLOBAL", role: { key: SUPER_ADMIN_ROLE_KEY, isActive: true } } })) > 0;
-      if (isSuperAdmin && (await activeSuperAdminCount(tx, id)) === 0) {
-        throw new InvalidStateError("errors.invalidState.lastSuperAdmin");
+  await db.$transaction(
+    async (tx) => {
+      if (data.status !== "ACTIVE" && user.status === "ACTIVE") {
+        const isSuperAdmin =
+          (await tx.userRole.count({
+            where: { userId: id, scopeType: "GLOBAL", role: { key: SUPER_ADMIN_ROLE_KEY, isActive: true } },
+          })) > 0;
+        if (isSuperAdmin && (await activeSuperAdminCount(tx, id)) === 0) {
+          throw new InvalidStateError("errors.invalidState.lastSuperAdmin");
+        }
       }
-    }
-    await tx.user.update({
-      where: { id },
-      data: { status: data.status, deactivatedAt: data.status === "DEACTIVATED" ? new Date() : null },
-    });
-    const revoked = data.status === "ACTIVE" ? 0 : await revokeAllSessions(tx, id);
-    await recordAudit(tx, ctx, {
-      action: "users.status",
-      entityType: "user",
-      entityId: id,
-      summary: `${user.email}: ${user.status} → ${data.status}${revoked ? `, ${revoked} session(s) revoked` : ""}`,
-      before: { status: user.status },
-      after: { status: data.status },
-      reason: data.reason ?? null,
-    });
-  }, { isolationLevel: "Serializable" });
+      await tx.user.update({
+        where: { id },
+        data: { status: data.status, deactivatedAt: data.status === "DEACTIVATED" ? new Date() : null },
+      });
+      const revoked = data.status === "ACTIVE" ? 0 : await revokeAllSessions(tx, id);
+      await recordAudit(tx, ctx, {
+        action: "users.status",
+        entityType: "user",
+        entityId: id,
+        summary: `${user.email}: ${user.status} → ${data.status}${revoked ? `, ${revoked} session(s) revoked` : ""}`,
+        before: { status: user.status },
+        after: { status: data.status },
+        reason: data.reason ?? null,
+      });
+    },
+    { isolationLevel: "Serializable" },
+  );
 }
 
 export async function assignRole(ctx: ServiceContext, userId: string, input: unknown): Promise<{ id: string }> {
@@ -319,21 +375,33 @@ export async function revokeRoleAssignment(ctx: ServiceContext, assignmentId: st
         : assignment.scopeType === "LEGAL_ENTITY"
           ? { legalEntityId: assignment.legalEntityId ?? undefined, countryCode: assignment.legalEntity?.countryCode }
           : assignment.scopeType === "STORE"
-            ? { storeId: assignment.storeId ?? undefined, legalEntityId: assignment.store?.legalEntityId, countryCode: assignment.store?.countryCode }
-            : { warehouseId: assignment.warehouseId ?? undefined, legalEntityId: assignment.warehouse?.legalEntityId, countryCode: assignment.warehouse?.countryCode };
+            ? {
+                storeId: assignment.storeId ?? undefined,
+                legalEntityId: assignment.store?.legalEntityId,
+                countryCode: assignment.store?.countryCode,
+              }
+            : {
+                warehouseId: assignment.warehouseId ?? undefined,
+                legalEntityId: assignment.warehouse?.legalEntityId,
+                countryCode: assignment.warehouse?.countryCode,
+              };
   assertCan(ctx.actor, "users.manage", target);
 
-  await db.$transaction(async (tx) => {
-    if (assignment.role.key === SUPER_ADMIN_ROLE_KEY && assignment.scopeType === "GLOBAL") {
-      if ((await activeSuperAdminCount(tx, assignment.userId)) === 0) throw new InvalidStateError("errors.invalidState.lastSuperAdmin");
-    }
-    await tx.userRole.delete({ where: { id: assignmentId } });
-    await recordAudit(tx, ctx, {
-      action: "users.role.revoke",
-      entityType: "user",
-      entityId: assignment.userId,
-      summary: `${assignment.role.key} @ ${assignment.scopeKey}`,
-      before: { assignmentId, role: assignment.role.key, scope: assignment.scopeKey },
-    });
-  }, { isolationLevel: "Serializable" });
+  await db.$transaction(
+    async (tx) => {
+      if (assignment.role.key === SUPER_ADMIN_ROLE_KEY && assignment.scopeType === "GLOBAL") {
+        if ((await activeSuperAdminCount(tx, assignment.userId)) === 0)
+          throw new InvalidStateError("errors.invalidState.lastSuperAdmin");
+      }
+      await tx.userRole.delete({ where: { id: assignmentId } });
+      await recordAudit(tx, ctx, {
+        action: "users.role.revoke",
+        entityType: "user",
+        entityId: assignment.userId,
+        summary: `${assignment.role.key} @ ${assignment.scopeKey}`,
+        before: { assignmentId, role: assignment.role.key, scope: assignment.scopeKey },
+      });
+    },
+    { isolationLevel: "Serializable" },
+  );
 }

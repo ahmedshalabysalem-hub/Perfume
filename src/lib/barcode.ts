@@ -50,11 +50,7 @@ export type BarcodeValidation =
  *  - CODE_128: manufacturer codes are any printable ASCII up to 48 chars;
  *    internal codes must match INTERNAL_BARCODE_PATTERN.
  */
-export function validateBarcode(
-  raw: string,
-  type: BarcodeTypeValue,
-  source: BarcodeSourceValue,
-): BarcodeValidation {
+export function validateBarcode(raw: string, type: BarcodeTypeValue, source: BarcodeSourceValue): BarcodeValidation {
   const value = normalizeBarcode(raw);
   if (type === "CODE_128") {
     if (source === "INTERNAL") {

@@ -45,7 +45,9 @@ export function Field({ id, label, error, description, required, className, chil
 
 /** ARIA attributes for a control rendered inside <Field>. */
 export function fieldAria(id: string, error?: string, hasDescription = false) {
-  const describedBy = [hasDescription ? `${id}-description` : null, error ? `${id}-error` : null].filter(Boolean).join(" ");
+  const describedBy = [hasDescription ? `${id}-description` : null, error ? `${id}-error` : null]
+    .filter(Boolean)
+    .join(" ");
   return {
     id,
     "aria-invalid": error ? true : undefined,

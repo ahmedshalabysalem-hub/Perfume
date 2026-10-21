@@ -37,11 +37,15 @@ export async function createLegalEntityAction(input: unknown): Promise<ActionRes
 }
 
 export async function updateLegalEntityAction(id: string, input: unknown): Promise<ActionResult> {
-  return runAction(async (ctx) => done(await updateLegalEntity(ctx, parseId(id, "legal_entity"), input).then(() => null)));
+  return runAction(async (ctx) =>
+    done(await updateLegalEntity(ctx, parseId(id, "legal_entity"), input).then(() => null)),
+  );
 }
 
 export async function setLegalEntityActiveAction(id: string, isActive: boolean): Promise<ActionResult> {
-  return runAction(async (ctx) => done(await setLegalEntityActive(ctx, parseId(id, "legal_entity"), { isActive }).then(() => null)));
+  return runAction(async (ctx) =>
+    done(await setLegalEntityActive(ctx, parseId(id, "legal_entity"), { isActive }).then(() => null)),
+  );
 }
 
 export async function createStoreAction(input: unknown): Promise<ActionResult<{ id: string }>> {
@@ -65,5 +69,7 @@ export async function updateWarehouseAction(id: string, input: unknown): Promise
 }
 
 export async function setWarehouseActiveAction(id: string, isActive: boolean): Promise<ActionResult> {
-  return runAction(async (ctx) => done(await setWarehouseActive(ctx, parseId(id, "warehouse"), { isActive }).then(() => null)));
+  return runAction(async (ctx) =>
+    done(await setWarehouseActive(ctx, parseId(id, "warehouse"), { isActive }).then(() => null)),
+  );
 }

@@ -15,7 +15,14 @@ import type { z } from "@/lib/validation/zod";
 import { createCategoryAction, setCategoryActiveAction, updateCategoryAction } from "./actions";
 
 type Values = z.input<typeof categorySchema>;
-export type CategoryOption = { id: string; parentId: string | null; nameEn: string; nameAr: string; depth: number; isActive: boolean };
+export type CategoryOption = {
+  id: string;
+  parentId: string | null;
+  nameEn: string;
+  nameAr: string;
+  depth: number;
+  isActive: boolean;
+};
 export type CategoryFormValues = {
   slug: string;
   parentId: string;
@@ -26,7 +33,15 @@ export type CategoryFormValues = {
   sortOrder: string;
 };
 
-const EMPTY: CategoryFormValues = { slug: "", parentId: "", nameEn: "", nameAr: "", descriptionEn: "", descriptionAr: "", sortOrder: "0" };
+const EMPTY: CategoryFormValues = {
+  slug: "",
+  parentId: "",
+  nameEn: "",
+  nameAr: "",
+  descriptionEn: "",
+  descriptionAr: "",
+  sortOrder: "0",
+};
 
 /** Ids of a category and all of its descendants (cannot be chosen as its parent). */
 function subtreeIds(categories: CategoryOption[], rootId: string): Set<string> {
@@ -81,7 +96,13 @@ function CategoryForm({
         <TextInput form={form} name="nameEn" label={common("nameEn")} required dir="ltr" />
         <TextInput form={form} name="nameAr" label={common("nameAr")} required dir="rtl" />
       </div>
-      <SelectInput form={form} name="parentId" label={t("parent")} options={parentOptions} placeholder={t("noParent")} />
+      <SelectInput
+        form={form}
+        name="parentId"
+        label={t("parent")}
+        options={parentOptions}
+        placeholder={t("noParent")}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput form={form} name="slug" label={common("slug")} description={common("slugHint")} dir="ltr" />
         <TextInput form={form} name="sortOrder" label={common("sortOrder")} inputMode="numeric" dir="ltr" />
@@ -103,7 +124,16 @@ function CategoryForm({
 export function NewCategoryButton({ categories }: { categories: CategoryOption[] }) {
   const t = useTranslations("categories");
   return (
-    <FormDialog trigger={<><Plus /> {t("new")}</>} title={t("createTitle")} wide testId="new-category">
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("new")}
+        </>
+      }
+      title={t("createTitle")}
+      wide
+      testId="new-category"
+    >
       {(close) => <CategoryForm defaults={EMPTY} categories={categories} onDone={close} />}
     </FormDialog>
   );
@@ -124,7 +154,17 @@ export function CategoryRowActions({
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+        wide
+      >
         {(close) => <CategoryForm categoryId={id} defaults={defaults} categories={categories} onDone={close} />}
       </FormDialog>
       <ActivationToggle

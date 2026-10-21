@@ -64,7 +64,11 @@ describe("authentication", () => {
     const response = await getAuth().handler(
       new Request("http://localhost:3000/api/auth/sign-in/email", {
         method: "POST",
-        headers: { "content-type": "application/json", origin: "https://evil.example", cookie: "perfume.session_token=x" },
+        headers: {
+          "content-type": "application/json",
+          origin: "https://evil.example",
+          cookie: "perfume.session_token=x",
+        },
         body: JSON.stringify({ email: "catalog@test.local", password: TEST_PASSWORD }),
       }),
     );

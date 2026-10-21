@@ -10,18 +10,45 @@ import { BrandForm, EMPTY_BRAND, type BrandFormValues } from "./brand-form";
 export function NewBrandButton() {
   const t = useTranslations("brands");
   return (
-    <FormDialog trigger={<><Plus /> {t("new")}</>} title={t("createTitle")} wide testId="new-brand">
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("new")}
+        </>
+      }
+      title={t("createTitle")}
+      wide
+      testId="new-brand"
+    >
       {(close) => <BrandForm defaults={EMPTY_BRAND} onDone={close} />}
     </FormDialog>
   );
 }
 
-export function BrandRowActions({ id, isActive, defaults }: { id: string; isActive: boolean; defaults: BrandFormValues }) {
+export function BrandRowActions({
+  id,
+  isActive,
+  defaults,
+}: {
+  id: string;
+  isActive: boolean;
+  defaults: BrandFormValues;
+}) {
   const t = useTranslations("brands");
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+        wide
+      >
         {(close) => <BrandForm brandId={id} defaults={defaults} onDone={close} />}
       </FormDialog>
       {isActive ? (

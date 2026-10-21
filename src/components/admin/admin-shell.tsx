@@ -63,7 +63,9 @@ function SidebarNav({ nav, onNavigate }: { nav: NavSection[]; onNavigate?: () =>
     <nav aria-label={t("overview")} className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
       {nav.map((section) => (
         <div key={section.section} className="grid gap-1">
-          <p className="px-3 pb-1 text-[0.7rem] font-semibold tracking-wider text-sidebar-muted uppercase">{t(section.section)}</p>
+          <p className="px-3 pb-1 text-[0.7rem] font-semibold tracking-wider text-sidebar-muted uppercase">
+            {t(section.section)}
+          </p>
           {section.items.map((item) => {
             const Icon = ICONS[item.icon];
             const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
@@ -126,7 +128,7 @@ function UserMenu({ user }: { user: ShellUser }) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>
           <span className="block font-medium">{user.name}</span>
-          <span className="block truncate text-xs text-muted-foreground ltr-value">{user.email}</span>
+          <span className="ltr-value block truncate text-xs text-muted-foreground">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -165,7 +167,10 @@ export function AdminShell({ nav, user, children }: { nav: NavSection[]; user: S
 
   return (
     <div className="flex min-h-dvh bg-background">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2"
+      >
         {t("skipToContent")}
       </a>
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex print:hidden">

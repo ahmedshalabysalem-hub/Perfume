@@ -1,12 +1,7 @@
 import { ForbiddenError } from "@/server/errors";
 import type { Actor, UserActor } from "./actor";
 import type { PermissionKey } from "./permissions";
-import {
-  scopeCovers,
-  scopeFilterFromScopes,
-  type AuthorizationTarget,
-  type ScopeFilter,
-} from "./scope";
+import { scopeCovers, scopeFilterFromScopes, type AuthorizationTarget, type ScopeFilter } from "./scope";
 
 /**
  * Authorisation is always decided on the server, from the actor's grants, at

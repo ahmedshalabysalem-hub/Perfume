@@ -8,7 +8,9 @@ import "dotenv/config";
 export function testDatabaseUrl(): string {
   const url = process.env.TEST_DATABASE_URL;
   if (!url) {
-    throw new Error("TEST_DATABASE_URL is not set. Integration tests need a dedicated, disposable database (see .env.example).");
+    throw new Error(
+      "TEST_DATABASE_URL is not set. Integration tests need a dedicated, disposable database (see .env.example).",
+    );
   }
   const appUrl = process.env.DATABASE_URL_ORIGINAL ?? process.env.DATABASE_URL;
   if (appUrl && appUrl === url && !process.env.CI_ALLOW_SHARED_TEST_DB) {
@@ -16,7 +18,9 @@ export function testDatabaseUrl(): string {
   }
   const databaseName = new URL(url).pathname.replace(/^\//, "");
   if (!/test/i.test(databaseName)) {
-    throw new Error(`Refusing to run integration tests against "${databaseName}": the database name must contain "test".`);
+    throw new Error(
+      `Refusing to run integration tests against "${databaseName}": the database name must contain "test".`,
+    );
   }
   return url;
 }

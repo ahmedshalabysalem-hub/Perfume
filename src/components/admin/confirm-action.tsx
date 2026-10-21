@@ -61,7 +61,12 @@ export function ConfirmAction({
         {withReason ? (
           <label className="grid gap-1.5 text-sm font-medium">
             {t("reasonLabel")}
-            <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder={t("reasonPlaceholder")} maxLength={500} />
+            <Textarea
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder={t("reasonPlaceholder")}
+              maxLength={500}
+            />
           </label>
         ) : null}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

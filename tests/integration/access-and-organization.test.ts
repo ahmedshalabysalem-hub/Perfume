@@ -72,26 +72,46 @@ describe("staff user administration", () => {
   });
 
   it("enforces the password policy and unique e-mails", async () => {
-    const weak = await errorOf(createStaffUser(f.superAdmin, { name: "Weak", email: "weak@example.com", temporaryPassword: "short" }));
+    const weak = await errorOf(
+      createStaffUser(f.superAdmin, { name: "Weak", email: "weak@example.com", temporaryPassword: "short" }),
+    );
     expect(weak).toBeInstanceOf(ValidationError);
     expect(weak.fieldErrors?.temporaryPassword?.[0]).toMatch(/^validation\.passwordTooShort/);
     const duplicate = await errorOf(
-      createStaffUser(f.superAdmin, { name: "Dup", email: "CATALOG@test.local", temporaryPassword: "Another-Long-Pass-1" }),
+      createStaffUser(f.superAdmin, {
+        name: "Dup",
+        email: "CATALOG@test.local",
+        temporaryPassword: "Another-Long-Pass-1",
+      }),
     );
     expect(duplicate).toBeInstanceOf(ConflictError);
   });
 
   it("requires GLOBAL users.manage for account operations", async () => {
-    expect(await errorOf(createStaffUser(f.catalogManager, { name: "X", email: "x@example.com", temporaryPassword: "Long-Enough-Pass-1" }))).toBeInstanceOf(
+    expect(
+      await errorOf(
+        createStaffUser(f.catalogManager, {
+          name: "X",
+          email: "x@example.com",
+          temporaryPassword: "Long-Enough-Pass-1",
+        }),
+      ),
+    ).toBeInstanceOf(ForbiddenError);
+    expect(await errorOf(setStaffUserStatus(f.saManager, userId(f.cashier), { status: "DEACTIVATED" }))).toBeInstanceOf(
       ForbiddenError,
     );
-    expect(await errorOf(setStaffUserStatus(f.saManager, userId(f.cashier), { status: "DEACTIVATED" }))).toBeInstanceOf(ForbiddenError);
   });
 });
 
 describe("role assignments", () => {
   it("validates that the role may be assigned at the requested scope", async () => {
-    const error = await errorOf(assignRole(f.superAdmin, userId(f.viewer), { roleId: await roleId("warehouse_staff"), scopeType: "COUNTRY", countryCode: "SA" }));
+    const error = await errorOf(
+      assignRole(f.superAdmin, userId(f.viewer), {
+        roleId: await roleId("warehouse_staff"),
+        scopeType: "COUNTRY",
+        countryCode: "SA",
+      }),
+    );
     expect(error.messageKey).toBe("errors.invalidState.scopeNotAllowed");
   });
 
@@ -105,19 +125,43 @@ describe("role assignments", () => {
     // A user administrator scoped to SA who is not a catalogue editor.
     const admin = await db.user.create({ data: { email: "useradmin@test.local", name: "User Admin", type: "STAFF" } });
     const userAdminRole = await db.role.create({
-      data: { key: "user_admin_test", nameEn: "User admin", nameAr: "مدير مستخدمين", allowedScopeTypes: ["GLOBAL", "COUNTRY"] },
+      data: {
+        key: "user_admin_test",
+        nameEn: "User admin",
+        nameAr: "مدير مستخدمين",
+        allowedScopeTypes: ["GLOBAL", "COUNTRY"],
+      },
     });
     await db.rolePermission.createMany({
-      data: ["admin.access", "users.view", "users.manage"].map((permissionKey) => ({ roleId: userAdminRole.id, permissionKey })),
+      data: ["admin.access", "users.view", "users.manage"].map((permissionKey) => ({
+        roleId: userAdminRole.id,
+        permissionKey,
+      })),
     });
-    await db.userRole.create({ data: { userId: admin.id, roleId: userAdminRole.id, scopeType: "COUNTRY", scopeKey: "COUNTRY:SA", countryCode: "SA" } });
+    await db.userRole.create({
+      data: {
+        userId: admin.id,
+        roleId: userAdminRole.id,
+        scopeType: "COUNTRY",
+        scopeKey: "COUNTRY:SA",
+        countryCode: "SA",
+      },
+    });
     const ctx = contextFor((await reloadActor(admin.id))!);
 
-    const escalation = await errorOf(assignRole(ctx, userId(f.viewer), { roleId: await roleId("catalog_manager"), scopeType: "COUNTRY", countryCode: "SA" }));
+    const escalation = await errorOf(
+      assignRole(ctx, userId(f.viewer), {
+        roleId: await roleId("catalog_manager"),
+        scopeType: "COUNTRY",
+        countryCode: "SA",
+      }),
+    );
     expect(escalation.messageKey).toBe("errors.invalidState.privilegeEscalation");
     // Outside their scope entirely: forbidden.
     expect(
-      await errorOf(assignRole(ctx, userId(f.viewer), { roleId: userAdminRole.id, scopeType: "COUNTRY", countryCode: "EG" })),
+      await errorOf(
+        assignRole(ctx, userId(f.viewer), { roleId: userAdminRole.id, scopeType: "COUNTRY", countryCode: "EG" }),
+      ),
     ).toBeInstanceOf(ForbiddenError);
     // Within scope and holding every permission of the role: allowed.
     await assignRole(ctx, userId(f.viewer), { roleId: userAdminRole.id, scopeType: "COUNTRY", countryCode: "SA" });
@@ -143,7 +187,9 @@ describe("role assignments", () => {
 describe("account status and sessions", () => {
   it("deactivation revokes sessions immediately and the account gets no actor", async () => {
     const cashierId = userId(f.cashier);
-    await db.session.create({ data: { userId: cashierId, token: "session-token-1", expiresAt: new Date(Date.now() + 3_600_000) } });
+    await db.session.create({
+      data: { userId: cashierId, token: "session-token-1", expiresAt: new Date(Date.now() + 3_600_000) },
+    });
     await setStaffUserStatus(f.superAdmin, cashierId, { status: "DEACTIVATED", reason: "Left the company" });
     expect(await db.session.count({ where: { userId: cashierId } })).toBe(0);
     expect(await reloadActor(cashierId)).toBeNull();
@@ -158,7 +204,9 @@ describe("account status and sessions", () => {
 
   it("password reset replaces the hash, forces a change and signs the user out", async () => {
     const viewerId = userId(f.viewer);
-    await db.session.create({ data: { userId: viewerId, token: "session-token-2", expiresAt: new Date(Date.now() + 3_600_000) } });
+    await db.session.create({
+      data: { userId: viewerId, token: "session-token-2", expiresAt: new Date(Date.now() + 3_600_000) },
+    });
     await resetStaffPassword(f.superAdmin, viewerId, { temporaryPassword: "Brand-New-Temp-Pass-7" });
     const account = await db.account.findFirstOrThrow({ where: { userId: viewerId, providerId: "credential" } });
     expect(await verifyPassword({ hash: account.password!, password: "Brand-New-Temp-Pass-7" })).toBe(true);
@@ -170,8 +218,20 @@ describe("account status and sessions", () => {
 
 describe("organisation scoping", () => {
   it("lists only stores inside the actor's scope", async () => {
-    const egEntity = await createLegalEntity(f.superAdmin, { code: "TEST-EG", countryCode: "EG", legalNameEn: "Egypt Co", legalNameAr: "شركة مصر" });
-    await createStore(f.superAdmin, { code: "EG-STORE", legalEntityId: egEntity.id, type: "ONLINE", nameEn: "EG", nameAr: "مصر", timezone: "Africa/Cairo" });
+    const egEntity = await createLegalEntity(f.superAdmin, {
+      code: "TEST-EG",
+      countryCode: "EG",
+      legalNameEn: "Egypt Co",
+      legalNameAr: "شركة مصر",
+    });
+    await createStore(f.superAdmin, {
+      code: "EG-STORE",
+      legalEntityId: egEntity.id,
+      type: "ONLINE",
+      nameEn: "EG",
+      nameAr: "مصر",
+      timezone: "Africa/Cairo",
+    });
     const all = await listStores(f.superAdmin);
     const saOnly = await listStores(f.saManager);
     expect(all.map((store) => store.code).sort()).toEqual(["EG-STORE", "SA-STORE-1"]);
@@ -179,7 +239,12 @@ describe("organisation scoping", () => {
   });
 
   it("derives a store's country and currency from its legal entity", async () => {
-    const egEntity = await createLegalEntity(f.superAdmin, { code: "TEST-EG2", countryCode: "EG", legalNameEn: "Egypt Co", legalNameAr: "شركة مصر" });
+    const egEntity = await createLegalEntity(f.superAdmin, {
+      code: "TEST-EG2",
+      countryCode: "EG",
+      legalNameEn: "Egypt Co",
+      legalNameAr: "شركة مصر",
+    });
     const { id } = await createStore(f.superAdmin, {
       code: "EG-2",
       legalEntityId: egEntity.id,
@@ -191,19 +256,41 @@ describe("organisation scoping", () => {
       countryCode: "SA",
       currencyCode: "SAR",
     });
-    expect(await db.store.findUniqueOrThrow({ where: { id } })).toMatchObject({ countryCode: "EG", currencyCode: "EGP" });
+    expect(await db.store.findUniqueOrThrow({ where: { id } })).toMatchObject({
+      countryCode: "EG",
+      currencyCode: "EGP",
+    });
   });
 
   it("validates KSA VAT number format on legal entities", async () => {
     const error = await errorOf(
-      createLegalEntity(f.superAdmin, { code: "BAD-VAT", countryCode: "SA", legalNameEn: "X", legalNameAr: "س", taxRegistrationNo: "12345" }),
+      createLegalEntity(f.superAdmin, {
+        code: "BAD-VAT",
+        countryCode: "SA",
+        legalNameEn: "X",
+        legalNameAr: "س",
+        taxRegistrationNo: "12345",
+      }),
     );
     expect(error.fieldErrors?.taxRegistrationNo).toEqual(["validation.invalidFormat"]);
-    await createLegalEntity(f.superAdmin, { code: "GOOD-VAT", countryCode: "SA", legalNameEn: "X", legalNameAr: "س", taxRegistrationNo: "300000000000003" });
+    await createLegalEntity(f.superAdmin, {
+      code: "GOOD-VAT",
+      countryCode: "SA",
+      legalNameEn: "X",
+      legalNameAr: "س",
+      taxRegistrationNo: "300000000000003",
+    });
   });
 
   it("market settings need GLOBAL organisation.manage", async () => {
-    const input = { nameEn: "Saudi Arabia", nameAr: "السعودية", timezone: "Asia/Riyadh", defaultLocale: "ar", pricesIncludeTax: false, isActive: true };
+    const input = {
+      nameEn: "Saudi Arabia",
+      nameAr: "السعودية",
+      timezone: "Asia/Riyadh",
+      defaultLocale: "ar",
+      pricesIncludeTax: false,
+      isActive: true,
+    };
     expect(await errorOf(updateCountry(f.saManager, "SA", input))).toBeInstanceOf(ForbiddenError);
     const invalid = await errorOf(updateCountry(f.superAdmin, "SA", { ...input, timezone: "Mars/Olympus" }));
     expect(invalid.fieldErrors?.timezone).toEqual(["validation.timezone"]);

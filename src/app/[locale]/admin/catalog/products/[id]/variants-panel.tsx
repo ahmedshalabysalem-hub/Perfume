@@ -56,7 +56,10 @@ function VariantForm({ productId, variant, onDone }: { productId: string; varian
   const common = useTranslations("common");
   const typeLabels = useTranslations("barcodeType");
   const sourceLabels = useTranslations("barcodeSource");
-  const form = useForm<VariantValues>({ resolver: formResolver(variantSchema), defaultValues: variantDefaults(variant) });
+  const form = useForm<VariantValues>({
+    resolver: formResolver(variantSchema),
+    defaultValues: variantDefaults(variant),
+  });
   const submit = useActionSubmit(form.setError);
   const [generating, startGenerating] = useTransition();
 
@@ -168,7 +171,9 @@ function PricesForm({ variant, markets, onDone }: { variant: VariantDto; markets
   const common = useTranslations("common");
   const locale = useLocale();
   const translate = useTranslateMessage();
-  const rows = markets.filter((market) => market.isActive || variant.prices.some((price) => price.countryCode === market.code));
+  const rows = markets.filter(
+    (market) => market.isActive || variant.prices.some((price) => price.countryCode === market.code),
+  );
   const form = useForm<PricesValues>({
     resolver: formResolver(variantPricesSchema),
     defaultValues: {
@@ -198,22 +203,33 @@ function PricesForm({ variant, markets, onDone }: { variant: VariantDto; markets
             {localized(locale, market.nameAr, market.nameEn)} · <span className="ltr-value">{market.currencyCode}</span>
           </legend>
           <p className="text-xs text-muted-foreground">
-            {market.editable ? t("subtitle", { taxMode: market.pricesIncludeTax ? t("taxInclusive") : t("taxExclusive") }) : t("notAllowed")}
+            {market.editable
+              ? t("subtitle", { taxMode: market.pricesIncludeTax ? t("taxInclusive") : t("taxExclusive") })
+              : t("notAllowed")}
           </p>
           <input type="hidden" {...form.register(`prices.${index}.countryCode`)} />
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1.5 text-sm font-medium">
               {t("amount")} ({market.currencyCode})
-              <Input inputMode="decimal" dir="ltr" {...form.register(`prices.${index}.amount`)} data-field={`price-${market.code}`} />
+              <Input
+                inputMode="decimal"
+                dir="ltr"
+                {...form.register(`prices.${index}.amount`)}
+                data-field={`price-${market.code}`}
+              />
               {errors?.[index]?.amount?.message ? (
-                <span role="alert" className="text-xs text-destructive">{translate(errors[index]?.amount?.message)}</span>
+                <span role="alert" className="text-xs text-destructive">
+                  {translate(errors[index]?.amount?.message)}
+                </span>
               ) : null}
             </label>
             <label className="grid gap-1.5 text-sm font-medium">
               {t("compareAt")}
               <Input inputMode="decimal" dir="ltr" {...form.register(`prices.${index}.compareAtAmount`)} />
               {errors?.[index]?.compareAtAmount?.message ? (
-                <span role="alert" className="text-xs text-destructive">{translate(errors[index]?.compareAtAmount?.message)}</span>
+                <span role="alert" className="text-xs text-destructive">
+                  {translate(errors[index]?.compareAtAmount?.message)}
+                </span>
               ) : (
                 <span className="text-xs font-normal text-muted-foreground">{t("compareAtHint")}</span>
               )}
@@ -260,13 +276,24 @@ export function VariantsPanel({
     <div className="grid gap-4" data-testid="variants-panel">
       {canEdit ? (
         <div className="flex justify-end">
-          <FormDialog trigger={<><Plus /> {t("add")}</>} title={t("addTitle")} wide testId="add-variant">
+          <FormDialog
+            trigger={
+              <>
+                <Plus /> {t("add")}
+              </>
+            }
+            title={t("addTitle")}
+            wide
+            testId="add-variant"
+          >
             {(close) => <VariantForm productId={productId} onDone={close} />}
           </FormDialog>
         </div>
       ) : null}
       {variants.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">{products("noVariants")}</p>
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          {products("noVariants")}
+        </p>
       ) : (
         <div className="overflow-hidden rounded-xl border">
           <Table>
@@ -287,16 +314,20 @@ export function VariantsPanel({
                 return (
                   <TableRow key={variant.id} data-testid="variant-row" data-sku={variant.sku}>
                     <TableCell>
-                      <p className="font-mono text-sm font-medium ltr-value">{variant.sku}</p>
+                      <p className="ltr-value font-mono text-sm font-medium">{variant.sku}</p>
                       <p className="text-xs text-muted-foreground">
                         {label}
-                        {variant.isTester ? <Badge variant="warning" className="ms-2">{t("isTester")}</Badge> : null}
+                        {variant.isTester ? (
+                          <Badge variant="warning" className="ms-2">
+                            {t("isTester")}
+                          </Badge>
+                        ) : null}
                       </p>
                     </TableCell>
                     <TableCell>
                       {variant.barcode ? (
                         <div>
-                          <p className="font-mono text-sm ltr-value">{variant.barcode}</p>
+                          <p className="ltr-value font-mono text-sm">{variant.barcode}</p>
                           <p className="text-xs text-muted-foreground">
                             {typeLabels(variant.barcodeType as (typeof BARCODE_TYPES)[number])} ·{" "}
                             {sourceLabels(variant.barcodeSource as (typeof BARCODE_SOURCES)[number])}
@@ -309,14 +340,22 @@ export function VariantsPanel({
                     <TableCell>
                       <div className="grid gap-0.5 text-sm">
                         {markets
-                          .filter((market) => market.isActive || variant.prices.some((price) => price.countryCode === market.code))
+                          .filter(
+                            (market) =>
+                              market.isActive || variant.prices.some((price) => price.countryCode === market.code),
+                          )
                           .map((market) => {
                             const price = variant.prices.find((candidate) => candidate.countryCode === market.code);
                             return (
                               <p key={market.code} className="flex gap-2 whitespace-nowrap">
-                                <span className="w-6 text-xs font-semibold text-muted-foreground ltr-value">{market.code}</span>
+                                <span className="ltr-value w-6 text-xs font-semibold text-muted-foreground">
+                                  {market.code}
+                                </span>
                                 {price ? (
-                                  <span className={price.isActive ? "" : "text-muted-foreground line-through"} data-price={market.code}>
+                                  <span
+                                    className={price.isActive ? "" : "text-muted-foreground line-through"}
+                                    data-price={market.code}
+                                  >
                                     {formatMoney(price.amount, price.currencyCode, locale, market.minorUnits)}
                                   </span>
                                 ) : (
@@ -333,17 +372,41 @@ export function VariantsPanel({
                     <TableCell>
                       <div className="flex flex-wrap justify-end gap-2">
                         {canEditPrices ? (
-                          <FormDialog trigger={<><Tags /> {t("editPrices")}</>} title={`${t("editPrices")} · ${variant.sku}`} variant="outline" size="sm" wide testId={`edit-prices-${variant.sku}`}>
+                          <FormDialog
+                            trigger={
+                              <>
+                                <Tags /> {t("editPrices")}
+                              </>
+                            }
+                            title={`${t("editPrices")} · ${variant.sku}`}
+                            variant="outline"
+                            size="sm"
+                            wide
+                            testId={`edit-prices-${variant.sku}`}
+                          >
                             {(close) => <PricesForm variant={variant} markets={markets} onDone={close} />}
                           </FormDialog>
                         ) : null}
                         {canEdit ? (
-                          <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+                          <FormDialog
+                            trigger={
+                              <>
+                                <Pencil /> {common("edit")}
+                              </>
+                            }
+                            title={t("editTitle")}
+                            variant="outline"
+                            size="sm"
+                            wide
+                          >
                             {(close) => <VariantForm productId={productId} variant={variant} onDone={close} />}
                           </FormDialog>
                         ) : null}
                         {variant.barcode ? (
-                          <Link href={`/admin/catalog/variants/${variant.id}/label`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+                          <Link
+                            href={`/admin/catalog/variants/${variant.id}/label`}
+                            className={buttonVariants({ variant: "ghost", size: "sm" })}
+                          >
                             <Printer /> {t("printLabel")}
                           </Link>
                         ) : null}
@@ -355,7 +418,9 @@ export function VariantsPanel({
                             confirmLabel={common("confirm")}
                             successMessage={t("statusChanged")}
                             variant={variant.status === "ACTIVE" ? "destructive" : "outline"}
-                            action={() => changeVariantStatusAction(variant.id, variant.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")}
+                            action={() =>
+                              changeVariantStatusAction(variant.id, variant.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")
+                            }
                           />
                         ) : null}
                       </div>

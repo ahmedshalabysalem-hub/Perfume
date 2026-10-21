@@ -34,10 +34,17 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
   const entities = await listLegalEntities(ctx);
   const rows: LocationRow[] =
     kind === "store"
-      ? (await listStores(ctx)).map((store) => ({ ...store, store: { type: store.type, phone: store.phone, email: store.email } }))
+      ? (await listStores(ctx)).map((store) => ({
+          ...store,
+          store: { type: store.type, phone: store.phone, email: store.email },
+        }))
       : (await listWarehouses(ctx)).map((warehouse) => ({ ...warehouse, store: null }));
   const entityOptions = entities
-    .filter((entity) => entity.isActive && can(actor, "organization.manage", { countryCode: entity.countryCode, legalEntityId: entity.id }))
+    .filter(
+      (entity) =>
+        entity.isActive &&
+        can(actor, "organization.manage", { countryCode: entity.countryCode, legalEntityId: entity.id }),
+    )
     .map((entity) => ({
       id: entity.id,
       code: entity.code,
@@ -58,7 +65,11 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
         description={subtitle}
         actions={
           entityOptions.length > 0 ? (
-            kind === "store" ? <NewStoreButton entities={entityOptions} /> : <NewWarehouseButton entities={entityOptions} />
+            kind === "store" ? (
+              <NewStoreButton entities={entityOptions} />
+            ) : (
+              <NewWarehouseButton entities={entityOptions} />
+            )
           ) : null
         }
       />
@@ -98,17 +109,24 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
                   ? entityOptions
                   : [
                       ...entityOptions,
-                      { id: row.legalEntityId, code: row.legalEntity.code, nameEn: row.legalEntity.legalNameEn, nameAr: row.legalEntity.legalNameAr, countryCode: row.countryCode, timezone: row.timezone },
+                      {
+                        id: row.legalEntityId,
+                        code: row.legalEntity.code,
+                        nameEn: row.legalEntity.legalNameEn,
+                        nameAr: row.legalEntity.legalNameAr,
+                        countryCode: row.countryCode,
+                        timezone: row.timezone,
+                      },
                     ];
                 return (
                   <TableRow key={row.id}>
-                    <TableCell className="font-mono text-xs ltr-value">{row.code}</TableCell>
+                    <TableCell className="ltr-value font-mono text-xs">{row.code}</TableCell>
                     <TableCell className="font-medium">{localized(locale, row.nameAr, row.nameEn)}</TableCell>
                     <TableCell className="text-sm">
                       {row.legalEntity.code} · <span className="ltr-value">{row.countryCode}</span>
                     </TableCell>
                     {row.store ? <TableCell>{t(`storeTypes.${row.store.type}`)}</TableCell> : null}
-                    <TableCell className="text-sm ltr-value">{row.timezone}</TableCell>
+                    <TableCell className="ltr-value text-sm">{row.timezone}</TableCell>
                     <TableCell>
                       <ActiveBadge active={row.isActive} />
                     </TableCell>
@@ -119,10 +137,20 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
                             id={row.id}
                             isActive={row.isActive}
                             entities={entityList}
-                            defaults={{ ...base, type: row.store.type, phone: row.store.phone ?? "", email: row.store.email ?? "" }}
+                            defaults={{
+                              ...base,
+                              type: row.store.type,
+                              phone: row.store.phone ?? "",
+                              email: row.store.email ?? "",
+                            }}
                           />
                         ) : (
-                          <WarehouseRowActions id={row.id} isActive={row.isActive} entities={entityList} defaults={base} />
+                          <WarehouseRowActions
+                            id={row.id}
+                            isActive={row.isActive}
+                            entities={entityList}
+                            defaults={base}
+                          />
                         )
                       ) : null}
                     </TableCell>

@@ -12,8 +12,7 @@ function flatten(object: Record<string, unknown>, prefix = ""): Record<string, s
   return output;
 }
 
-const placeholders = (message: string) =>
-  [...message.matchAll(/\{(\w+)(?:,|\})/g)].map((match) => match[1]).sort();
+const placeholders = (message: string) => [...message.matchAll(/\{(\w+)(?:,|\})/g)].map((match) => match[1]).sort();
 
 describe("message catalogues", () => {
   const enFlat = flatten(en);

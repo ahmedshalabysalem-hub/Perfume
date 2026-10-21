@@ -35,7 +35,8 @@ export async function listBrands(ctx: ServiceContext, options: { q?: string; inc
 }
 
 function mapConflict(error: unknown): never {
-  if (isUniqueViolationOn(error, "slug")) throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
+  if (isUniqueViolationOn(error, "slug"))
+    throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
   throw error;
 }
 

@@ -22,16 +22,31 @@ const NAVIGATION: NavDefinition[] = [
       { href: "/admin/catalog/categories", label: "categories", icon: "categories", permission: "products.view" },
       { href: "/admin/catalog/notes", label: "notes", icon: "notes", permission: "products.view" },
       { href: "/admin/catalog/families", label: "families", icon: "families", permission: "products.view" },
-      { href: "/admin/catalog/concentrations", label: "concentrations", icon: "concentrations", permission: "products.view" },
+      {
+        href: "/admin/catalog/concentrations",
+        label: "concentrations",
+        icon: "concentrations",
+        permission: "products.view",
+      },
     ],
   },
   {
     section: "organization",
     items: [
       { href: "/admin/organization/countries", label: "countries", icon: "countries", permission: "organization.view" },
-      { href: "/admin/organization/legal-entities", label: "legalEntities", icon: "legalEntities", permission: "organization.view" },
+      {
+        href: "/admin/organization/legal-entities",
+        label: "legalEntities",
+        icon: "legalEntities",
+        permission: "organization.view",
+      },
       { href: "/admin/organization/stores", label: "stores", icon: "stores", permission: "organization.view" },
-      { href: "/admin/organization/warehouses", label: "warehouses", icon: "warehouses", permission: "organization.view" },
+      {
+        href: "/admin/organization/warehouses",
+        label: "warehouses",
+        icon: "warehouses",
+        permission: "organization.view",
+      },
     ],
   },
   {

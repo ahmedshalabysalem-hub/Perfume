@@ -10,7 +10,12 @@ import { formResolver } from "@/components/forms/resolver";
 import { useActionSubmit } from "@/components/forms/use-action-submit";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
-import { createStaffUserSchema, resetPasswordSchema, roleAssignmentSchema, scopeTypeValues } from "@/lib/schemas/access";
+import {
+  createStaffUserSchema,
+  resetPasswordSchema,
+  roleAssignmentSchema,
+  scopeTypeValues,
+} from "@/lib/schemas/access";
 import { localized } from "@/lib/utils";
 import type { z } from "@/lib/validation/zod";
 import {
@@ -70,7 +75,10 @@ function AssignmentFields<T extends { assignment?: AssignmentValues } | Assignme
         label={t("role")}
         required={!optional}
         placeholder={optional ? common("none") : common("selectPlaceholder")}
-        options={options.roles.map((candidate) => ({ value: candidate.id, label: localized(locale, candidate.nameAr, candidate.nameEn) }))}
+        options={options.roles.map((candidate) => ({
+          value: candidate.id,
+          label: localized(locale, candidate.nameAr, candidate.nameEn),
+        }))}
       />
       <SelectInput
         form={typed}
@@ -86,7 +94,10 @@ function AssignmentFields<T extends { assignment?: AssignmentValues } | Assignme
           label={t("scopeTarget")}
           required
           placeholder={common("selectPlaceholder")}
-          options={options.countries.map((country) => ({ value: country.code, label: localized(locale, country.nameAr, country.nameEn) }))}
+          options={options.countries.map((country) => ({
+            value: country.code,
+            label: localized(locale, country.nameAr, country.nameEn),
+          }))}
         />
       ) : null}
       {scopeType === "LEGAL_ENTITY" ? (
@@ -96,7 +107,10 @@ function AssignmentFields<T extends { assignment?: AssignmentValues } | Assignme
           label={t("scopeTarget")}
           required
           placeholder={common("selectPlaceholder")}
-          options={options.legalEntities.map((entity) => ({ value: entity.id, label: `${entity.code} · ${localized(locale, entity.legalNameAr, entity.legalNameEn)}` }))}
+          options={options.legalEntities.map((entity) => ({
+            value: entity.id,
+            label: `${entity.code} · ${localized(locale, entity.legalNameAr, entity.legalNameEn)}`,
+          }))}
         />
       ) : null}
       {scopeType === "STORE" ? (
@@ -106,7 +120,10 @@ function AssignmentFields<T extends { assignment?: AssignmentValues } | Assignme
           label={t("scopeTarget")}
           required
           placeholder={common("selectPlaceholder")}
-          options={options.stores.map((store) => ({ value: store.id, label: `${store.code} · ${localized(locale, store.nameAr, store.nameEn)}` }))}
+          options={options.stores.map((store) => ({
+            value: store.id,
+            label: `${store.code} · ${localized(locale, store.nameAr, store.nameEn)}`,
+          }))}
         />
       ) : null}
       {scopeType === "WAREHOUSE" ? (
@@ -116,7 +133,10 @@ function AssignmentFields<T extends { assignment?: AssignmentValues } | Assignme
           label={t("scopeTarget")}
           required
           placeholder={common("selectPlaceholder")}
-          options={options.warehouses.map((warehouse) => ({ value: warehouse.id, label: `${warehouse.code} · ${localized(locale, warehouse.nameAr, warehouse.nameEn)}` }))}
+          options={options.warehouses.map((warehouse) => ({
+            value: warehouse.id,
+            label: `${warehouse.code} · ${localized(locale, warehouse.nameAr, warehouse.nameEn)}`,
+          }))}
         />
       ) : null}
     </div>
@@ -128,7 +148,17 @@ type CreateValues = z.input<typeof createStaffUserSchema>;
 export function CreateStaffUserButton({ options }: { options: AssignmentOptions }) {
   const t = useTranslations("users");
   return (
-    <FormDialog trigger={<><Plus /> {t("new")}</>} title={t("createTitle")} description={t("createHint")} wide testId="new-user">
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("new")}
+        </>
+      }
+      title={t("createTitle")}
+      description={t("createHint")}
+      wide
+      testId="new-user"
+    >
       {(close) => <CreateStaffUserForm options={options} onDone={close} />}
     </FormDialog>
   );
@@ -158,8 +188,20 @@ function CreateStaffUserForm({ options, onDone }: { options: AssignmentOptions; 
         <TextInput form={form} name="email" label={t("email")} required type="email" dir="ltr" />
       </div>
       <div className="flex items-end gap-2">
-        <TextInput form={form} name="temporaryPassword" label={t("temporaryPassword")} required dir="ltr" className="flex-1" />
-        <Button type="button" variant="outline" onClick={() => form.setValue("temporaryPassword", generatePassword())} aria-label={common("generate")}>
+        <TextInput
+          form={form}
+          name="temporaryPassword"
+          label={t("temporaryPassword")}
+          required
+          dir="ltr"
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => form.setValue("temporaryPassword", generatePassword())}
+          aria-label={common("generate")}
+        >
           <Wand2 />
         </Button>
       </div>
@@ -179,18 +221,43 @@ function CreateStaffUserForm({ options, onDone }: { options: AssignmentOptions; 
 export function AssignRoleButton({ userId, options }: { userId: string; options: AssignmentOptions }) {
   const t = useTranslations("users");
   return (
-    <FormDialog trigger={<><ShieldPlus /> {t("addAssignment")}</>} title={t("addAssignment")} description={t("assignmentsHint")} wide testId="assign-role">
+    <FormDialog
+      trigger={
+        <>
+          <ShieldPlus /> {t("addAssignment")}
+        </>
+      }
+      title={t("addAssignment")}
+      description={t("assignmentsHint")}
+      wide
+      testId="assign-role"
+    >
       {(close) => <AssignRoleForm userId={userId} options={options} onDone={close} />}
     </FormDialog>
   );
 }
 
-function AssignRoleForm({ userId, options, onDone }: { userId: string; options: AssignmentOptions; onDone: () => void }) {
+function AssignRoleForm({
+  userId,
+  options,
+  onDone,
+}: {
+  userId: string;
+  options: AssignmentOptions;
+  onDone: () => void;
+}) {
   const t = useTranslations("users");
   const common = useTranslations("common");
   const form = useForm<AssignmentValues>({
     resolver: formResolver(roleAssignmentSchema),
-    defaultValues: { roleId: "", scopeType: "GLOBAL", countryCode: "", legalEntityId: "", storeId: "", warehouseId: "" },
+    defaultValues: {
+      roleId: "",
+      scopeType: "GLOBAL",
+      countryCode: "",
+      legalEntityId: "",
+      storeId: "",
+      warehouseId: "",
+    },
   });
   const submit = useActionSubmit(form.setError);
   const onSubmit = form.handleSubmit(async (values) => {
@@ -232,7 +299,16 @@ type ResetValues = z.input<typeof resetPasswordSchema>;
 export function ResetPasswordButton({ userId }: { userId: string }) {
   const t = useTranslations("users");
   return (
-    <FormDialog trigger={<><KeyRound /> {t("resetPassword")}</>} title={t("resetPassword")} description={t("resetPasswordHint")} variant="outline">
+    <FormDialog
+      trigger={
+        <>
+          <KeyRound /> {t("resetPassword")}
+        </>
+      }
+      title={t("resetPassword")}
+      description={t("resetPasswordHint")}
+      variant="outline"
+    >
       {(close) => <ResetPasswordForm userId={userId} onDone={close} />}
     </FormDialog>
   );
@@ -241,7 +317,10 @@ export function ResetPasswordButton({ userId }: { userId: string }) {
 function ResetPasswordForm({ userId, onDone }: { userId: string; onDone: () => void }) {
   const t = useTranslations("users");
   const common = useTranslations("common");
-  const form = useForm<ResetValues>({ resolver: formResolver(resetPasswordSchema), defaultValues: { temporaryPassword: generatePassword() } });
+  const form = useForm<ResetValues>({
+    resolver: formResolver(resetPasswordSchema),
+    defaultValues: { temporaryPassword: generatePassword() },
+  });
   const submit = useActionSubmit(form.setError);
   const onSubmit = form.handleSubmit(async (values) => {
     if ((await submit(() => resetStaffPasswordAction(userId, values), t("passwordReset"))) !== null) onDone();
@@ -249,8 +328,20 @@ function ResetPasswordForm({ userId, onDone }: { userId: string; onDone: () => v
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-4">
       <div className="flex items-end gap-2">
-        <TextInput form={form} name="temporaryPassword" label={t("temporaryPassword")} required dir="ltr" className="flex-1" />
-        <Button type="button" variant="outline" onClick={() => form.setValue("temporaryPassword", generatePassword())} aria-label={common("generate")}>
+        <TextInput
+          form={form}
+          name="temporaryPassword"
+          label={t("temporaryPassword")}
+          required
+          dir="ltr"
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => form.setValue("temporaryPassword", generatePassword())}
+          aria-label={common("generate")}
+        >
           <Wand2 />
         </Button>
       </div>
@@ -266,7 +357,13 @@ function ResetPasswordForm({ userId, onDone }: { userId: string; onDone: () => v
   );
 }
 
-export function UserStatusButton({ userId, status }: { userId: string; status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED" }) {
+export function UserStatusButton({
+  userId,
+  status,
+}: {
+  userId: string;
+  status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+}) {
   const t = useTranslations("users");
   const common = useTranslations("common");
   return status === "ACTIVE" ? (

@@ -74,7 +74,14 @@ export function TextAreaInput<T extends FieldValues>({
   const error = errorMessage(form, name);
   return (
     <Field id={id} label={label} error={error} description={description} required={required} className={className}>
-      <Textarea rows={rows} dir={dir} disabled={disabled} {...fieldAria(id, error, !!description)} {...form.register(name)} data-field={name} />
+      <Textarea
+        rows={rows}
+        dir={dir}
+        disabled={disabled}
+        {...fieldAria(id, error, !!description)}
+        {...form.register(name)}
+        data-field={name}
+      />
     </Field>
   );
 }
@@ -94,7 +101,12 @@ export function SelectInput<T extends FieldValues>({
   const error = errorMessage(form, name);
   return (
     <Field id={id} label={label} error={error} description={description} required={required} className={className}>
-      <NativeSelect disabled={disabled} {...fieldAria(id, error, !!description)} {...form.register(name)} data-field={name}>
+      <NativeSelect
+        disabled={disabled}
+        {...fieldAria(id, error, !!description)}
+        {...form.register(name)}
+        data-field={name}
+      >
         {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
         {options.map((option) => (
           <option key={option.value} value={option.value} disabled={option.disabled}>

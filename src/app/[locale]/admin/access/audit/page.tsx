@@ -25,7 +25,13 @@ export default async function AuditPage({ params, searchParams }: PageProps<"/[l
   const raw = await searchParams;
   const result = await listAuditLogs(
     { actor, meta: await getRequestMeta() },
-    { action: first(raw.action), entity: first(raw.entity), from: first(raw.from), to: first(raw.to), page: first(raw.page) },
+    {
+      action: first(raw.action),
+      entity: first(raw.entity),
+      from: first(raw.from),
+      to: first(raw.to),
+      page: first(raw.page),
+    },
   );
   const t = await getTranslations("audit");
   const common = await getTranslations("common");
@@ -35,7 +41,10 @@ export default async function AuditPage({ params, searchParams }: PageProps<"/[l
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader title={t("title")} description={t("subtitle")} />
-      <form method="get" className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+      <form
+        method="get"
+        className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
+      >
         <label className="grid gap-1 text-xs font-medium text-muted-foreground">
           {t("actionFilter")}
           <Input name="action" defaultValue={query.action} dir="ltr" placeholder="catalog.product" />
@@ -80,41 +89,51 @@ export default async function AuditPage({ params, searchParams }: PageProps<"/[l
             <TableBody>
               {result.entries.map((entry) => (
                 <TableRow key={entry.id} className="align-top" data-testid="audit-row">
-                  <TableCell className="text-xs whitespace-nowrap text-muted-foreground">{format.dateTime(entry.occurredAt, "long")}</TableCell>
+                  <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
+                    {format.dateTime(entry.occurredAt, "long")}
+                  </TableCell>
                   <TableCell className="text-sm">
                     {entry.actor ? (
                       <>
                         <span className="block">{entry.actor.name}</span>
-                        <span className="block text-xs text-muted-foreground ltr-value">{entry.actor.email}</span>
+                        <span className="ltr-value block text-xs text-muted-foreground">{entry.actor.email}</span>
                       </>
                     ) : (
                       <span className="text-muted-foreground">{t("system")}</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs ltr-value">{entry.action}</code>
-                    <span className="mt-1 block text-xs text-muted-foreground ltr-value">
+                    <code className="ltr-value rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
+                    <span className="ltr-value mt-1 block text-xs text-muted-foreground">
                       {entry.entityType}
                       {entry.entityId ? ` · ${entry.entityId.slice(0, 8)}…` : ""}
                     </span>
                   </TableCell>
                   <TableCell className="max-w-xl text-sm">
                     <p>{entry.summary ?? "—"}</p>
-                    {entry.reason ? <p className="mt-1 text-muted-foreground">{t("reason")}: “{entry.reason}”</p> : null}
+                    {entry.reason ? (
+                      <p className="mt-1 text-muted-foreground">
+                        {t("reason")}: “{entry.reason}”
+                      </p>
+                    ) : null}
                     {entry.before || entry.after ? (
                       <details className="mt-2">
                         <summary className="cursor-pointer text-xs font-medium text-gold">{t("showChanges")}</summary>
                         <div className="mt-2 grid gap-2 md:grid-cols-2">
                           <div>
                             <p className="text-xs font-semibold">{t("before")}</p>
-                            <pre className="max-h-64 overflow-auto rounded bg-muted p-2 text-xs ltr-value">{JSON.stringify(entry.before, null, 2) ?? "—"}</pre>
+                            <pre className="ltr-value max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
+                              {JSON.stringify(entry.before, null, 2) ?? "—"}
+                            </pre>
                           </div>
                           <div>
                             <p className="text-xs font-semibold">{t("after")}</p>
-                            <pre className="max-h-64 overflow-auto rounded bg-muted p-2 text-xs ltr-value">{JSON.stringify(entry.after, null, 2) ?? "—"}</pre>
+                            <pre className="ltr-value max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
+                              {JSON.stringify(entry.after, null, 2) ?? "—"}
+                            </pre>
                           </div>
                         </div>
-                        <p className="mt-2 text-xs text-muted-foreground ltr-value">
+                        <p className="ltr-value mt-2 text-xs text-muted-foreground">
                           {t("correlation")}: {entry.correlationId ?? "—"} · {t("ip")}: {entry.ipAddress ?? "—"}
                         </p>
                       </details>

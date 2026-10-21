@@ -26,7 +26,10 @@ function Checkbox({ className, ...props }: Omit<React.ComponentProps<"input">, "
     <input
       type="checkbox"
       data-slot="checkbox"
-      className={cn("size-4 shrink-0 rounded border-input accent-[var(--gold)] focus-visible:ring-2 focus-visible:ring-ring/50", className)}
+      className={cn(
+        "size-4 shrink-0 rounded border-input accent-[var(--gold)] focus-visible:ring-2 focus-visible:ring-ring/50",
+        className,
+      )}
       {...props}
     />
   );

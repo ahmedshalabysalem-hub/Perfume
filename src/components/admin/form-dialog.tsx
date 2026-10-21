@@ -3,7 +3,14 @@
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Button, type ButtonProps } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,10 +45,18 @@ export function FormDialog({
           {trigger}
         </Button>
       </DialogTrigger>
-      <DialogContent closeLabel={t("close")} className={cn(wide && "max-w-2xl")} aria-describedby={description ? undefined : undefined}>
+      <DialogContent
+        closeLabel={t("close")}
+        className={cn(wide && "max-w-2xl")}
+        aria-describedby={description ? undefined : undefined}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : <DialogDescription className="sr-only">{title}</DialogDescription>}
+          {description ? (
+            <DialogDescription>{description}</DialogDescription>
+          ) : (
+            <DialogDescription className="sr-only">{title}</DialogDescription>
+          )}
         </DialogHeader>
         {open ? children(() => setOpen(false)) : null}
       </DialogContent>

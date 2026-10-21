@@ -73,7 +73,15 @@ function selectable(options: Option[], current: string, locale: string) {
     .map((option) => ({ value: option.id, label: localized(locale, option.nameAr, option.nameEn) }));
 }
 
-function CategoryPicker({ form, categories, disabled }: { form: UseFormReturn<Values>; categories: CategoryOption[]; disabled?: boolean }) {
+function CategoryPicker({
+  form,
+  categories,
+  disabled,
+}: {
+  form: UseFormReturn<Values>;
+  categories: CategoryOption[];
+  disabled?: boolean;
+}) {
   const t = useTranslations("products.fields");
   const locale = useLocale();
   const selected = (useWatch({ control: form.control, name: "categoryIds" }) ?? []) as string[];
@@ -81,11 +89,17 @@ function CategoryPicker({ form, categories, disabled }: { form: UseFormReturn<Va
   const toggle = (id: string, checked: boolean) => {
     const next = checked ? [...selected, id] : selected.filter((value) => value !== id);
     form.setValue("categoryIds", next, { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
-    if (!checked && form.getValues("primaryCategoryId") === id) form.setValue("primaryCategoryId", "", { shouldDirty: true });
+    if (!checked && form.getValues("primaryCategoryId") === id)
+      form.setValue("primaryCategoryId", "", { shouldDirty: true });
   };
   return (
     <Field id="categoryIds" label={t("categories")} error={error}>
-      <div id="categoryIds" role="group" className="max-h-56 overflow-y-auto rounded-md border bg-card p-2" data-field="categoryIds">
+      <div
+        id="categoryIds"
+        role="group"
+        className="max-h-56 overflow-y-auto rounded-md border bg-card p-2"
+        data-field="categoryIds"
+      >
         {categories
           .filter((category) => category.isActive || selected.includes(category.id))
           .map((category) => (
@@ -200,15 +214,33 @@ export function ProductForm({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <TextAreaInput form={form} name="shortDescriptionEn" label={t("fields.shortDescriptionEn")} dir="ltr" rows={2} />
-          <TextAreaInput form={form} name="shortDescriptionAr" label={t("fields.shortDescriptionAr")} dir="rtl" rows={2} />
+          <TextAreaInput
+            form={form}
+            name="shortDescriptionEn"
+            label={t("fields.shortDescriptionEn")}
+            dir="ltr"
+            rows={2}
+          />
+          <TextAreaInput
+            form={form}
+            name="shortDescriptionAr"
+            label={t("fields.shortDescriptionAr")}
+            dir="rtl"
+            rows={2}
+          />
           <TextAreaInput form={form} name="descriptionEn" label={common("descriptionEn")} dir="ltr" rows={5} />
           <TextAreaInput form={form} name="descriptionAr" label={common("descriptionAr")} dir="rtl" rows={5} />
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <TextInput form={form} name="launchYear" label={t("fields.launchYear")} inputMode="numeric" dir="ltr" />
-          <TextInput form={form} name="countryOfOriginCode" label={t("fields.countryOfOrigin")} dir="ltr" placeholder="FR" />
+          <TextInput
+            form={form}
+            name="countryOfOriginCode"
+            label={t("fields.countryOfOrigin")}
+            dir="ltr"
+            placeholder="FR"
+          />
           <TextInput form={form} name="manufacturerName" label={t("fields.manufacturer")} />
         </div>
       </fieldset>

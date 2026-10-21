@@ -38,7 +38,8 @@ export default async function RolesPage({ params }: PageProps<"/[locale]/admin/a
                 </CardTitle>
                 <CardDescription>{localized(locale, role.descriptionAr, role.descriptionEn)}</CardDescription>
                 <p className="text-xs text-muted-foreground">
-                  {t("allowedScopes")}: {role.allowedScopeTypes.map((scope) => scopes(scope)).join(" · ")} — {t("usersCount", { count: role._count.assignments })}
+                  {t("allowedScopes")}: {role.allowedScopeTypes.map((scope) => scopes(scope)).join(" · ")} —{" "}
+                  {t("usersCount", { count: role._count.assignments })}
                 </p>
               </CardHeader>
               <CardContent>
@@ -51,24 +52,41 @@ export default async function RolesPage({ params }: PageProps<"/[locale]/admin/a
                     </summary>
                     <div className="mt-3 grid gap-3">
                       {modules.map((module) => {
-                        const inModule = permissions.filter((permission) => permission.module === module && granted.has(permission.key));
+                        const inModule = permissions.filter(
+                          (permission) => permission.module === module && granted.has(permission.key),
+                        );
                         if (inModule.length === 0) return null;
                         return (
                           <div key={module}>
-                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{module}</p>
+                            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                              {module}
+                            </p>
                             <ul className="mt-1 grid gap-1">
                               {inModule.map((permission) => (
                                 <li key={permission.key} className="flex items-start gap-2 text-sm">
                                   {permission.available ? (
                                     <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
                                   ) : (
-                                    <Minus className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                                    <Minus
+                                      className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                                      aria-hidden="true"
+                                    />
                                   )}
                                   <span>
                                     {locale === "ar" ? permission.ar : permission.en}
-                                    <code className="ms-1 text-[0.7rem] text-muted-foreground ltr-value">{permission.key}</code>
-                                    {permission.sensitive ? <Badge variant="warning" className="ms-1">{t("sensitive")}</Badge> : null}
-                                    {!permission.available ? <span className="ms-1 text-xs text-muted-foreground">({t("notYetAvailable")})</span> : null}
+                                    <code className="ltr-value ms-1 text-[0.7rem] text-muted-foreground">
+                                      {permission.key}
+                                    </code>
+                                    {permission.sensitive ? (
+                                      <Badge variant="warning" className="ms-1">
+                                        {t("sensitive")}
+                                      </Badge>
+                                    ) : null}
+                                    {!permission.available ? (
+                                      <span className="ms-1 text-xs text-muted-foreground">
+                                        ({t("notYetAvailable")})
+                                      </span>
+                                    ) : null}
                                   </span>
                                 </li>
                               ))}

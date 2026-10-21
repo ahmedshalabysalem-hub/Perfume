@@ -13,7 +13,15 @@ import { updateProductContentAction } from "../actions";
 type Values = z.input<typeof productContentSchema>;
 export type ContentDefaults = Record<keyof Values, string>;
 
-export function ContentForm({ productId, defaults, readOnly }: { productId: string; defaults: ContentDefaults; readOnly: boolean }) {
+export function ContentForm({
+  productId,
+  defaults,
+  readOnly,
+}: {
+  productId: string;
+  defaults: ContentDefaults;
+  readOnly: boolean;
+}) {
   const t = useTranslations("products");
   const common = useTranslations("common");
   const form = useForm<Values>({ resolver: formResolver(productContentSchema), defaultValues: defaults });

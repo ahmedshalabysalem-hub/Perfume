@@ -51,7 +51,10 @@ export const roleAssignmentSchema = z
 
 export const createStaffUserSchema = z.object({
   name: requiredText(120),
-  email: z.email().max(254).transform((value) => value.toLowerCase()),
+  email: z
+    .email()
+    .max(254)
+    .transform((value) => value.toLowerCase()),
   temporaryPassword: z.string().min(1).max(PASSWORD_MAX),
   assignment: roleAssignmentSchema.optional(),
 });

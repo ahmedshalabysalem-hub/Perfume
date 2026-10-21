@@ -63,12 +63,18 @@ export default async function DashboardPage({ params }: PageProps<"/[locale]/adm
       <PageHeader title={t("welcome", { name: actor.name })} description={t("subtitle")} />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <Kpi label={t("publishedProducts")} value={data.publishedProducts} href="/admin/catalog/products?status=PUBLISHED" />
+        <Kpi
+          label={t("publishedProducts")}
+          value={data.publishedProducts}
+          href="/admin/catalog/products?status=PUBLISHED"
+        />
         <Kpi label={t("draftProducts")} value={data.draftProducts} href="/admin/catalog/products?status=DRAFT" />
         <Kpi label={t("activeVariants")} value={data.activeVariants} />
         <Kpi label={t("brands")} value={data.activeBrands} href="/admin/catalog/brands" />
         <Kpi label={t("categories")} value={data.activeCategories} href="/admin/catalog/categories" />
-        {data.activeStaff !== null ? <Kpi label={t("staffUsers")} value={data.activeStaff} href="/admin/access/users" /> : null}
+        {data.activeStaff !== null ? (
+          <Kpi label={t("staffUsers")} value={data.activeStaff} href="/admin/access/users" />
+        ) : null}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -82,7 +88,7 @@ export default async function DashboardPage({ params }: PageProps<"/[locale]/adm
               <div key={market.countryCode} className="flex items-center justify-between rounded-lg border px-4 py-3">
                 <div>
                   <p className="font-medium">{localized(locale, market.nameAr, market.nameEn)}</p>
-                  <p className="text-xs text-muted-foreground ltr-value">{market.currencyCode}</p>
+                  <p className="ltr-value text-xs text-muted-foreground">{market.currencyCode}</p>
                 </div>
                 <p className="text-sm tabular-nums">{t("pricedSkus", { count: market.pricedVariants })}</p>
               </div>
@@ -128,7 +134,7 @@ export default async function DashboardPage({ params }: PageProps<"/[locale]/adm
                 {data.recentActivity.map((entry) => (
                   <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
                     <span className="flex min-w-0 items-center gap-2">
-                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs ltr-value">{entry.action}</code>
+                      <code className="ltr-value rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
                       <span className="truncate text-muted-foreground">{entry.summary}</span>
                     </span>
                     <span className="text-xs text-muted-foreground">

@@ -92,7 +92,13 @@ async function seedOrganisation(tx: Tx) {
 
 async function ensureStaffUser(
   tx: Tx,
-  input: { email: string; name: string; password: string; roleKey: string; scope: { type: "GLOBAL" } | { type: "COUNTRY"; countryCode: string } | { type: "STORE"; storeId: string } },
+  input: {
+    email: string;
+    name: string;
+    password: string;
+    roleKey: string;
+    scope: { type: "GLOBAL" } | { type: "COUNTRY"; countryCode: string } | { type: "STORE"; storeId: string };
+  },
 ) {
   const email = input.email.toLowerCase();
   const user = await tx.user.upsert({
@@ -107,7 +113,11 @@ async function ensureStaffUser(
   const role = await tx.role.findUniqueOrThrow({ where: { key: input.roleKey } });
   const scope = input.scope;
   const scopeKey =
-    scope.type === "GLOBAL" ? "GLOBAL" : scope.type === "COUNTRY" ? `COUNTRY:${scope.countryCode}` : `STORE:${scope.storeId}`;
+    scope.type === "GLOBAL"
+      ? "GLOBAL"
+      : scope.type === "COUNTRY"
+        ? `COUNTRY:${scope.countryCode}`
+        : `STORE:${scope.storeId}`;
   await tx.userRole.upsert({
     where: { userId_roleId_scopeKey: { userId: user.id, roleId: role.id, scopeKey } },
     update: {},
@@ -135,11 +145,17 @@ async function seedCatalogReference(tx: Tx) {
   }
   const categoryIds = new Map<string, string>();
   for (const category of CATEGORIES) {
-    const parentId = category.parent ? categoryIds.get(category.parent) ?? null : null;
+    const parentId = category.parent ? (categoryIds.get(category.parent) ?? null) : null;
     const row = await tx.category.upsert({
       where: { slug: category.slug },
       update: {},
-      create: { slug: category.slug, parentId, nameEn: category.nameEn, nameAr: category.nameAr, sortOrder: category.sortOrder },
+      create: {
+        slug: category.slug,
+        parentId,
+        nameEn: category.nameEn,
+        nameAr: category.nameAr,
+        sortOrder: category.sortOrder,
+      },
     });
     categoryIds.set(category.slug, row.id);
   }
@@ -195,16 +211,32 @@ async function seedProducts(tx: Tx) {
         categories: { create: categories.map((category) => ({ categoryId: category.id })) },
         notes: {
           create: [
-            ...product.notes.top.map((slug, index) => ({ noteId: noteId(slug), layer: "TOP" as const, sortOrder: index })),
-            ...product.notes.heart.map((slug, index) => ({ noteId: noteId(slug), layer: "HEART" as const, sortOrder: index })),
-            ...product.notes.base.map((slug, index) => ({ noteId: noteId(slug), layer: "BASE" as const, sortOrder: index })),
+            ...product.notes.top.map((slug, index) => ({
+              noteId: noteId(slug),
+              layer: "TOP" as const,
+              sortOrder: index,
+            })),
+            ...product.notes.heart.map((slug, index) => ({
+              noteId: noteId(slug),
+              layer: "HEART" as const,
+              sortOrder: index,
+            })),
+            ...product.notes.base.map((slug, index) => ({
+              noteId: noteId(slug),
+              layer: "BASE" as const,
+              sortOrder: index,
+            })),
           ],
         },
       },
     });
 
     for (const [index, variant] of product.variants.entries()) {
-      let barcode: { barcode: string; barcodeType: "EAN_13" | "CODE_128"; barcodeSource: "MANUFACTURER" | "INTERNAL" } | null = null;
+      let barcode: {
+        barcode: string;
+        barcodeType: "EAN_13" | "CODE_128";
+        barcodeSource: "MANUFACTURER" | "INTERNAL";
+      } | null = null;
       if (variant.barcode?.kind === "gs1-demo") {
         barcode = {
           barcode: `${variant.barcode.body}${gtinCheckDigit(variant.barcode.body)}`,

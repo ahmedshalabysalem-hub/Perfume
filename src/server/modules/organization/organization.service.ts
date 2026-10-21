@@ -21,7 +21,8 @@ import { scopeFilterIsEmpty } from "@/server/rbac/scope";
 import { parseInput } from "@/server/validation";
 
 function codeConflict(error: unknown): never {
-  if (isUniqueViolationOn(error, "code")) throw new ConflictError("errors.conflict.code", { code: ["errors.conflict.code"] });
+  if (isUniqueViolationOn(error, "code"))
+    throw new ConflictError("errors.conflict.code", { code: ["errors.conflict.code"] });
   throw error;
 }
 
@@ -46,7 +47,13 @@ export async function updateCountry(ctx: ServiceContext, code: string, input: un
   await db.$transaction(async (tx) => {
     const updated = await tx.country.update({ where: { code }, data });
     const diff = diffForAudit(withoutTimestamps(existing), withoutTimestamps(updated));
-    await recordAudit(tx, ctx, { action: "organization.country.update", entityType: "country", entityId: code, summary: updated.nameEn, ...diff });
+    await recordAudit(tx, ctx, {
+      action: "organization.country.update",
+      entityType: "country",
+      entityId: code,
+      summary: updated.nameEn,
+      ...diff,
+    });
   });
 }
 
@@ -70,7 +77,10 @@ export async function listLegalEntities(ctx: ServiceContext) {
   return db.legalEntity.findMany({
     where,
     orderBy: [{ countryCode: "desc" }, { code: "asc" }],
-    include: { country: { select: { nameEn: true, nameAr: true } }, _count: { select: { stores: true, warehouses: true } } },
+    include: {
+      country: { select: { nameEn: true, nameAr: true } },
+      _count: { select: { stores: true, warehouses: true } },
+    },
   });
 }
 
@@ -82,7 +92,13 @@ export async function createLegalEntity(ctx: ServiceContext, input: unknown): Pr
   try {
     return await db.$transaction(async (tx) => {
       const entity = await tx.legalEntity.create({ data });
-      await recordAudit(tx, ctx, { action: "organization.legal_entity.create", entityType: "legal_entity", entityId: entity.id, summary: entity.legalNameEn, after: entity });
+      await recordAudit(tx, ctx, {
+        action: "organization.legal_entity.create",
+        entityType: "legal_entity",
+        entityId: entity.id,
+        summary: entity.legalNameEn,
+        after: entity,
+      });
       return { id: entity.id };
     });
   } catch (error) {
@@ -102,7 +118,13 @@ export async function updateLegalEntity(ctx: ServiceContext, id: string, input: 
     await db.$transaction(async (tx) => {
       const updated = await tx.legalEntity.update({ where: { id }, data });
       const diff = diffForAudit(withoutTimestamps(existing), withoutTimestamps(updated));
-      await recordAudit(tx, ctx, { action: "organization.legal_entity.update", entityType: "legal_entity", entityId: id, summary: updated.legalNameEn, ...diff });
+      await recordAudit(tx, ctx, {
+        action: "organization.legal_entity.update",
+        entityType: "legal_entity",
+        entityId: id,
+        summary: updated.legalNameEn,
+        ...diff,
+      });
     });
   } catch (error) {
     codeConflict(error);
@@ -172,7 +194,13 @@ export async function createStore(ctx: ServiceContext, input: unknown): Promise<
       const store = await tx.store.create({
         data: { ...data, countryCode: entity.countryCode, currencyCode: entity.country.currencyCode },
       });
-      await recordAudit(tx, ctx, { action: "organization.store.create", entityType: "store", entityId: store.id, summary: store.nameEn, after: store });
+      await recordAudit(tx, ctx, {
+        action: "organization.store.create",
+        entityType: "store",
+        entityId: store.id,
+        summary: store.nameEn,
+        after: store,
+      });
       return { id: store.id };
     });
   } catch (error) {
@@ -184,12 +212,22 @@ export async function updateStore(ctx: ServiceContext, id: string, input: unknow
   const data = parseInput(storeUpdateSchema, input);
   const existing = await db.store.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("store");
-  assertCan(ctx.actor, "organization.manage", { countryCode: existing.countryCode, legalEntityId: existing.legalEntityId, storeId: id });
+  assertCan(ctx.actor, "organization.manage", {
+    countryCode: existing.countryCode,
+    legalEntityId: existing.legalEntityId,
+    storeId: id,
+  });
   try {
     await db.$transaction(async (tx) => {
       const updated = await tx.store.update({ where: { id }, data });
       const diff = diffForAudit(withoutTimestamps(existing), withoutTimestamps(updated));
-      await recordAudit(tx, ctx, { action: "organization.store.update", entityType: "store", entityId: id, summary: updated.nameEn, ...diff });
+      await recordAudit(tx, ctx, {
+        action: "organization.store.update",
+        entityType: "store",
+        entityId: id,
+        summary: updated.nameEn,
+        ...diff,
+      });
     });
   } catch (error) {
     codeConflict(error);
@@ -200,7 +238,11 @@ export async function setStoreActive(ctx: ServiceContext, id: string, input: unk
   const { isActive } = parseInput(activationSchema, input);
   const existing = await db.store.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("store");
-  assertCan(ctx.actor, "organization.manage", { countryCode: existing.countryCode, legalEntityId: existing.legalEntityId, storeId: id });
+  assertCan(ctx.actor, "organization.manage", {
+    countryCode: existing.countryCode,
+    legalEntityId: existing.legalEntityId,
+    storeId: id,
+  });
   if (existing.isActive === isActive) return;
   await db.$transaction(async (tx) => {
     await tx.store.update({ where: { id }, data: { isActive } });
@@ -245,7 +287,13 @@ export async function createWarehouse(ctx: ServiceContext, input: unknown): Prom
   try {
     return await db.$transaction(async (tx) => {
       const warehouse = await tx.warehouse.create({ data: { ...data, countryCode: entity.countryCode } });
-      await recordAudit(tx, ctx, { action: "organization.warehouse.create", entityType: "warehouse", entityId: warehouse.id, summary: warehouse.nameEn, after: warehouse });
+      await recordAudit(tx, ctx, {
+        action: "organization.warehouse.create",
+        entityType: "warehouse",
+        entityId: warehouse.id,
+        summary: warehouse.nameEn,
+        after: warehouse,
+      });
       return { id: warehouse.id };
     });
   } catch (error) {
@@ -257,12 +305,22 @@ export async function updateWarehouse(ctx: ServiceContext, id: string, input: un
   const data = parseInput(warehouseUpdateSchema, input);
   const existing = await db.warehouse.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("warehouse");
-  assertCan(ctx.actor, "organization.manage", { countryCode: existing.countryCode, legalEntityId: existing.legalEntityId, warehouseId: id });
+  assertCan(ctx.actor, "organization.manage", {
+    countryCode: existing.countryCode,
+    legalEntityId: existing.legalEntityId,
+    warehouseId: id,
+  });
   try {
     await db.$transaction(async (tx) => {
       const updated = await tx.warehouse.update({ where: { id }, data });
       const diff = diffForAudit(withoutTimestamps(existing), withoutTimestamps(updated));
-      await recordAudit(tx, ctx, { action: "organization.warehouse.update", entityType: "warehouse", entityId: id, summary: updated.nameEn, ...diff });
+      await recordAudit(tx, ctx, {
+        action: "organization.warehouse.update",
+        entityType: "warehouse",
+        entityId: id,
+        summary: updated.nameEn,
+        ...diff,
+      });
     });
   } catch (error) {
     codeConflict(error);
@@ -273,7 +331,11 @@ export async function setWarehouseActive(ctx: ServiceContext, id: string, input:
   const { isActive } = parseInput(activationSchema, input);
   const existing = await db.warehouse.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError("warehouse");
-  assertCan(ctx.actor, "organization.manage", { countryCode: existing.countryCode, legalEntityId: existing.legalEntityId, warehouseId: id });
+  assertCan(ctx.actor, "organization.manage", {
+    countryCode: existing.countryCode,
+    legalEntityId: existing.legalEntityId,
+    warehouseId: id,
+  });
   if (existing.isActive === isActive) return;
   await db.$transaction(async (tx) => {
     await tx.warehouse.update({ where: { id }, data: { isActive } });

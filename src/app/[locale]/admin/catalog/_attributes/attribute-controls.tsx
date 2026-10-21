@@ -38,7 +38,12 @@ function AttributeForm({
   });
   const lookupForm = useForm<LookupValues>({
     resolver: formResolver(lookupSchema),
-    defaultValues: { code: defaults.key, nameEn: defaults.nameEn, nameAr: defaults.nameAr, sortOrder: defaults.sortOrder },
+    defaultValues: {
+      code: defaults.key,
+      nameEn: defaults.nameEn,
+      nameAr: defaults.nameAr,
+      sortOrder: defaults.sortOrder,
+    },
   });
   const noteSubmit = useActionSubmit(noteForm.setError);
   const lookupSubmit = useActionSubmit(lookupForm.setError);
@@ -91,8 +96,18 @@ function AttributeForm({
 export function NewAttributeButton({ kind }: { kind: AttributeKind }) {
   const t = useTranslations("attributes");
   return (
-    <FormDialog trigger={<><Plus /> {t("new")}</>} title={t("createTitle")} testId={`new-${kind}`}>
-      {(close) => <AttributeForm kind={kind} defaults={{ key: "", nameEn: "", nameAr: "", sortOrder: "0" }} onDone={close} />}
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("new")}
+        </>
+      }
+      title={t("createTitle")}
+      testId={`new-${kind}`}
+    >
+      {(close) => (
+        <AttributeForm kind={kind} defaults={{ key: "", nameEn: "", nameAr: "", sortOrder: "0" }} onDone={close} />
+      )}
     </FormDialog>
   );
 }
@@ -112,7 +127,16 @@ export function AttributeRowActions({
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm">
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+      >
         {(close) => <AttributeForm kind={kind} id={id} defaults={defaults} onDone={close} />}
       </FormDialog>
       <ActivationToggle

@@ -11,7 +11,9 @@ const STORE_CAIRO = "0190a000-0000-7000-8000-000000000002";
 const ENTITY_SA = "0190a000-0000-7000-8000-000000000003";
 
 function assignment(
-  scope: Partial<ActorUserRow["roleAssignments"][number]> & { scopeType: ActorUserRow["roleAssignments"][number]["scopeType"] },
+  scope: Partial<ActorUserRow["roleAssignments"][number]> & {
+    scopeType: ActorUserRow["roleAssignments"][number]["scopeType"];
+  },
   permissions: string[],
   roleKey = "test_role",
   isActive = true,
@@ -80,7 +82,9 @@ describe("scope coverage", () => {
 
 describe("can / assertCan", () => {
   it("global catalogue writes require a GLOBAL grant", () => {
-    const countryManager = actor([assignment({ scopeType: "COUNTRY", countryCode: "SA" }, ["products.update", "products.view"])]);
+    const countryManager = actor([
+      assignment({ scopeType: "COUNTRY", countryCode: "SA" }, ["products.update", "products.view"]),
+    ]);
     expect(can(countryManager, "products.view", "any")).toBe(true);
     expect(can(countryManager, "products.update", "global")).toBe(false);
     const globalEditor = actor([assignment({ scopeType: "GLOBAL" }, ["products.update"])]);

@@ -126,7 +126,9 @@ export async function listProducts(ctx: ServiceContext, rawQuery: unknown, local
       type: product.type,
       status: product.status,
       variantCount: product._count.variants,
-      pricedMarkets: [...new Set(product.variants.flatMap((variant) => variant.prices.map((price) => price.countryCode)))].sort(),
+      pricedMarkets: [
+        ...new Set(product.variants.flatMap((variant) => variant.prices.map((price) => price.countryCode))),
+      ].sort(),
       updatedAt: product.updatedAt,
       imageKey: product.images[0]?.storageKey ?? null,
     })),
@@ -161,17 +163,37 @@ export async function getProductForAdmin(ctx: ServiceContext, id: string) {
 /** Options for product forms (active reference data + current selections). */
 export async function getProductFormOptions(ctx: ServiceContext) {
   assertCan(ctx.actor, "products.view");
-  const brands = await db.brand.findMany({ orderBy: { nameEn: "asc" }, select: { id: true, nameEn: true, nameAr: true, isActive: true } });
+  const brands = await db.brand.findMany({
+    orderBy: { nameEn: "asc" },
+    select: { id: true, nameEn: true, nameAr: true, isActive: true },
+  });
   const categories = await db.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
     select: { id: true, parentId: true, nameEn: true, nameAr: true, isActive: true },
   });
-  const concentrations = await db.concentration.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, nameEn: true, nameAr: true, isActive: true } });
-  const families = await db.fragranceFamily.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, nameEn: true, nameAr: true, isActive: true } });
-  const notes = await db.fragranceNote.findMany({ orderBy: { nameEn: "asc" }, select: { id: true, nameEn: true, nameAr: true, isActive: true } });
+  const concentrations = await db.concentration.findMany({
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, nameEn: true, nameAr: true, isActive: true },
+  });
+  const families = await db.fragranceFamily.findMany({
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, nameEn: true, nameAr: true, isActive: true },
+  });
+  const notes = await db.fragranceNote.findMany({
+    orderBy: { nameEn: "asc" },
+    select: { id: true, nameEn: true, nameAr: true, isActive: true },
+  });
   const countries = await db.country.findMany({
     orderBy: { code: "desc" },
-    select: { code: true, nameEn: true, nameAr: true, currencyCode: true, pricesIncludeTax: true, isActive: true, currency: { select: { minorUnits: true } } },
+    select: {
+      code: true,
+      nameEn: true,
+      nameAr: true,
+      currencyCode: true,
+      pricesIncludeTax: true,
+      isActive: true,
+      currency: { select: { minorUnits: true } },
+    },
   });
   return { brands, categories, concentrations, families, notes, countries };
 }
@@ -188,7 +210,12 @@ type ProductData = ReturnType<typeof productSchema.parse>;
 async function assertReferencesUsable(
   client: DbClient,
   data: ProductData,
-  existing: { brandId: string; concentrationId: string | null; fragranceFamilyId: string | null; categoryIds: string[] } | null,
+  existing: {
+    brandId: string;
+    concentrationId: string | null;
+    fragranceFamilyId: string | null;
+    categoryIds: string[];
+  } | null,
 ): Promise<void> {
   if (!existing || existing.brandId !== data.brandId) {
     const brand = await client.brand.findUnique({ where: { id: data.brandId }, select: { isActive: true } });
@@ -196,18 +223,29 @@ async function assertReferencesUsable(
     if (!brand.isActive) throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "brand" });
   }
   if (data.concentrationId && data.concentrationId !== existing?.concentrationId) {
-    const concentration = await client.concentration.findUnique({ where: { id: data.concentrationId }, select: { isActive: true } });
+    const concentration = await client.concentration.findUnique({
+      where: { id: data.concentrationId },
+      select: { isActive: true },
+    });
     if (!concentration) throw new NotFoundError("concentration");
-    if (!concentration.isActive) throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "concentration" });
+    if (!concentration.isActive)
+      throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "concentration" });
   }
   if (data.fragranceFamilyId && data.fragranceFamilyId !== existing?.fragranceFamilyId) {
-    const family = await client.fragranceFamily.findUnique({ where: { id: data.fragranceFamilyId }, select: { isActive: true } });
+    const family = await client.fragranceFamily.findUnique({
+      where: { id: data.fragranceFamilyId },
+      select: { isActive: true },
+    });
     if (!family) throw new NotFoundError("fragrance_family");
-    if (!family.isActive) throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "fragrance_family" });
+    if (!family.isActive)
+      throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "fragrance_family" });
   }
   const added = data.categoryIds.filter((id) => !existing?.categoryIds.includes(id));
   if (added.length > 0) {
-    const categories = await client.category.findMany({ where: { id: { in: added } }, select: { id: true, isActive: true } });
+    const categories = await client.category.findMany({
+      where: { id: { in: added } },
+      select: { id: true, isActive: true },
+    });
     if (categories.length !== added.length) throw new NotFoundError("category");
     if (categories.some((category) => !category.isActive)) {
       throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "category" });
@@ -216,7 +254,8 @@ async function assertReferencesUsable(
 }
 
 function mapProductConflict(error: unknown): never {
-  if (isUniqueViolationOn(error, "slug")) throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
+  if (isUniqueViolationOn(error, "slug"))
+    throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
   throw error;
 }
 
@@ -260,7 +299,10 @@ export async function createProduct(ctx: ServiceContext, input: unknown): Promis
 export async function updateProduct(ctx: ServiceContext, id: string, input: unknown): Promise<void> {
   assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(productSchema, input);
-  const existing = await db.product.findUnique({ where: { id }, include: { categories: { select: { categoryId: true } } } });
+  const existing = await db.product.findUnique({
+    where: { id },
+    include: { categories: { select: { categoryId: true } } },
+  });
   if (!existing) throw new NotFoundError("product");
   const existingCategoryIds = existing.categories.map((category) => category.categoryId);
   await assertReferencesUsable(db, data, { ...existing, categoryIds: existingCategoryIds });
@@ -272,11 +314,20 @@ export async function updateProduct(ctx: ServiceContext, id: string, input: unkn
       await tx.productCategory.deleteMany({ where: { productId: id, categoryId: { notIn: categoryIds } } });
       const toAdd = categoryIds.filter((categoryId) => !existingCategoryIds.includes(categoryId));
       if (toAdd.length > 0) {
-        await tx.productCategory.createMany({ data: toAdd.map((categoryId) => ({ productId: id, categoryId })), skipDuplicates: true });
+        await tx.productCategory.createMany({
+          data: toAdd.map((categoryId) => ({ productId: id, categoryId })),
+          skipDuplicates: true,
+        });
       }
       await refreshProductSearchText(tx, id);
       const diff = diffForAudit(
-        { ...existing, categoryIds: [...existingCategoryIds].sort(), categories: undefined, searchText: undefined, updatedAt: undefined },
+        {
+          ...existing,
+          categoryIds: [...existingCategoryIds].sort(),
+          categories: undefined,
+          searchText: undefined,
+          updatedAt: undefined,
+        },
         { ...updated, categoryIds: [...categoryIds].sort(), searchText: undefined, updatedAt: undefined },
       );
       await recordAudit(tx, ctx, {
@@ -333,7 +384,8 @@ export async function updateProductNotes(ctx: ServiceContext, id: string, input:
   if (newlyUsed.length > 0) {
     const notes = await db.fragranceNote.findMany({ where: { id: { in: newlyUsed } }, select: { isActive: true } });
     if (notes.length !== newlyUsed.length) throw new NotFoundError("fragrance_note");
-    if (notes.some((note) => !note.isActive)) throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "fragrance_note" });
+    if (notes.some((note) => !note.isActive))
+      throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "fragrance_note" });
   }
 
   await db.$transaction(async (tx) => {
@@ -373,7 +425,8 @@ export async function changeProductStatus(ctx: ServiceContext, id: string, input
 
   await db.$transaction(async (tx) => {
     if (data.status === "PUBLISHED") {
-      if (!product.brand.isActive) throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "brand" });
+      if (!product.brand.isActive)
+        throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "brand" });
       const sellable = await tx.productVariant.count({
         where: { productId: id, status: "ACTIVE", prices: { some: { isActive: true, country: { isActive: true } } } },
       });

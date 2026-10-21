@@ -9,7 +9,9 @@ import { productEditorOptions } from "@/server/modules/catalog/form-options";
 import { can } from "@/server/rbac/authorize";
 import { EMPTY_PRODUCT, ProductForm } from "../product-form";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/admin/catalog/products/new">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/admin/catalog/products/new">): Promise<Metadata> {
   const t = await getTranslations({ locale: await metadataLocale(params), namespace: "products" });
   return { title: t("createTitle") };
 }

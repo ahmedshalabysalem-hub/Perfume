@@ -18,11 +18,7 @@ export type AuditInput = {
  * Append an audit entry. Pass the transaction client of the business operation
  * so the entry commits — or rolls back — together with the change it records.
  */
-export async function recordAudit(
-  client: DbClient,
-  ctx: ServiceContext,
-  input: AuditInput,
-): Promise<void> {
+export async function recordAudit(client: DbClient, ctx: ServiceContext, input: AuditInput): Promise<void> {
   const actor = ctx.actor;
   await client.auditLog.create({
     data: {

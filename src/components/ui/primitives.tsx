@@ -7,25 +7,41 @@ function Label({ className, ...props }: React.ComponentProps<typeof LabelPrimiti
   return (
     <LabelPrimitive.Root
       data-slot="label"
-      className={cn("flex items-center gap-2 text-sm leading-none font-medium select-none peer-disabled:opacity-50", className)}
+      className={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none peer-disabled:opacity-50",
+        className,
+      )}
       {...props}
     />
   );
 }
 
-function Separator({ className, orientation = "horizontal", ...props }: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+function Separator({
+  className,
+  orientation = "horizontal",
+  ...props
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
   return (
     <SeparatorPrimitive.Root
       data-slot="separator"
       orientation={orientation}
-      className={cn("shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px", className)}
+      className={cn(
+        "shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px",
+        className,
+      )}
       {...props}
     />
   );
 }
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="card" className={cn("rounded-xl border bg-card text-card-foreground shadow-xs", className)} {...props} />;
+  return (
+    <div
+      data-slot="card"
+      className={cn("rounded-xl border bg-card text-card-foreground shadow-xs", className)}
+      {...props}
+    />
+  );
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -45,7 +61,9 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="card-footer" className={cn("flex items-center gap-2 border-t px-5 py-4", className)} {...props} />;
+  return (
+    <div data-slot="card-footer" className={cn("flex items-center gap-2 border-t px-5 py-4", className)} {...props} />
+  );
 }
 
 const badgeVariants = cva(
@@ -75,18 +93,21 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return <div data-slot="skeleton" className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
 }
 
-const alertVariants = cva("relative flex w-full gap-3 rounded-lg border px-4 py-3 text-sm [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0", {
-  variants: {
-    variant: {
-      default: "bg-card text-card-foreground",
-      info: "border-gold/30 bg-gold/5 text-foreground [&>svg]:text-gold",
-      destructive: "border-destructive/30 bg-destructive/5 text-destructive",
-      success: "border-success/30 bg-success/5 text-success",
-      warning: "border-warning/30 bg-warning/5 text-warning",
+const alertVariants = cva(
+  "relative flex w-full gap-3 rounded-lg border px-4 py-3 text-sm [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-card text-card-foreground",
+        info: "border-gold/30 bg-gold/5 text-foreground [&>svg]:text-gold",
+        destructive: "border-destructive/30 bg-destructive/5 text-destructive",
+        success: "border-success/30 bg-success/5 text-success",
+        warning: "border-warning/30 bg-warning/5 text-warning",
+      },
     },
+    defaultVariants: { variant: "default" },
   },
-  defaultVariants: { variant: "default" },
-});
+);
 
 function Alert({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
   return <div data-slot="alert" role="alert" className={cn(alertVariants({ variant }), className)} {...props} />;

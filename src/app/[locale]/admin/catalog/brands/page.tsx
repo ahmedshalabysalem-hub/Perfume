@@ -55,7 +55,7 @@ export default async function BrandsPage({ params, searchParams }: PageProps<"/[
                     <p className="font-medium">{localized(locale, brand.nameAr, brand.nameEn)}</p>
                     <p className="text-xs text-muted-foreground">{locale === "ar" ? brand.nameEn : brand.nameAr}</p>
                   </TableCell>
-                  <TableCell className="font-mono text-xs ltr-value">{brand.slug}</TableCell>
+                  <TableCell className="ltr-value font-mono text-xs">{brand.slug}</TableCell>
                   <TableCell className="ltr-value">{brand.countryOfOriginCode ?? "—"}</TableCell>
                   <TableCell className="tabular-nums">{brand._count.products}</TableCell>
                   <TableCell>

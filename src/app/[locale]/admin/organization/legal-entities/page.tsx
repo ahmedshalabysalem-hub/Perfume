@@ -12,7 +12,9 @@ import { listCountries, listLegalEntities } from "@/server/modules/organization/
 import { can } from "@/server/rbac/authorize";
 import { LegalEntityRowActions, NewLegalEntityButton } from "../organization-forms";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/admin/organization/legal-entities">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/admin/organization/legal-entities">): Promise<Metadata> {
   const t = await getTranslations({ locale: await metadataLocale(params), namespace: "organization" });
   return { title: t("legalEntitiesTitle") };
 }
@@ -56,13 +58,17 @@ export default async function LegalEntitiesPage({ params }: PageProps<"/[locale]
             <TableBody>
               {entities.map((entity) => (
                 <TableRow key={entity.id}>
-                  <TableCell className="font-mono text-xs ltr-value">{entity.code}</TableCell>
+                  <TableCell className="ltr-value font-mono text-xs">{entity.code}</TableCell>
                   <TableCell>
                     <p className="font-medium">{localized(locale, entity.legalNameAr, entity.legalNameEn)}</p>
-                    <p className="text-xs text-muted-foreground">{localized(locale, entity.tradeNameAr, entity.tradeNameEn)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {localized(locale, entity.tradeNameAr, entity.tradeNameEn)}
+                    </p>
                   </TableCell>
                   <TableCell>{localized(locale, entity.country.nameAr, entity.country.nameEn)}</TableCell>
-                  <TableCell className="font-mono text-xs ltr-value">{entity.taxRegistrationNo ?? common("notSet")}</TableCell>
+                  <TableCell className="ltr-value font-mono text-xs">
+                    {entity.taxRegistrationNo ?? common("notSet")}
+                  </TableCell>
                   <TableCell className="tabular-nums">
                     {entity._count.stores} / {entity._count.warehouses}
                   </TableCell>
@@ -70,11 +76,24 @@ export default async function LegalEntitiesPage({ params }: PageProps<"/[locale]
                     <ActiveBadge active={entity.isActive} />
                   </TableCell>
                   <TableCell>
-                    {can(actor, "organization.manage", { countryCode: entity.countryCode, legalEntityId: entity.id }) ? (
+                    {can(actor, "organization.manage", {
+                      countryCode: entity.countryCode,
+                      legalEntityId: entity.id,
+                    }) ? (
                       <LegalEntityRowActions
                         id={entity.id}
                         isActive={entity.isActive}
-                        countries={manageable.length > 0 ? manageable : [{ code: entity.countryCode, nameEn: entity.country.nameEn, nameAr: entity.country.nameAr }]}
+                        countries={
+                          manageable.length > 0
+                            ? manageable
+                            : [
+                                {
+                                  code: entity.countryCode,
+                                  nameEn: entity.country.nameEn,
+                                  nameAr: entity.country.nameAr,
+                                },
+                              ]
+                        }
                         defaults={{
                           code: entity.code,
                           countryCode: entity.countryCode,

@@ -90,7 +90,10 @@ export async function uploadProductImage(
 
 export async function removeProductImage(ctx: ServiceContext, imageId: string): Promise<void> {
   assertCan(ctx.actor, "products.update", "global");
-  const image = await db.productImage.findUnique({ where: { id: imageId }, include: { product: { select: { nameEn: true } } } });
+  const image = await db.productImage.findUnique({
+    where: { id: imageId },
+    include: { product: { select: { nameEn: true } } },
+  });
   if (!image) throw new NotFoundError("product_image");
   await db.$transaction(async (tx) => {
     await tx.productImage.delete({ where: { id: imageId } });
@@ -104,7 +107,9 @@ export async function removeProductImage(ctx: ServiceContext, imageId: string): 
   });
   // The file is removed after the row; a failure here leaves an unreferenced
   // file (never a broken reference) and is safe to retry.
-  await getStorage().delete(image.storageKey).catch((error) => console.error("[storage] delete failed", error));
+  await getStorage()
+    .delete(image.storageKey)
+    .catch((error) => console.error("[storage] delete failed", error));
 }
 
 export async function makePrimaryImage(ctx: ServiceContext, imageId: string): Promise<void> {
@@ -112,7 +117,10 @@ export async function makePrimaryImage(ctx: ServiceContext, imageId: string): Pr
   const image = await db.productImage.findUnique({ where: { id: imageId } });
   if (!image) throw new NotFoundError("product_image");
   await db.$transaction(async (tx) => {
-    const images = await tx.productImage.findMany({ where: { productId: image.productId }, orderBy: { sortOrder: "asc" } });
+    const images = await tx.productImage.findMany({
+      where: { productId: image.productId },
+      orderBy: { sortOrder: "asc" },
+    });
     const ordered = [image, ...images.filter((candidate) => candidate.id !== imageId)];
     for (const [index, candidate] of ordered.entries()) {
       if (candidate.sortOrder !== index) {

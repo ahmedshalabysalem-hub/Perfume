@@ -35,14 +35,30 @@ export async function listAttributes(ctx: ServiceContext, kind: AttributeKind): 
       orderBy: [{ isActive: "desc" }, { nameEn: "asc" }],
       include: { _count: { select: { products: true } } },
     });
-    return rows.map((row) => ({ id: row.id, key: row.slug, nameEn: row.nameEn, nameAr: row.nameAr, sortOrder: 0, isActive: row.isActive, usage: row._count.products }));
+    return rows.map((row) => ({
+      id: row.id,
+      key: row.slug,
+      nameEn: row.nameEn,
+      nameAr: row.nameAr,
+      sortOrder: 0,
+      isActive: row.isActive,
+      usage: row._count.products,
+    }));
   }
   const delegate = kind === "family" ? db.fragranceFamily : db.concentration;
   const rows = await (delegate as typeof db.fragranceFamily).findMany({
     orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
     include: { _count: { select: { products: true } } },
   });
-  return rows.map((row) => ({ id: row.id, key: row.code, nameEn: row.nameEn, nameAr: row.nameAr, sortOrder: row.sortOrder, isActive: row.isActive, usage: row._count.products }));
+  return rows.map((row) => ({
+    id: row.id,
+    key: row.code,
+    nameEn: row.nameEn,
+    nameAr: row.nameAr,
+    sortOrder: row.sortOrder,
+    isActive: row.isActive,
+    usage: row._count.products,
+  }));
 }
 
 const ENTITY_TYPE: Record<AttributeKind, string> = {
@@ -61,7 +77,11 @@ function conflict(kind: AttributeKind, error: unknown): never {
   throw error;
 }
 
-export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, input: unknown): Promise<{ id: string }> {
+export async function createAttribute(
+  ctx: ServiceContext,
+  kind: AttributeKind,
+  input: unknown,
+): Promise<{ id: string }> {
   assertCan(ctx.actor, PERMISSION, "global");
   try {
     if (kind === "note") {
@@ -74,7 +94,13 @@ export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, 
       });
       return await db.$transaction(async (tx) => {
         const row = await tx.fragranceNote.create({ data: { ...data, slug } });
-        await recordAudit(tx, ctx, { action: "catalog.note.create", entityType: ENTITY_TYPE.note, entityId: row.id, summary: row.nameEn, after: row });
+        await recordAudit(tx, ctx, {
+          action: "catalog.note.create",
+          entityType: ENTITY_TYPE.note,
+          entityId: row.id,
+          summary: row.nameEn,
+          after: row,
+        });
         return { id: row.id };
       });
     }
@@ -82,7 +108,13 @@ export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, 
     return await db.$transaction(async (tx) => {
       const row =
         kind === "family" ? await tx.fragranceFamily.create({ data }) : await tx.concentration.create({ data });
-      await recordAudit(tx, ctx, { action: `catalog.${kind}.create`, entityType: ENTITY_TYPE[kind], entityId: row.id, summary: row.nameEn, after: row });
+      await recordAudit(tx, ctx, {
+        action: `catalog.${kind}.create`,
+        entityType: ENTITY_TYPE[kind],
+        entityId: row.id,
+        summary: row.nameEn,
+        after: row,
+      });
       return { id: row.id };
     });
   } catch (error) {
@@ -90,7 +122,12 @@ export async function createAttribute(ctx: ServiceContext, kind: AttributeKind, 
   }
 }
 
-export async function updateAttribute(ctx: ServiceContext, kind: AttributeKind, id: string, input: unknown): Promise<void> {
+export async function updateAttribute(
+  ctx: ServiceContext,
+  kind: AttributeKind,
+  id: string,
+  input: unknown,
+): Promise<void> {
   assertCan(ctx.actor, PERMISSION, "global");
   try {
     if (kind === "note") {
@@ -98,9 +135,18 @@ export async function updateAttribute(ctx: ServiceContext, kind: AttributeKind, 
       const existing = await db.fragranceNote.findUnique({ where: { id } });
       if (!existing) throw new NotFoundError("fragrance_note");
       await db.$transaction(async (tx) => {
-        const updated = await tx.fragranceNote.update({ where: { id }, data: { ...data, slug: data.slug ?? existing.slug } });
+        const updated = await tx.fragranceNote.update({
+          where: { id },
+          data: { ...data, slug: data.slug ?? existing.slug },
+        });
         const diff = diffForAudit(existing, updated);
-        await recordAudit(tx, ctx, { action: "catalog.note.update", entityType: ENTITY_TYPE.note, entityId: id, summary: updated.nameEn, ...diff });
+        await recordAudit(tx, ctx, {
+          action: "catalog.note.update",
+          entityType: ENTITY_TYPE.note,
+          entityId: id,
+          summary: updated.nameEn,
+          ...diff,
+        });
       });
       return;
     }
@@ -116,14 +162,25 @@ export async function updateAttribute(ctx: ServiceContext, kind: AttributeKind, 
           ? await tx.fragranceFamily.update({ where: { id }, data })
           : await tx.concentration.update({ where: { id }, data });
       const diff = diffForAudit(existing, updated);
-      await recordAudit(tx, ctx, { action: `catalog.${kind}.update`, entityType: ENTITY_TYPE[kind], entityId: id, summary: updated.nameEn, ...diff });
+      await recordAudit(tx, ctx, {
+        action: `catalog.${kind}.update`,
+        entityType: ENTITY_TYPE[kind],
+        entityId: id,
+        summary: updated.nameEn,
+        ...diff,
+      });
     });
   } catch (error) {
     conflict(kind, error);
   }
 }
 
-export async function setAttributeActive(ctx: ServiceContext, kind: AttributeKind, id: string, input: unknown): Promise<void> {
+export async function setAttributeActive(
+  ctx: ServiceContext,
+  kind: AttributeKind,
+  id: string,
+  input: unknown,
+): Promise<void> {
   assertCan(ctx.actor, PERMISSION, "global");
   const { isActive } = parseInput(activationSchema, input);
   await db.$transaction(async (tx) => {

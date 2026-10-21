@@ -26,11 +26,22 @@ export default async function CategoriesPage({ params }: PageProps<"/[locale]/ad
   const canManage = can(actor, "catalog.categories.manage", "global");
   const t = await getTranslations("categories");
   const common = await getTranslations("common");
-  const options = tree.map(({ id, parentId, nameEn, nameAr, depth, isActive }) => ({ id, parentId, nameEn, nameAr, depth, isActive }));
+  const options = tree.map(({ id, parentId, nameEn, nameAr, depth, isActive }) => ({
+    id,
+    parentId,
+    nameEn,
+    nameAr,
+    depth,
+    isActive,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title={t("title")} description={t("subtitle")} actions={canManage ? <NewCategoryButton categories={options} /> : null} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={canManage ? <NewCategoryButton categories={options} /> : null}
+      />
       {tree.length === 0 ? (
         <EmptyState title={common("emptyList")} />
       ) : (
@@ -50,12 +61,19 @@ export default async function CategoriesPage({ params }: PageProps<"/[locale]/ad
               {tree.map((category) => (
                 <TableRow key={category.id} data-testid="category-row">
                   <TableCell>
-                    <div className="flex items-center gap-2" style={{ paddingInlineStart: `${category.depth * 1.25}rem` }}>
-                      {category.depth > 0 ? <span className="text-muted-foreground" aria-hidden="true">↳</span> : null}
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ paddingInlineStart: `${category.depth * 1.25}rem` }}
+                    >
+                      {category.depth > 0 ? (
+                        <span className="text-muted-foreground" aria-hidden="true">
+                          ↳
+                        </span>
+                      ) : null}
                       <span className="font-medium">{localized(locale, category.nameAr, category.nameEn)}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-xs ltr-value">{category.slug}</TableCell>
+                  <TableCell className="ltr-value font-mono text-xs">{category.slug}</TableCell>
                   <TableCell className="tabular-nums">{category.productCount}</TableCell>
                   <TableCell className="tabular-nums">{category.sortOrder}</TableCell>
                   <TableCell>

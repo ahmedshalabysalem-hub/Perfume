@@ -1,6 +1,15 @@
 import { normalizeDigits } from "@/lib/digits";
 import { vmsg, z } from "@/lib/validation/zod";
-import { booleanField, codeField, isoCountryCode, optionalEmail, optionalText, requiredText, timeZoneField, uuid } from "./fields";
+import {
+  booleanField,
+  codeField,
+  isoCountryCode,
+  optionalEmail,
+  optionalText,
+  requiredText,
+  timeZoneField,
+  uuid,
+} from "./fields";
 
 export const STORE_TYPES = ["ONLINE", "RETAIL"] as const;
 

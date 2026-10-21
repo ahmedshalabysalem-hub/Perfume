@@ -62,7 +62,10 @@ function ComplianceForm({
           name="countryCode"
           label={common("country")}
           required
-          options={markets.map((market) => ({ value: market.code, label: localized(locale, market.nameAr, market.nameEn) }))}
+          options={markets.map((market) => ({
+            value: market.code,
+            label: localized(locale, market.nameAr, market.nameEn),
+          }))}
         />
         <SelectInput
           form={form}
@@ -112,7 +115,15 @@ export function CompliancePanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-2xl text-sm text-muted-foreground">{t("subtitle")}</p>
         {canAdd && markets.length > 0 ? (
-          <FormDialog trigger={<><Plus /> {t("add")}</>} title={t("add")} wide>
+          <FormDialog
+            trigger={
+              <>
+                <Plus /> {t("add")}
+              </>
+            }
+            title={t("add")}
+            wide
+          >
             {(close) => <ComplianceForm productId={productId} markets={markets} onDone={close} />}
           </FormDialog>
         ) : null}
@@ -128,7 +139,7 @@ export function CompliancePanel({
                   <span className="ltr-value">{entry.countryCode}</span> · {entry.authority} · {entry.referenceType}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-mono ltr-value">{entry.referenceNumber ?? "—"}</span>
+                  <span className="ltr-value font-mono">{entry.referenceNumber ?? "—"}</span>
                   {entry.expiresAt ? ` · ${t("expiresAt")}: ${entry.expiresAt}` : null}
                 </p>
               </div>
@@ -137,8 +148,16 @@ export function CompliancePanel({
                 <span className="sr-only">{statusLabels(entry.status)}</span>
                 {entry.editable ? (
                   <>
-                    <FormDialog trigger={<Pencil aria-label={common("edit")} />} title={t("title")} variant="ghost" size="icon-sm" wide>
-                      {(close) => <ComplianceForm productId={productId} entry={entry} markets={markets} onDone={close} />}
+                    <FormDialog
+                      trigger={<Pencil aria-label={common("edit")} />}
+                      title={t("title")}
+                      variant="ghost"
+                      size="icon-sm"
+                      wide
+                    >
+                      {(close) => (
+                        <ComplianceForm productId={productId} entry={entry} markets={markets} onDone={close} />
+                      )}
                     </FormDialog>
                     <ConfirmAction
                       trigger={t("remove")}

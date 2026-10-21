@@ -28,7 +28,11 @@ export async function AttributePage({ kind, locale }: { kind: AttributeKind; loc
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title={t(title)} description={t(subtitle)} actions={canManage ? <NewAttributeButton kind={kind} /> : null} />
+      <PageHeader
+        title={t(title)}
+        description={t(subtitle)}
+        actions={canManage ? <NewAttributeButton kind={kind} /> : null}
+      />
       {rows.length === 0 ? (
         <EmptyState title={common("emptyList")} />
       ) : (
@@ -51,7 +55,7 @@ export async function AttributePage({ kind, locale }: { kind: AttributeKind; loc
                     <p className="font-medium">{localized(locale, row.nameAr, row.nameEn)}</p>
                     <p className="text-xs text-muted-foreground">{locale === "ar" ? row.nameEn : row.nameAr}</p>
                   </TableCell>
-                  <TableCell className="font-mono text-xs ltr-value">{row.key}</TableCell>
+                  <TableCell className="ltr-value font-mono text-xs">{row.key}</TableCell>
                   {kind === "note" ? null : <TableCell className="tabular-nums">{row.sortOrder}</TableCell>}
                   <TableCell className="tabular-nums">{row.usage}</TableCell>
                   <TableCell>
@@ -63,7 +67,12 @@ export async function AttributePage({ kind, locale }: { kind: AttributeKind; loc
                         kind={kind}
                         id={row.id}
                         isActive={row.isActive}
-                        defaults={{ key: row.key, nameEn: row.nameEn, nameAr: row.nameAr, sortOrder: String(row.sortOrder) }}
+                        defaults={{
+                          key: row.key,
+                          nameEn: row.nameEn,
+                          nameAr: row.nameAr,
+                          sortOrder: String(row.sortOrder),
+                        }}
                       />
                     </TableCell>
                   ) : null}

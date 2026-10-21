@@ -13,7 +13,11 @@ import { parseInput } from "@/server/validation";
  * number). Managing them requires `products.compliance.manage` at a scope
  * that covers the reference's country.
  */
-export async function addComplianceReference(ctx: ServiceContext, productId: string, input: unknown): Promise<{ id: string }> {
+export async function addComplianceReference(
+  ctx: ServiceContext,
+  productId: string,
+  input: unknown,
+): Promise<{ id: string }> {
   const data = parseInput(complianceSchema, input);
   assertCan(ctx.actor, "products.compliance.manage", { countryCode: data.countryCode });
   const product = await db.product.findUnique({ where: { id: productId }, select: { nameEn: true } });

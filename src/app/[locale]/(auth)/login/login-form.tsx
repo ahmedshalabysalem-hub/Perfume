@@ -47,10 +47,23 @@ export function LoginForm({ next }: { next: string }) {
     <form onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="login-form">
       {formError ? <Alert variant="destructive">{formError}</Alert> : null}
       <Field id="email" label={t("email")} error={fieldErrors.email?.message} required>
-        <Input type="email" autoComplete="username" inputMode="email" dir="ltr" {...fieldAria("email", fieldErrors.email?.message)} {...form.register("email")} />
+        <Input
+          type="email"
+          autoComplete="username"
+          inputMode="email"
+          dir="ltr"
+          {...fieldAria("email", fieldErrors.email?.message)}
+          {...form.register("email")}
+        />
       </Field>
       <Field id="password" label={t("password")} error={fieldErrors.password?.message} required>
-        <Input type="password" autoComplete="current-password" dir="ltr" {...fieldAria("password", fieldErrors.password?.message)} {...form.register("password")} />
+        <Input
+          type="password"
+          autoComplete="current-password"
+          dir="ltr"
+          {...fieldAria("password", fieldErrors.password?.message)}
+          {...form.register("password")}
+        />
       </Field>
       <Button type="submit" variant="default" size="lg" disabled={form.formState.isSubmitting}>
         {form.formState.isSubmitting ? t("signingIn") : t("signIn")}

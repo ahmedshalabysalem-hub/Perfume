@@ -74,7 +74,11 @@ async function createStaff(
   await setCredentialPassword(db, user.id, TEST_PASSWORD);
   const role = await db.role.findUniqueOrThrow({ where: { key: roleKey } });
   const scopeKey =
-    scope.type === "GLOBAL" ? "GLOBAL" : scope.type === "COUNTRY" ? `COUNTRY:${scope.countryCode}` : `STORE:${scope.storeId}`;
+    scope.type === "GLOBAL"
+      ? "GLOBAL"
+      : scope.type === "COUNTRY"
+        ? `COUNTRY:${scope.countryCode}`
+        : `STORE:${scope.storeId}`;
   await db.userRole.create({
     data: {
       userId: user.id,
@@ -101,25 +105,59 @@ export async function seedFixture(): Promise<Fixture> {
   });
   await db.country.createMany({
     data: [
-      { code: "SA", nameEn: "Saudi Arabia", nameAr: "السعودية", currencyCode: "SAR", defaultLocale: "ar", timezone: "Asia/Riyadh", phoneCode: "+966" },
-      { code: "EG", nameEn: "Egypt", nameAr: "مصر", currencyCode: "EGP", defaultLocale: "ar", timezone: "Africa/Cairo", phoneCode: "+20" },
+      {
+        code: "SA",
+        nameEn: "Saudi Arabia",
+        nameAr: "السعودية",
+        currencyCode: "SAR",
+        defaultLocale: "ar",
+        timezone: "Asia/Riyadh",
+        phoneCode: "+966",
+      },
+      {
+        code: "EG",
+        nameEn: "Egypt",
+        nameAr: "مصر",
+        currencyCode: "EGP",
+        defaultLocale: "ar",
+        timezone: "Africa/Cairo",
+        phoneCode: "+20",
+      },
     ],
   });
   const entity = await db.legalEntity.create({
     data: { code: "TEST-SA", countryCode: "SA", legalNameEn: "Test Co", legalNameAr: "شركة اختبار" },
   });
   const store = await db.store.create({
-    data: { code: "SA-STORE-1", legalEntityId: entity.id, countryCode: "SA", type: "RETAIL", nameEn: "Store", nameAr: "متجر", timezone: "Asia/Riyadh", currencyCode: "SAR" },
+    data: {
+      code: "SA-STORE-1",
+      legalEntityId: entity.id,
+      countryCode: "SA",
+      type: "RETAIL",
+      nameEn: "Store",
+      nameAr: "متجر",
+      timezone: "Asia/Riyadh",
+      currencyCode: "SAR",
+    },
   });
   const warehouse = await db.warehouse.create({
-    data: { code: "SA-WH-1", legalEntityId: entity.id, countryCode: "SA", nameEn: "Warehouse", nameAr: "مستودع", timezone: "Asia/Riyadh" },
+    data: {
+      code: "SA-WH-1",
+      legalEntityId: entity.id,
+      countryCode: "SA",
+      nameEn: "Warehouse",
+      nameAr: "مستودع",
+      timezone: "Asia/Riyadh",
+    },
   });
   await syncRbac(db);
 
   return {
     superAdmin: contextFor(await createStaff("root@test.local", "super_admin", { type: "GLOBAL" })),
     catalogManager: contextFor(await createStaff("catalog@test.local", "catalog_manager", { type: "GLOBAL" })),
-    saManager: contextFor(await createStaff("manager.sa@test.local", "business_manager", { type: "COUNTRY", countryCode: "SA" })),
+    saManager: contextFor(
+      await createStaff("manager.sa@test.local", "business_manager", { type: "COUNTRY", countryCode: "SA" }),
+    ),
     cashier: contextFor(await createStaff("cashier@test.local", "cashier", { type: "STORE", storeId: store.id })),
     viewer: contextFor(await createStaff("support@test.local", "customer_support", { type: "GLOBAL" })),
     storeId: store.id,

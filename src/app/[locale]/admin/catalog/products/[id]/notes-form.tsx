@@ -53,7 +53,10 @@ export function NotesForm({
                 .filter((note) => note.isActive || value[layer].includes(note.id))
                 .map((note) => (
                   <label key={note.id} className="flex items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted">
-                    <Checkbox checked={value[layer].includes(note.id)} onChange={(event) => toggle(layer, note.id, event.target.checked)} />
+                    <Checkbox
+                      checked={value[layer].includes(note.id)}
+                      onChange={(event) => toggle(layer, note.id, event.target.checked)}
+                    />
                     {localized(locale, note.nameAr, note.nameEn)}
                   </label>
                 ))}
@@ -65,7 +68,11 @@ export function NotesForm({
         <div className="flex justify-end">
           <Button
             disabled={pending}
-            onClick={() => startTransition(async () => void (await submit(() => updateProductNotesAction(productId, value), t("notesSaved"))))}
+            onClick={() =>
+              startTransition(
+                async () => void (await submit(() => updateProductNotesAction(productId, value), t("notesSaved"))),
+              )
+            }
           >
             {pending ? common("saving") : common("save")}
           </Button>

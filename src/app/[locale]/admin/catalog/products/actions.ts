@@ -55,7 +55,11 @@ export async function updateProductNotesAction(id: string, input: unknown): Prom
   });
 }
 
-export async function changeProductStatusAction(id: string, status: string, reason: string | null): Promise<ActionResult> {
+export async function changeProductStatusAction(
+  id: string,
+  status: string,
+  reason: string | null,
+): Promise<ActionResult> {
   return runAction(async (ctx) => {
     await changeProductStatus(ctx, parseId(id, "product"), { status, reason });
     refresh();
@@ -89,7 +93,10 @@ export async function changeVariantStatusAction(variantId: string, status: strin
   });
 }
 
-export async function setVariantPricesAction(variantId: string, input: unknown): Promise<ActionResult<{ changed: number }>> {
+export async function setVariantPricesAction(
+  variantId: string,
+  input: unknown,
+): Promise<ActionResult<{ changed: number }>> {
   return runAction(async (ctx) => {
     const result = await setVariantPrices(ctx, parseId(variantId, "product_variant"), input);
     refresh();
@@ -103,7 +110,10 @@ export async function suggestInternalBarcodeAction(): Promise<ActionResult<strin
 
 // Images ---------------------------------------------------------------------------------
 
-export async function uploadProductImageAction(productId: string, formData: FormData): Promise<ActionResult<{ id: string }>> {
+export async function uploadProductImageAction(
+  productId: string,
+  formData: FormData,
+): Promise<ActionResult<{ id: string }>> {
   return runAction(async (ctx) => {
     const file = formData.get("file");
     const result = await uploadProductImage(ctx, parseId(productId, "product"), file instanceof File ? file : null, {

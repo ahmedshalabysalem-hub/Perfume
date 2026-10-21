@@ -37,7 +37,11 @@ export default async function UsersPage({ params, searchParams }: PageProps<"/[l
 
   return (
     <div className="mx-auto max-w-7xl">
-      <PageHeader title={t("title")} description={t("subtitle")} actions={options ? <CreateStaffUserButton options={options} /> : null} />
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={options ? <CreateStaffUserButton options={options} /> : null}
+      />
       <ListToolbar
         pathname="/admin/access/users"
         query={q}
@@ -47,7 +51,10 @@ export default async function UsersPage({ params, searchParams }: PageProps<"/[l
             name: "status",
             label: common("status"),
             value: status,
-            options: (["ACTIVE", "SUSPENDED", "DEACTIVATED"] as const).map((value) => ({ value, label: statusLabels(value) })),
+            options: (["ACTIVE", "SUSPENDED", "DEACTIVATED"] as const).map((value) => ({
+              value,
+              label: statusLabels(value),
+            })),
           },
         ]}
       />
@@ -71,8 +78,12 @@ export default async function UsersPage({ params, searchParams }: PageProps<"/[l
                     <Link href={`/admin/access/users/${user.id}`} className="font-medium hover:underline">
                       {user.name}
                     </Link>
-                    {user.id === actor.userId ? <Badge variant="gold" className="ms-2">{t("you")}</Badge> : null}
-                    <p className="text-xs text-muted-foreground ltr-value">{user.email}</p>
+                    {user.id === actor.userId ? (
+                      <Badge variant="gold" className="ms-2">
+                        {t("you")}
+                      </Badge>
+                    ) : null}
+                    <p className="ltr-value text-xs text-muted-foreground">{user.email}</p>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

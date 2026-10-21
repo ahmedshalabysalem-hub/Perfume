@@ -12,7 +12,9 @@ import { listCountries } from "@/server/modules/organization/organization.servic
 import { can } from "@/server/rbac/authorize";
 import { EditCountryButton } from "../organization-forms";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/admin/organization/countries">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/admin/organization/countries">): Promise<Metadata> {
   const t = await getTranslations({ locale: await metadataLocale(params), namespace: "organization" });
   return { title: t("countriesTitle") };
 }
@@ -45,12 +47,13 @@ export default async function CountriesPage({ params }: PageProps<"/[locale]/adm
               <TableRow key={country.code}>
                 <TableCell>
                   <p className="font-medium">{localized(locale, country.nameAr, country.nameEn)}</p>
-                  <p className="text-xs text-muted-foreground ltr-value">
+                  <p className="ltr-value text-xs text-muted-foreground">
                     {country.code} · {country.phoneCode}
                   </p>
                 </TableCell>
                 <TableCell>
-                  <span className="ltr-value">{country.currencyCode}</span> · {locale === "ar" ? country.currency.symbolAr : country.currency.symbolEn}
+                  <span className="ltr-value">{country.currencyCode}</span> ·{" "}
+                  {locale === "ar" ? country.currency.symbolAr : country.currency.symbolEn}
                 </TableCell>
                 <TableCell className="ltr-value">{country.timezone}</TableCell>
                 <TableCell>{country.pricesIncludeTax ? common("yes") : common("no")}</TableCell>

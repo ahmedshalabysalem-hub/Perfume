@@ -37,7 +37,9 @@ export async function listCategoryTree(ctx: ServiceContext): Promise<CategoryNod
   return flattenTree(rows.map(({ _count, ...row }) => ({ ...row, productCount: _count.products })));
 }
 
-export function flattenTree<T extends { id: string; parentId: string | null }>(rows: T[]): Array<T & { depth: number }> {
+export function flattenTree<T extends { id: string; parentId: string | null }>(
+  rows: T[],
+): Array<T & { depth: number }> {
   const children = new Map<string | null, T[]>();
   for (const row of rows) {
     const key = row.parentId && rows.some((candidate) => candidate.id === row.parentId) ? row.parentId : null;
@@ -74,7 +76,8 @@ async function assertValidParent(client: DbClient, categoryId: string | null, pa
 }
 
 function mapConflict(error: unknown): never {
-  if (isUniqueViolationOn(error, "slug")) throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
+  if (isUniqueViolationOn(error, "slug"))
+    throw new ConflictError("errors.conflict.slug", { slug: ["errors.conflict.slug"] });
   throw error;
 }
 

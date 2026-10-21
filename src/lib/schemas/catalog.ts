@@ -21,7 +21,15 @@ import {
   uuid,
 } from "./fields";
 
-export const PRODUCT_TYPES = ["FRAGRANCE", "GIFT_SET", "BODY_CARE", "HOME_FRAGRANCE", "ACCESSORY", "SAMPLE", "OTHER"] as const;
+export const PRODUCT_TYPES = [
+  "FRAGRANCE",
+  "GIFT_SET",
+  "BODY_CARE",
+  "HOME_FRAGRANCE",
+  "ACCESSORY",
+  "SAMPLE",
+  "OTHER",
+] as const;
 export const PRODUCT_STATUSES = ["DRAFT", "PUBLISHED", "INACTIVE", "DISCONTINUED"] as const;
 export const VARIANT_STATUSES = ["ACTIVE", "INACTIVE", "DISCONTINUED"] as const;
 export const AUDIENCES = ["MEN", "WOMEN", "UNISEX"] as const;
@@ -183,9 +191,10 @@ export const variantSchema = z
     }
   })
   .transform((value) => {
-    const barcode = value.barcode && value.barcodeType && value.barcodeSource
-      ? validateBarcode(value.barcode, value.barcodeType, value.barcodeSource)
-      : null;
+    const barcode =
+      value.barcode && value.barcodeType && value.barcodeSource
+        ? validateBarcode(value.barcode, value.barcodeType, value.barcodeSource)
+        : null;
     // Expiry tracking needs batches; batches need inventory tracking.
     const trackExpiry = value.trackExpiry;
     const trackBatches = value.trackBatches || trackExpiry;

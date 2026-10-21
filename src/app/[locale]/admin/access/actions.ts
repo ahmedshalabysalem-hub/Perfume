@@ -33,7 +33,11 @@ export async function resetStaffPasswordAction(id: string, input: unknown): Prom
   });
 }
 
-export async function setStaffUserStatusAction(id: string, status: string, reason: string | null): Promise<ActionResult> {
+export async function setStaffUserStatusAction(
+  id: string,
+  status: string,
+  reason: string | null,
+): Promise<ActionResult> {
   return runAction(async (ctx) => {
     await setStaffUserStatus(ctx, parseId(id, "user"), { status, reason });
     refresh();

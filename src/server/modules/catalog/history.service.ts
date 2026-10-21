@@ -18,7 +18,11 @@ export type HistoryEntry = {
  * Change history of a product and its variants, for catalogue users. Unlike
  * the full audit log (audit.view) this omits IP addresses and user agents.
  */
-export async function getProductHistory(ctx: ServiceContext, productId: string, variantIds: string[]): Promise<HistoryEntry[]> {
+export async function getProductHistory(
+  ctx: ServiceContext,
+  productId: string,
+  variantIds: string[],
+): Promise<HistoryEntry[]> {
   assertCan(ctx.actor, "products.view");
   const entries = await db.auditLog.findMany({
     where: {

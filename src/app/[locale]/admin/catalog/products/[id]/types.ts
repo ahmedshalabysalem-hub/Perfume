@@ -12,7 +12,13 @@ export type MarketDto = {
   editable: boolean;
 };
 
-export type PriceDto = { countryCode: string; currencyCode: string; amount: string; compareAtAmount: string | null; isActive: boolean };
+export type PriceDto = {
+  countryCode: string;
+  currencyCode: string;
+  amount: string;
+  compareAtAmount: string | null;
+  isActive: boolean;
+};
 
 export type VariantDto = {
   id: string;
@@ -33,7 +39,14 @@ export type VariantDto = {
   prices: PriceDto[];
 };
 
-export type ImageDto = { id: string; url: string; altEn: string | null; altAr: string | null; width: number | null; height: number | null };
+export type ImageDto = {
+  id: string;
+  url: string;
+  altEn: string | null;
+  altAr: string | null;
+  width: number | null;
+  height: number | null;
+};
 
 export type ComplianceDto = {
   id: string;

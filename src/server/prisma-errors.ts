@@ -13,8 +13,7 @@ export function uniqueViolationFields(error: unknown): string[] | null {
   if (Array.isArray(target)) return target.map(String);
   if (typeof target === "string") return [target];
   const adapterError = meta.driverAdapterError as
-    | { cause?: { constraint?: { fields?: unknown; index?: unknown } } }
-    | undefined;
+    { cause?: { constraint?: { fields?: unknown; index?: unknown } } } | undefined;
   const fields = adapterError?.cause?.constraint?.fields;
   if (Array.isArray(fields)) return fields.map((field) => String(field).replace(/"/g, ""));
   const index = adapterError?.cause?.constraint?.index;

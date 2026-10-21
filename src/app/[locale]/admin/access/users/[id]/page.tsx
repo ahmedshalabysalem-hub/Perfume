@@ -55,7 +55,7 @@ export default async function UserPage({ params }: PageProps<"/[locale]/admin/ac
 
   return (
     <div className="mx-auto max-w-5xl">
-      <Link href="/admin/access/users" className={buttonVariants({ variant: "ghost", className: "mb-2 -ms-3" })}>
+      <Link href="/admin/access/users" className={buttonVariants({ variant: "ghost", className: "-ms-3 mb-2" })}>
         <ArrowLeft className="rtl:rotate-180" /> {t("title")}
       </Link>
       <PageHeader
@@ -74,7 +74,11 @@ export default async function UserPage({ params }: PageProps<"/[locale]/admin/ac
           ) : null
         }
       />
-      {user.mustChangePassword ? <Alert variant="warning" className="mb-4">{t("createHint")}</Alert> : null}
+      {user.mustChangePassword ? (
+        <Alert variant="warning" className="mb-4">
+          {t("createHint")}
+        </Alert>
+      ) : null}
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex-row items-start justify-between">

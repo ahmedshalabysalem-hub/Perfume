@@ -36,7 +36,7 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1.5 text-start pe-6", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-1.5 pe-6 text-start", className)} {...props} />;
 }
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -94,7 +94,10 @@ function AlertDialogTitle({ className, ...props }: React.ComponentProps<typeof A
   return <AlertDialogPrimitive.Title className={cn("text-lg font-semibold", className)} {...props} />;
 }
 
-function AlertDialogDescription({ className, ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
+function AlertDialogDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
   return <AlertDialogPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />;
 }
 

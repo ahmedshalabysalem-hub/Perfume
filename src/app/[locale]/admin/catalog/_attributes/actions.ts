@@ -19,7 +19,10 @@ function parseKind(kind: unknown): AttributeKind {
   return kind as AttributeKind;
 }
 
-export async function createAttributeAction(kind: AttributeKind, input: unknown): Promise<ActionResult<{ id: string }>> {
+export async function createAttributeAction(
+  kind: AttributeKind,
+  input: unknown,
+): Promise<ActionResult<{ id: string }>> {
   return runAction(async (ctx) => {
     const result = await createAttribute(ctx, parseKind(kind), input);
     refresh();
@@ -35,7 +38,11 @@ export async function updateAttributeAction(kind: AttributeKind, id: string, inp
   });
 }
 
-export async function setAttributeActiveAction(kind: AttributeKind, id: string, isActive: boolean): Promise<ActionResult> {
+export async function setAttributeActiveAction(
+  kind: AttributeKind,
+  id: string,
+  isActive: boolean,
+): Promise<ActionResult> {
   return runAction(async (ctx) => {
     await setAttributeActive(ctx, parseKind(kind), parseId(id, "attribute"), { isActive });
     refresh();

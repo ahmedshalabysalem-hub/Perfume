@@ -37,13 +37,37 @@ export function ChangePasswordForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="change-password-form">
       <Field id="currentPassword" label={t("currentPassword")} error={errors.currentPassword?.message} required>
-        <Input type="password" autoComplete="current-password" dir="ltr" {...fieldAria("currentPassword", errors.currentPassword?.message)} {...form.register("currentPassword")} />
+        <Input
+          type="password"
+          autoComplete="current-password"
+          dir="ltr"
+          {...fieldAria("currentPassword", errors.currentPassword?.message)}
+          {...form.register("currentPassword")}
+        />
       </Field>
-      <Field id="newPassword" label={t("newPassword")} error={errors.newPassword?.message} description={t("passwordPolicy")} required>
-        <Input type="password" autoComplete="new-password" dir="ltr" {...fieldAria("newPassword", errors.newPassword?.message, true)} {...form.register("newPassword")} />
+      <Field
+        id="newPassword"
+        label={t("newPassword")}
+        error={errors.newPassword?.message}
+        description={t("passwordPolicy")}
+        required
+      >
+        <Input
+          type="password"
+          autoComplete="new-password"
+          dir="ltr"
+          {...fieldAria("newPassword", errors.newPassword?.message, true)}
+          {...form.register("newPassword")}
+        />
       </Field>
       <Field id="confirmPassword" label={t("confirmPassword")} error={errors.confirmPassword?.message} required>
-        <Input type="password" autoComplete="new-password" dir="ltr" {...fieldAria("confirmPassword", errors.confirmPassword?.message)} {...form.register("confirmPassword")} />
+        <Input
+          type="password"
+          autoComplete="new-password"
+          dir="ltr"
+          {...fieldAria("confirmPassword", errors.confirmPassword?.message)}
+          {...form.register("confirmPassword")}
+        />
       </Field>
       <Button type="submit" disabled={form.formState.isSubmitting}>
         {form.formState.isSubmitting ? common("saving") : common("save")}

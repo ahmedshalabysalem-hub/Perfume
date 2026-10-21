@@ -55,13 +55,47 @@ export const LEGAL_ENTITIES = [
 ] as const;
 
 export const STORES = [
-  { code: "SA-ONLINE", legalEntityCode: "DEMO-SA", type: "ONLINE", nameEn: "Online Store — Saudi Arabia", nameAr: "المتجر الإلكتروني — السعودية", timezone: "Asia/Riyadh", currencyCode: "SAR", city: null },
-  { code: "SA-RUH-01", legalEntityCode: "DEMO-SA", type: "RETAIL", nameEn: "Riyadh Boutique", nameAr: "بوتيك الرياض", timezone: "Asia/Riyadh", currencyCode: "SAR", city: "Riyadh" },
-  { code: "EG-ONLINE", legalEntityCode: "DEMO-EG", type: "ONLINE", nameEn: "Online Store — Egypt", nameAr: "المتجر الإلكتروني — مصر", timezone: "Africa/Cairo", currencyCode: "EGP", city: null },
+  {
+    code: "SA-ONLINE",
+    legalEntityCode: "DEMO-SA",
+    type: "ONLINE",
+    nameEn: "Online Store — Saudi Arabia",
+    nameAr: "المتجر الإلكتروني — السعودية",
+    timezone: "Asia/Riyadh",
+    currencyCode: "SAR",
+    city: null,
+  },
+  {
+    code: "SA-RUH-01",
+    legalEntityCode: "DEMO-SA",
+    type: "RETAIL",
+    nameEn: "Riyadh Boutique",
+    nameAr: "بوتيك الرياض",
+    timezone: "Asia/Riyadh",
+    currencyCode: "SAR",
+    city: "Riyadh",
+  },
+  {
+    code: "EG-ONLINE",
+    legalEntityCode: "DEMO-EG",
+    type: "ONLINE",
+    nameEn: "Online Store — Egypt",
+    nameAr: "المتجر الإلكتروني — مصر",
+    timezone: "Africa/Cairo",
+    currencyCode: "EGP",
+    city: null,
+  },
 ] as const;
 
 export const WAREHOUSES = [
-  { code: "SA-RUH-WH1", legalEntityCode: "DEMO-SA", nameEn: "Riyadh Main Warehouse", nameAr: "مستودع الرياض الرئيسي", timezone: "Asia/Riyadh", city: "Riyadh" },
+  {
+    code: "SA-RUH-WH1",
+    legalEntityCode: "DEMO-SA",
+    nameEn: "Riyadh Main Warehouse",
+    nameAr: "مستودع الرياض الرئيسي",
+    timezone: "Asia/Riyadh",
+    city: "Riyadh",
+  },
 ] as const;
 
 export const CONCENTRATIONS = [
@@ -108,7 +142,13 @@ export const NOTES = [
 /** Category tree: parents first. */
 export const CATEGORIES = [
   { slug: "perfumes", parent: null, nameEn: "Perfumes", nameAr: "العطور", sortOrder: 10 },
-  { slug: "oriental-perfumes", parent: "perfumes", nameEn: "Oriental Perfumes", nameAr: "العطور الشرقية", sortOrder: 11 },
+  {
+    slug: "oriental-perfumes",
+    parent: "perfumes",
+    nameEn: "Oriental Perfumes",
+    nameAr: "العطور الشرقية",
+    sortOrder: 11,
+  },
   { slug: "floral-perfumes", parent: "perfumes", nameEn: "Floral Perfumes", nameAr: "العطور الزهرية", sortOrder: 12 },
   { slug: "fresh-perfumes", parent: "perfumes", nameEn: "Fresh Perfumes", nameAr: "العطور المنعشة", sortOrder: 13 },
   { slug: "perfume-oils", parent: null, nameEn: "Perfume Oils", nameAr: "الدهون العطرية", sortOrder: 20 },
@@ -200,8 +240,24 @@ export const PRODUCTS: SeedProduct[] = [
     notes: { top: ["saffron", "bergamot"], heart: ["taif-rose", "oud"], base: ["amber", "white-musk", "sandalwood"] },
     launchYear: 2025,
     variants: [
-      { sku: "QA-ROI-50", sizeMl: "50", barcode: { kind: "gs1-demo", body: "952000010001" }, prices: [{ country: "SA", amount: "650.00" }, { country: "EG", amount: "7900.00" }] },
-      { sku: "QA-ROI-100", sizeMl: "100", barcode: { kind: "gs1-demo", body: "952000010002" }, prices: [{ country: "SA", amount: "980.00", compareAt: "1150.00" }, { country: "EG", amount: "11500.00" }] },
+      {
+        sku: "QA-ROI-50",
+        sizeMl: "50",
+        barcode: { kind: "gs1-demo", body: "952000010001" },
+        prices: [
+          { country: "SA", amount: "650.00" },
+          { country: "EG", amount: "7900.00" },
+        ],
+      },
+      {
+        sku: "QA-ROI-100",
+        sizeMl: "100",
+        barcode: { kind: "gs1-demo", body: "952000010002" },
+        prices: [
+          { country: "SA", amount: "980.00", compareAt: "1150.00" },
+          { country: "EG", amount: "11500.00" },
+        ],
+      },
     ],
   },
   {
@@ -223,8 +279,24 @@ export const PRODUCTS: SeedProduct[] = [
     notes: { top: ["pink-pepper", "bergamot"], heart: ["taif-rose", "jasmine"], base: ["white-musk", "cedarwood"] },
     launchYear: 2024,
     variants: [
-      { sku: "QA-TRE-30", sizeMl: "30", barcode: { kind: "internal", value: "PF0000000101" }, prices: [{ country: "SA", amount: "295.00" }, { country: "EG", amount: "3600.00" }] },
-      { sku: "QA-TRE-75", sizeMl: "75", barcode: { kind: "internal", value: "PF0000000102" }, prices: [{ country: "SA", amount: "540.00" }, { country: "EG", amount: "6500.00" }] },
+      {
+        sku: "QA-TRE-30",
+        sizeMl: "30",
+        barcode: { kind: "internal", value: "PF0000000101" },
+        prices: [
+          { country: "SA", amount: "295.00" },
+          { country: "EG", amount: "3600.00" },
+        ],
+      },
+      {
+        sku: "QA-TRE-75",
+        sizeMl: "75",
+        barcode: { kind: "internal", value: "PF0000000102" },
+        prices: [
+          { country: "SA", amount: "540.00" },
+          { country: "EG", amount: "6500.00" },
+        ],
+      },
     ],
   },
   {
@@ -246,8 +318,24 @@ export const PRODUCTS: SeedProduct[] = [
     notes: { top: ["cardamom", "bergamot"], heart: ["vetiver", "cedarwood"], base: ["leather", "tonka-bean"] },
     launchYear: 2023,
     variants: [
-      { sku: "NS-DVT-100", sizeMl: "100", barcode: { kind: "gs1-demo", body: "952000020001" }, prices: [{ country: "SA", amount: "420.00" }, { country: "EG", amount: "4950.00" }] },
-      { sku: "NS-DVT-100-T", sizeMl: "100", nameEn: "100 ml Tester", nameAr: "١٠٠ مل (تستر)", isTester: true, barcode: { kind: "internal", value: "PF0000000201" }, prices: [{ country: "SA", amount: "360.00" }] },
+      {
+        sku: "NS-DVT-100",
+        sizeMl: "100",
+        barcode: { kind: "gs1-demo", body: "952000020001" },
+        prices: [
+          { country: "SA", amount: "420.00" },
+          { country: "EG", amount: "4950.00" },
+        ],
+      },
+      {
+        sku: "NS-DVT-100-T",
+        sizeMl: "100",
+        nameEn: "100 ml Tester",
+        nameAr: "١٠٠ مل (تستر)",
+        isTester: true,
+        barcode: { kind: "internal", value: "PF0000000201" },
+        prices: [{ country: "SA", amount: "360.00" }],
+      },
     ],
   },
   {
@@ -259,7 +347,8 @@ export const PRODUCTS: SeedProduct[] = [
     nameAr: "دهن مسك الطهارة",
     shortDescriptionEn: "Clean white musk perfume oil, alcohol-free.",
     shortDescriptionAr: "دهن مسك أبيض نقي خالٍ من الكحول.",
-    descriptionEn: "A concentrated, alcohol-free perfume oil of clean white musk with a soft vanilla trail. Available in Saudi Arabia only.",
+    descriptionEn:
+      "A concentrated, alcohol-free perfume oil of clean white musk with a soft vanilla trail. Available in Saudi Arabia only.",
     descriptionAr: "دهن عطري مركّز خالٍ من الكحول من المسك الأبيض النقي مع لمسة فانيليا ناعمة. متوفر في السعودية فقط.",
     audience: "UNISEX",
     concentration: "PERFUME_OIL",
@@ -269,7 +358,13 @@ export const PRODUCTS: SeedProduct[] = [
     notes: { top: ["bergamot"], heart: ["white-musk"], base: ["vanilla", "sandalwood"] },
     launchYear: 2022,
     variants: [
-      { sku: "NS-MAT-12", sizeMl: "12", barcode: { kind: "internal", value: "PF0000000301" }, trackExpiry: true, prices: [{ country: "SA", amount: "85.00" }] },
+      {
+        sku: "NS-MAT-12",
+        sizeMl: "12",
+        barcode: { kind: "internal", value: "PF0000000301" },
+        trackExpiry: true,
+        prices: [{ country: "SA", amount: "85.00" }],
+      },
     ],
   },
   {
@@ -281,7 +376,8 @@ export const PRODUCTS: SeedProduct[] = [
     nameAr: "مجموعة ليالي العنبر",
     shortDescriptionEn: "Eau de parfum, body mist and travel spray.",
     shortDescriptionAr: "أو دو بارفان ومعطر للجسم وعبوة سفر.",
-    descriptionEn: "A gift box with Amber Nights eau de parfum (100 ml), matching body mist (75 ml) and a 10 ml travel spray.",
+    descriptionEn:
+      "A gift box with Amber Nights eau de parfum (100 ml), matching body mist (75 ml) and a 10 ml travel spray.",
     descriptionAr: "علبة هدايا تضم أو دو بارفان ليالي العنبر (١٠٠ مل) ومعطر جسم مطابق (٧٥ مل) وعبوة سفر ١٠ مل.",
     audience: "UNISEX",
     concentration: "EDP",
@@ -291,7 +387,17 @@ export const PRODUCTS: SeedProduct[] = [
     notes: { top: ["orange-blossom"], heart: ["amber", "frankincense"], base: ["vanilla", "patchouli"] },
     launchYear: 2025,
     variants: [
-      { sku: "ML-ANG-SET", sizeMl: null, nameEn: "Gift set", nameAr: "مجموعة هدية", barcode: { kind: "internal", value: "PF0000000401" }, prices: [{ country: "SA", amount: "720.00" }, { country: "EG", amount: "8400.00" }] },
+      {
+        sku: "ML-ANG-SET",
+        sizeMl: null,
+        nameEn: "Gift set",
+        nameAr: "مجموعة هدية",
+        barcode: { kind: "internal", value: "PF0000000401" },
+        prices: [
+          { country: "SA", amount: "720.00" },
+          { country: "EG", amount: "8400.00" },
+        ],
+      },
     ],
   },
   {
@@ -318,7 +424,22 @@ export const PRODUCTS: SeedProduct[] = [
 
 /** Demo staff accounts (development only). */
 export const DEMO_STAFF = [
-  { email: "catalog@perfume.local", name: "Catalogue Manager (Demo)", role: "catalog_manager", scope: { type: "GLOBAL" as const } },
-  { email: "manager.sa@perfume.local", name: "KSA Business Manager (Demo)", role: "business_manager", scope: { type: "COUNTRY" as const, countryCode: "SA" } },
-  { email: "cashier.riyadh@perfume.local", name: "Riyadh Cashier (Demo)", role: "cashier", scope: { type: "STORE" as const, storeCode: "SA-RUH-01" } },
+  {
+    email: "catalog@perfume.local",
+    name: "Catalogue Manager (Demo)",
+    role: "catalog_manager",
+    scope: { type: "GLOBAL" as const },
+  },
+  {
+    email: "manager.sa@perfume.local",
+    name: "KSA Business Manager (Demo)",
+    role: "business_manager",
+    scope: { type: "COUNTRY" as const, countryCode: "SA" },
+  },
+  {
+    email: "cashier.riyadh@perfume.local",
+    name: "Riyadh Cashier (Demo)",
+    role: "cashier",
+    scope: { type: "STORE" as const, storeCode: "SA-RUH-01" },
+  },
 ];

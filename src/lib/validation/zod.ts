@@ -46,7 +46,8 @@ z.config({
         // a malformed id) instead of a generic message.
         const nested = (issue.errors ?? []).flat();
         const specific = nested.find(
-          (inner) => inner.code !== "invalid_type" && inner.code !== "invalid_value" && inner.message.startsWith("validation."),
+          (inner) =>
+            inner.code !== "invalid_type" && inner.code !== "invalid_value" && inner.message.startsWith("validation."),
         );
         return specific?.message ?? vmsg("invalidFormat");
       }

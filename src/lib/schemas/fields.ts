@@ -99,8 +99,7 @@ export const optionalInt = (min: number, max: number, message = vmsg("integer"))
       return number;
     });
 
-export const sortOrderField = () =>
-  optionalInt(-100_000, 100_000).transform((value) => value ?? 0);
+export const sortOrderField = () => optionalInt(-100_000, 100_000).transform((value) => value ?? 0);
 
 /** Positive decimal with up to `scale` decimals as a canonical string ("7.5" → "7.50"). */
 export const optionalDecimal = (scale: number, message: string) =>
@@ -123,7 +122,8 @@ export const optionalDecimal = (scale: number, message: string) =>
 function checkMoney(value: string, minorUnits: number): { ok: true; value: string } | { ok: false; message: string } {
   const parsed = parseMoneyInput(value, minorUnits);
   if (!parsed.ok) {
-    const key = parsed.reason === "precision" ? "moneyPrecision" : parsed.reason === "range" ? "moneyRange" : "moneyFormat";
+    const key =
+      parsed.reason === "precision" ? "moneyPrecision" : parsed.reason === "range" ? "moneyRange" : "moneyFormat";
     return { ok: false, message: vmsg(key) };
   }
   if (!/[1-9]/.test(parsed.value)) return { ok: false, message: vmsg("moneyPositive") };

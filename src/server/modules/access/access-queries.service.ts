@@ -56,11 +56,20 @@ export async function listAuditLogs(ctx: ServiceContext, rawQuery: unknown) {
     take: AUDIT_PAGE_SIZE,
   });
   const actorIds = [...new Set(entries.map((entry) => entry.actorUserId).filter((id): id is string => !!id))];
-  const actors = actorIds.length ? await db.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, email: true } }) : [];
+  const actors = actorIds.length
+    ? await db.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, email: true } })
+    : [];
   const actorMap = new Map(actors.map((actor) => [actor.id, actor]));
-  const entityTypes = await db.auditLog.findMany({ distinct: ["entityType"], select: { entityType: true }, orderBy: { entityType: "asc" } });
+  const entityTypes = await db.auditLog.findMany({
+    distinct: ["entityType"],
+    select: { entityType: true },
+    orderBy: { entityType: "asc" },
+  });
   return {
-    entries: entries.map((entry) => ({ ...entry, actor: entry.actorUserId ? (actorMap.get(entry.actorUserId) ?? null) : null })),
+    entries: entries.map((entry) => ({
+      ...entry,
+      actor: entry.actorUserId ? (actorMap.get(entry.actorUserId) ?? null) : null,
+    })),
     total,
     page,
     pageCount,

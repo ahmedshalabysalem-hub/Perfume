@@ -6,11 +6,7 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /** Pick the localised field (`nameAr` / `nameEn`), falling back to the other language. */
-export function localized(
-  locale: string,
-  ar: string | null | undefined,
-  en: string | null | undefined,
-): string {
+export function localized(locale: string, ar: string | null | undefined, en: string | null | undefined): string {
   const primary = locale === "ar" ? ar : en;
   const fallback = locale === "ar" ? en : ar;
   return (primary && primary.trim()) || (fallback && fallback.trim()) || "";

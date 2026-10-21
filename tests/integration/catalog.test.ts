@@ -10,7 +10,12 @@ import {
   updateProduct,
   updateProductNotes,
 } from "@/server/modules/catalog/products.service";
-import { changeVariantStatus, createVariant, setVariantPrices, updateVariant } from "@/server/modules/catalog/variants.service";
+import {
+  changeVariantStatus,
+  createVariant,
+  setVariantPrices,
+  updateVariant,
+} from "@/server/modules/catalog/variants.service";
 import { createAttribute } from "@/server/modules/catalog/attributes.service";
 import { auditEntries, seedFixture, type Fixture } from "./fixtures";
 
@@ -79,7 +84,9 @@ describe("brands", () => {
   });
 
   it("validates input on the server", async () => {
-    const error = await errorOf(createBrand(f.catalogManager, { nameEn: "", nameAr: "x", websiteUrl: "javascript:alert(1)" }));
+    const error = await errorOf(
+      createBrand(f.catalogManager, { nameEn: "", nameAr: "x", websiteUrl: "javascript:alert(1)" }),
+    );
     expect(error).toBeInstanceOf(ValidationError);
     expect(error.fieldErrors?.nameEn).toEqual(["validation.required"]);
     expect(error.fieldErrors?.websiteUrl?.[0]).toBe("validation.url");
@@ -108,7 +115,9 @@ describe("categories", () => {
   it("prevents cycles in the hierarchy", async () => {
     const parent = await createCategory(f.catalogManager, { nameEn: "Perfumes", nameAr: "عطور" });
     const child = await createCategory(f.catalogManager, { nameEn: "Oriental", nameAr: "شرقي", parentId: parent.id });
-    const error = await errorOf(updateCategory(f.catalogManager, parent.id, { nameEn: "Perfumes", nameAr: "عطور", parentId: child.id }));
+    const error = await errorOf(
+      updateCategory(f.catalogManager, parent.id, { nameEn: "Perfumes", nameAr: "عطور", parentId: child.id }),
+    );
     expect(error).toBeInstanceOf(InvalidStateError);
     expect(error.messageKey).toBe("errors.invalidState.categoryCycle");
   });
@@ -117,7 +126,11 @@ describe("categories", () => {
 describe("products", () => {
   it("creates a draft product with categories and a normalised search document", async () => {
     const category = await createCategory(f.catalogManager, { nameEn: "Oud", nameAr: "عود" });
-    const { productId } = await makeProduct({ categoryIds: [category.id], primaryCategoryId: category.id, nameAr: "عُود مَلَكي" });
+    const { productId } = await makeProduct({
+      categoryIds: [category.id],
+      primaryCategoryId: category.id,
+      nameAr: "عُود مَلَكي",
+    });
     const product = await db.product.findUniqueOrThrow({ where: { id: productId }, include: { categories: true } });
     expect(product.status).toBe("DRAFT");
     expect(product.slug).toBe("royal-oud");
@@ -138,7 +151,12 @@ describe("products", () => {
       createProduct(f.catalogManager, { brandId, type: "FRAGRANCE", nameEn: "New", nameAr: "جديد" }),
     );
     expect(error.messageKey).toBe("errors.invalidState.inactiveReference");
-    await updateProduct(f.catalogManager, productId, { brandId, type: "FRAGRANCE", nameEn: "Royal Oud II", nameAr: "عود ملكي ٢" });
+    await updateProduct(f.catalogManager, productId, {
+      brandId,
+      type: "FRAGRANCE",
+      nameEn: "Royal Oud II",
+      nameAr: "عود ملكي ٢",
+    });
     expect((await db.product.findUniqueOrThrow({ where: { id: productId } })).nameEn).toBe("Royal Oud II");
   });
 
@@ -167,13 +185,25 @@ describe("variants: SKU and barcode", () => {
   it("validates GTIN check digits and barcode uniqueness", async () => {
     const { productId } = await makeProduct();
     const invalid = await errorOf(
-      createVariant(f.catalogManager, productId, variantInput({ barcode: "4006381333932", barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" })),
+      createVariant(
+        f.catalogManager,
+        productId,
+        variantInput({ barcode: "4006381333932", barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }),
+      ),
     );
     expect(invalid.fieldErrors?.barcode).toEqual(["validation.barcodeChecksum"]);
 
-    await createVariant(f.catalogManager, productId, variantInput({ barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }));
+    await createVariant(
+      f.catalogManager,
+      productId,
+      variantInput({ barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }),
+    );
     const duplicate = await errorOf(
-      createVariant(f.catalogManager, productId, variantInput({ sku: "OTHER-SKU", barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" })),
+      createVariant(
+        f.catalogManager,
+        productId,
+        variantInput({ sku: "OTHER-SKU", barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }),
+      ),
     );
     expect(duplicate.fieldErrors?.barcode).toEqual(["errors.conflict.barcode"]);
   });
@@ -181,7 +211,11 @@ describe("variants: SKU and barcode", () => {
   it("refuses to label an internally generated code as a GTIN", async () => {
     const { productId } = await makeProduct();
     const error = await errorOf(
-      createVariant(f.catalogManager, productId, variantInput({ barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "INTERNAL" })),
+      createVariant(
+        f.catalogManager,
+        productId,
+        variantInput({ barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "INTERNAL" }),
+      ),
     );
     expect(error.fieldErrors?.barcode).toEqual(["validation.barcodeSourceMismatch"]);
   });
@@ -242,7 +276,9 @@ describe("market prices", () => {
       ],
     });
     const prices = await db.productPrice.findMany({ where: { variantId }, orderBy: { countryCode: "asc" } });
-    expect(prices.map((p) => [p.countryCode, p.currencyCode, p.amount.toFixed(2), p.compareAtAmount?.toFixed(2) ?? null])).toEqual([
+    expect(
+      prices.map((p) => [p.countryCode, p.currencyCode, p.amount.toFixed(2), p.compareAtAmount?.toFixed(2) ?? null]),
+    ).toEqual([
       ["EG", "EGP", "15000.00", null],
       ["SA", "SAR", "1250.50", "1499.99"],
     ]);
@@ -286,15 +322,21 @@ describe("market prices", () => {
     );
     expect(error.fieldErrors?.["prices.0.amount"]).toEqual(["validation.moneyPrecision"]);
     const second = await errorOf(
-      setVariantPrices(f.superAdmin, variantId, { prices: [{ countryCode: "SA", amount: "100", compareAtAmount: "90", isActive: true }] }),
+      setVariantPrices(f.superAdmin, variantId, {
+        prices: [{ countryCode: "SA", amount: "100", compareAtAmount: "90", isActive: true }],
+      }),
     );
     expect(second.fieldErrors?.["prices.0.compareAtAmount"]).toEqual(["validation.compareAtGreater"]);
   });
 
   it("removes a market price when the amount is cleared", async () => {
     const { variantId } = await variantWithId();
-    await setVariantPrices(f.superAdmin, variantId, { prices: [{ countryCode: "SA", amount: "100", compareAtAmount: "", isActive: true }] });
-    await setVariantPrices(f.superAdmin, variantId, { prices: [{ countryCode: "SA", amount: "", compareAtAmount: "", isActive: true }] });
+    await setVariantPrices(f.superAdmin, variantId, {
+      prices: [{ countryCode: "SA", amount: "100", compareAtAmount: "", isActive: true }],
+    });
+    await setVariantPrices(f.superAdmin, variantId, {
+      prices: [{ countryCode: "SA", amount: "", compareAtAmount: "", isActive: true }],
+    });
     expect(await db.productPrice.count({ where: { variantId } })).toBe(0);
     expect(await auditEntries("catalog.price.update")).toHaveLength(2);
   });
@@ -314,7 +356,9 @@ describe("publishing workflow", () => {
     expect(error.messageKey).toBe("errors.invalidState.publishRequirements");
 
     const { id: variantId } = await createVariant(f.catalogManager, productId, variantInput());
-    await setVariantPrices(f.catalogManager, variantId, { prices: [{ countryCode: "SA", amount: "250", compareAtAmount: "", isActive: true }] });
+    await setVariantPrices(f.catalogManager, variantId, {
+      prices: [{ countryCode: "SA", amount: "250", compareAtAmount: "", isActive: true }],
+    });
     await changeProductStatus(f.catalogManager, productId, { status: "PUBLISHED" });
     const product = await db.product.findUniqueOrThrow({ where: { id: productId } });
     expect(product.status).toBe("PUBLISHED");
@@ -324,7 +368,9 @@ describe("publishing workflow", () => {
   it("does not count prices in inactive markets", async () => {
     const { productId } = await makeProduct();
     const { id: variantId } = await createVariant(f.catalogManager, productId, variantInput());
-    await setVariantPrices(f.catalogManager, variantId, { prices: [{ countryCode: "EG", amount: "250", compareAtAmount: "", isActive: true }] });
+    await setVariantPrices(f.catalogManager, variantId, {
+      prices: [{ countryCode: "EG", amount: "250", compareAtAmount: "", isActive: true }],
+    });
     await db.country.update({ where: { code: "EG" }, data: { isActive: false } });
     const error = await errorOf(changeProductStatus(f.catalogManager, productId, { status: "PUBLISHED" }));
     expect(error.messageKey).toBe("errors.invalidState.publishRequirements");
@@ -333,12 +379,16 @@ describe("publishing workflow", () => {
   it("enforces the state machine and the publish permission", async () => {
     const { productId } = await makeProduct();
     const { id: variantId } = await createVariant(f.catalogManager, productId, variantInput());
-    await setVariantPrices(f.catalogManager, variantId, { prices: [{ countryCode: "SA", amount: "250", compareAtAmount: "", isActive: true }] });
+    await setVariantPrices(f.catalogManager, variantId, {
+      prices: [{ countryCode: "SA", amount: "250", compareAtAmount: "", isActive: true }],
+    });
     await changeProductStatus(f.catalogManager, productId, { status: "PUBLISHED" });
     const backToDraft = await errorOf(changeProductStatus(f.catalogManager, productId, { status: "DRAFT" }));
     expect(backToDraft.messageKey).toBe("errors.invalidState.transition");
     // Country-scoped managers cannot change global product visibility.
-    expect(await errorOf(changeProductStatus(f.saManager, productId, { status: "INACTIVE" }))).toBeInstanceOf(ForbiddenError);
+    expect(await errorOf(changeProductStatus(f.saManager, productId, { status: "INACTIVE" }))).toBeInstanceOf(
+      ForbiddenError,
+    );
     await changeProductStatus(f.catalogManager, productId, { status: "DISCONTINUED", reason: "End of line" });
     const [audit] = await auditEntries("catalog.product.status").then((entries) => entries.slice(-1));
     expect(audit?.reason).toBe("End of line");
@@ -352,7 +402,11 @@ describe("publishing workflow", () => {
 describe("product search", () => {
   it("finds products by Arabic text regardless of hamza or diacritics, and by exact SKU/barcode", async () => {
     const { productId } = await makeProduct({ nameAr: "أمير العود" });
-    await createVariant(f.catalogManager, productId, variantInput({ sku: "AMIR-50", barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }));
+    await createVariant(
+      f.catalogManager,
+      productId,
+      variantInput({ sku: "AMIR-50", barcode: VALID_EAN13, barcodeType: "EAN_13", barcodeSource: "MANUFACTURER" }),
+    );
 
     const arabic = await listProducts(f.viewer, { q: "امير" });
     expect(arabic.rows.map((row) => row.id)).toEqual([productId]);
@@ -370,7 +424,12 @@ describe("product search", () => {
   it("filters by status and paginates", async () => {
     const { id: brandId } = await createBrand(f.catalogManager, { nameEn: "Bulk", nameAr: "جملة" });
     for (let index = 0; index < 23; index += 1) {
-      await createProduct(f.catalogManager, { brandId, type: "FRAGRANCE", nameEn: `Scent ${index}`, nameAr: `عطر ${index}` });
+      await createProduct(f.catalogManager, {
+        brandId,
+        type: "FRAGRANCE",
+        nameEn: `Scent ${index}`,
+        nameAr: `عطر ${index}`,
+      });
     }
     const first = await listProducts(f.viewer, { status: "DRAFT", page: "1" });
     const last = await listProducts(f.viewer, { status: "DRAFT", page: "2" });

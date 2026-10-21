@@ -19,13 +19,20 @@ type VariantData = ReturnType<typeof variantSchema.parse>;
  * product_variants(sku) and (barcode) remain the source of truth for races;
  * those violations are mapped to the same field errors.
  */
-async function assertCodesAvailable(client: DbClient, data: VariantData, excludeVariantId: string | null): Promise<void> {
+async function assertCodesAvailable(
+  client: DbClient,
+  data: VariantData,
+  excludeVariantId: string | null,
+): Promise<void> {
   const skuOwner = await client.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
   if (skuOwner && skuOwner.id !== excludeVariantId) {
     throw new ConflictError("errors.conflict.sku", { sku: ["errors.conflict.sku"] });
   }
   if (data.barcode) {
-    const barcodeOwner = await client.productVariant.findUnique({ where: { barcode: data.barcode }, select: { id: true } });
+    const barcodeOwner = await client.productVariant.findUnique({
+      where: { barcode: data.barcode },
+      select: { id: true },
+    });
     if (barcodeOwner && barcodeOwner.id !== excludeVariantId) {
       throw new ConflictError("errors.conflict.barcode", { barcode: ["errors.conflict.barcode"] });
     }
@@ -33,7 +40,8 @@ async function assertCodesAvailable(client: DbClient, data: VariantData, exclude
 }
 
 function mapVariantConflict(error: unknown): never {
-  if (isUniqueViolationOn(error, "sku")) throw new ConflictError("errors.conflict.sku", { sku: ["errors.conflict.sku"] });
+  if (isUniqueViolationOn(error, "sku"))
+    throw new ConflictError("errors.conflict.sku", { sku: ["errors.conflict.sku"] });
   if (isUniqueViolationOn(error, "barcode")) {
     throw new ConflictError("errors.conflict.barcode", { barcode: ["errors.conflict.barcode"] });
   }
@@ -43,7 +51,10 @@ function mapVariantConflict(error: unknown): never {
 export async function createVariant(ctx: ServiceContext, productId: string, input: unknown): Promise<{ id: string }> {
   assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(variantSchema, input);
-  const product = await db.product.findUnique({ where: { id: productId }, select: { id: true, status: true, nameEn: true } });
+  const product = await db.product.findUnique({
+    where: { id: productId },
+    select: { id: true, status: true, nameEn: true },
+  });
   if (!product) throw new NotFoundError("product");
   if (product.status === "DISCONTINUED") throw new InvalidStateError("errors.invalidState.variantProductInactive");
   await assertCodesAvailable(db, data, null);
@@ -74,7 +85,12 @@ export async function updateVariant(ctx: ServiceContext, variantId: string, inpu
   try {
     await db.$transaction(async (tx) => {
       const updated = await tx.productVariant.update({ where: { id: variantId }, data });
-      if (updated.sku !== existing.sku || updated.barcode !== existing.barcode || updated.nameEn !== existing.nameEn || updated.nameAr !== existing.nameAr) {
+      if (
+        updated.sku !== existing.sku ||
+        updated.barcode !== existing.barcode ||
+        updated.nameEn !== existing.nameEn ||
+        updated.nameAr !== existing.nameAr
+      ) {
         await refreshProductSearchText(tx, existing.productId);
       }
       const diff = diffForAudit(existing, updated);
@@ -142,7 +158,11 @@ export async function suggestInternalBarcode(ctx: ServiceContext): Promise<strin
  * scope covering that country — a KSA-scoped manager cannot touch EGP prices.
  * Empty amount = the variant is not sold in that market (price row removed).
  */
-export async function setVariantPrices(ctx: ServiceContext, variantId: string, input: unknown): Promise<{ changed: number }> {
+export async function setVariantPrices(
+  ctx: ServiceContext,
+  variantId: string,
+  input: unknown,
+): Promise<{ changed: number }> {
   assertCan(ctx.actor, "products.view");
   const data = parseInput(variantPricesSchema, input);
   const variant = await db.productVariant.findUnique({
@@ -151,7 +171,9 @@ export async function setVariantPrices(ctx: ServiceContext, variantId: string, i
   });
   if (!variant) throw new NotFoundError("product_variant");
 
-  const countries = await db.country.findMany({ where: { code: { in: data.prices.map((price) => price.countryCode) } } });
+  const countries = await db.country.findMany({
+    where: { code: { in: data.prices.map((price) => price.countryCode) } },
+  });
   const changes: Array<{
     countryCode: string;
     currencyCode: string;
@@ -188,7 +210,11 @@ export async function setVariantPrices(ctx: ServiceContext, variantId: string, i
       if (change.current) {
         await tx.productPrice.update({
           where: { id: change.current.id },
-          data: { amount: change.desired.amount, compareAtAmount: change.desired.compareAtAmount, isActive: change.desired.isActive },
+          data: {
+            amount: change.desired.amount,
+            compareAtAmount: change.desired.compareAtAmount,
+            isActive: change.desired.isActive,
+          },
         });
       } else {
         await tx.productPrice.create({
@@ -216,7 +242,11 @@ export async function setVariantPrices(ctx: ServiceContext, variantId: string, i
         compareAtAmount: change.current?.compareAtAmount ?? null,
         isActive: change.current?.isActive ?? null,
       })),
-      after: changes.map((change) => ({ countryCode: change.countryCode, currencyCode: change.currencyCode, ...change.desired })),
+      after: changes.map((change) => ({
+        countryCode: change.countryCode,
+        currencyCode: change.currencyCode,
+        ...change.desired,
+      })),
     });
   });
   return { changed: changes.length };

@@ -56,17 +56,44 @@ function FormFooter({ submitting, onCancel }: { submitting: boolean; onCancel: (
 
 type CountryValues = z.input<typeof countryUpdateSchema>;
 
-export function EditCountryButton({ code, defaults, currencyCode }: { code: string; defaults: CountryValues; currencyCode: string }) {
+export function EditCountryButton({
+  code,
+  defaults,
+  currencyCode,
+}: {
+  code: string;
+  defaults: CountryValues;
+  currencyCode: string;
+}) {
   const t = useTranslations("organization");
   const common = useTranslations("common");
   return (
-    <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={`${t("editTitle")} · ${code}`} variant="outline" size="sm">
+    <FormDialog
+      trigger={
+        <>
+          <Pencil /> {common("edit")}
+        </>
+      }
+      title={`${t("editTitle")} · ${code}`}
+      variant="outline"
+      size="sm"
+    >
       {(close) => <CountryForm code={code} defaults={defaults} currencyCode={currencyCode} onDone={close} />}
     </FormDialog>
   );
 }
 
-function CountryForm({ code, defaults, currencyCode, onDone }: { code: string; defaults: CountryValues; currencyCode: string; onDone: () => void }) {
+function CountryForm({
+  code,
+  defaults,
+  currencyCode,
+  onDone,
+}: {
+  code: string;
+  defaults: CountryValues;
+  currencyCode: string;
+  onDone: () => void;
+}) {
   const t = useTranslations("organization");
   const common = useTranslations("common");
   const form = useForm<CountryValues>({ resolver: formResolver(countryUpdateSchema), defaultValues: defaults });
@@ -120,7 +147,9 @@ function LegalEntityForm({
   const common = useTranslations("common");
   const locale = useLocale();
   const form = useForm<LegalEntityValues>({
-    resolver: formResolver(id ? (legalEntityUpdateSchema as unknown as typeof legalEntityCreateSchema) : legalEntityCreateSchema),
+    resolver: formResolver(
+      id ? (legalEntityUpdateSchema as unknown as typeof legalEntityCreateSchema) : legalEntityCreateSchema,
+    ),
     defaultValues: defaults,
   });
   const submit = useActionSubmit(form.setError);
@@ -141,7 +170,10 @@ function LegalEntityForm({
           required
           disabled={!!id}
           description={id ? t("countryLockedHint") : undefined}
-          options={countries.map((country) => ({ value: country.code, label: localized(locale, country.nameAr, country.nameEn) }))}
+          options={countries.map((country) => ({
+            value: country.code,
+            label: localized(locale, country.nameAr, country.nameEn),
+          }))}
         />
         <TextInput form={form} name="legalNameEn" label={t("legalNameEn")} required dir="ltr" />
         <TextInput form={form} name="legalNameAr" label={t("legalNameAr")} required dir="rtl" />
@@ -185,8 +217,22 @@ const EMPTY_ENTITY: LegalEntityValues = {
 export function NewLegalEntityButton({ countries }: { countries: CountryOption[] }) {
   const t = useTranslations("organization");
   return (
-    <FormDialog trigger={<><Plus /> {t("newLegalEntity")}</>} title={t("newLegalEntity")} wide>
-      {(close) => <LegalEntityForm defaults={{ ...EMPTY_ENTITY, countryCode: countries[0]?.code ?? "SA" }} countries={countries} onDone={close} />}
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("newLegalEntity")}
+        </>
+      }
+      title={t("newLegalEntity")}
+      wide
+    >
+      {(close) => (
+        <LegalEntityForm
+          defaults={{ ...EMPTY_ENTITY, countryCode: countries[0]?.code ?? "SA" }}
+          countries={countries}
+          onDone={close}
+        />
+      )}
     </FormDialog>
   );
 }
@@ -206,7 +252,17 @@ export function LegalEntityRowActions({
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+        wide
+      >
         {(close) => <LegalEntityForm id={id} defaults={defaults} countries={countries} onDone={close} />}
       </FormDialog>
       <Toggle isActive={isActive} setActive={(active) => setLegalEntityActiveAction(id, active)} />
@@ -214,7 +270,13 @@ export function LegalEntityRowActions({
   );
 }
 
-function Toggle({ isActive, setActive }: { isActive: boolean; setActive: (active: boolean) => ReturnType<typeof setStoreActiveAction> }) {
+function Toggle({
+  isActive,
+  setActive,
+}: {
+  isActive: boolean;
+  setActive: (active: boolean) => ReturnType<typeof setStoreActiveAction>;
+}) {
   const t = useTranslations("organization");
   return (
     <ActivationToggle
@@ -273,7 +335,17 @@ function LocationFields({
   );
 }
 
-function StoreForm({ id, defaults, entities, onDone }: { id?: string; defaults: StoreValues; entities: EntityOption[]; onDone: () => void }) {
+function StoreForm({
+  id,
+  defaults,
+  entities,
+  onDone,
+}: {
+  id?: string;
+  defaults: StoreValues;
+  entities: EntityOption[];
+  onDone: () => void;
+}) {
   const t = useTranslations("organization");
   const form = useForm<StoreValues>({
     resolver: formResolver(id ? (storeUpdateSchema as unknown as typeof storeCreateSchema) : storeCreateSchema),
@@ -281,7 +353,9 @@ function StoreForm({ id, defaults, entities, onDone }: { id?: string; defaults: 
   });
   const submit = useActionSubmit(form.setError);
   const onSubmit = form.handleSubmit(async (values) => {
-    const result = id ? await submit(() => updateStoreAction(id, values), t("saved")) : await submit(() => createStoreAction(values), t("saved"));
+    const result = id
+      ? await submit(() => updateStoreAction(id, values), t("saved"))
+      : await submit(() => createStoreAction(values), t("saved"));
     if (result !== null) onDone();
   });
   return (
@@ -309,10 +383,22 @@ function StoreForm({ id, defaults, entities, onDone }: { id?: string; defaults: 
   );
 }
 
-function WarehouseForm({ id, defaults, entities, onDone }: { id?: string; defaults: WarehouseValues; entities: EntityOption[]; onDone: () => void }) {
+function WarehouseForm({
+  id,
+  defaults,
+  entities,
+  onDone,
+}: {
+  id?: string;
+  defaults: WarehouseValues;
+  entities: EntityOption[];
+  onDone: () => void;
+}) {
   const t = useTranslations("organization");
   const form = useForm<WarehouseValues>({
-    resolver: formResolver(id ? (warehouseUpdateSchema as unknown as typeof warehouseCreateSchema) : warehouseCreateSchema),
+    resolver: formResolver(
+      id ? (warehouseUpdateSchema as unknown as typeof warehouseCreateSchema) : warehouseCreateSchema,
+    ),
     defaultValues: defaults,
   });
   const submit = useActionSubmit(form.setError);
@@ -334,24 +420,63 @@ export function NewStoreButton({ entities }: { entities: EntityOption[] }) {
   const t = useTranslations("organization");
   const first = entities[0];
   return (
-    <FormDialog trigger={<><Plus /> {t("newStore")}</>} title={t("newStore")} wide>
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("newStore")}
+        </>
+      }
+      title={t("newStore")}
+      wide
+    >
       {(close) => (
         <StoreForm
           entities={entities}
           onDone={close}
-          defaults={{ code: "", legalEntityId: first?.id ?? "", type: "RETAIL", nameEn: "", nameAr: "", timezone: first?.timezone ?? "Asia/Riyadh", addressLine1: "", city: "", phone: "", email: "" }}
+          defaults={{
+            code: "",
+            legalEntityId: first?.id ?? "",
+            type: "RETAIL",
+            nameEn: "",
+            nameAr: "",
+            timezone: first?.timezone ?? "Asia/Riyadh",
+            addressLine1: "",
+            city: "",
+            phone: "",
+            email: "",
+          }}
         />
       )}
     </FormDialog>
   );
 }
 
-export function StoreRowActions({ id, isActive, defaults, entities }: { id: string; isActive: boolean; defaults: StoreValues; entities: EntityOption[] }) {
+export function StoreRowActions({
+  id,
+  isActive,
+  defaults,
+  entities,
+}: {
+  id: string;
+  isActive: boolean;
+  defaults: StoreValues;
+  entities: EntityOption[];
+}) {
   const t = useTranslations("organization");
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+        wide
+      >
         {(close) => <StoreForm id={id} defaults={defaults} entities={entities} onDone={close} />}
       </FormDialog>
       <Toggle isActive={isActive} setActive={(active) => setStoreActiveAction(id, active)} />
@@ -363,24 +488,60 @@ export function NewWarehouseButton({ entities }: { entities: EntityOption[] }) {
   const t = useTranslations("organization");
   const first = entities[0];
   return (
-    <FormDialog trigger={<><Plus /> {t("newWarehouse")}</>} title={t("newWarehouse")} wide>
+    <FormDialog
+      trigger={
+        <>
+          <Plus /> {t("newWarehouse")}
+        </>
+      }
+      title={t("newWarehouse")}
+      wide
+    >
       {(close) => (
         <WarehouseForm
           entities={entities}
           onDone={close}
-          defaults={{ code: "", legalEntityId: first?.id ?? "", nameEn: "", nameAr: "", timezone: first?.timezone ?? "Asia/Riyadh", addressLine1: "", city: "" }}
+          defaults={{
+            code: "",
+            legalEntityId: first?.id ?? "",
+            nameEn: "",
+            nameAr: "",
+            timezone: first?.timezone ?? "Asia/Riyadh",
+            addressLine1: "",
+            city: "",
+          }}
         />
       )}
     </FormDialog>
   );
 }
 
-export function WarehouseRowActions({ id, isActive, defaults, entities }: { id: string; isActive: boolean; defaults: WarehouseValues; entities: EntityOption[] }) {
+export function WarehouseRowActions({
+  id,
+  isActive,
+  defaults,
+  entities,
+}: {
+  id: string;
+  isActive: boolean;
+  defaults: WarehouseValues;
+  entities: EntityOption[];
+}) {
   const t = useTranslations("organization");
   const common = useTranslations("common");
   return (
     <div className="flex justify-end gap-2">
-      <FormDialog trigger={<><Pencil /> {common("edit")}</>} title={t("editTitle")} variant="outline" size="sm" wide>
+      <FormDialog
+        trigger={
+          <>
+            <Pencil /> {common("edit")}
+          </>
+        }
+        title={t("editTitle")}
+        variant="outline"
+        size="sm"
+        wide
+      >
         {(close) => <WarehouseForm id={id} defaults={defaults} entities={entities} onDone={close} />}
       </FormDialog>
       <Toggle isActive={isActive} setActive={(active) => setWarehouseActiveAction(id, active)} />

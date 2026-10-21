@@ -1,17 +1,13 @@
 import "server-only";
 import { z } from "zod";
 
-const booleanString = z
-  .enum(["true", "false", "1", "0"])
-  .transform((value) => value === "true" || value === "1");
+const booleanString = z.enum(["true", "false", "1", "0"]).transform((value) => value === "true" || value === "1");
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   APP_URL: z.url().transform((url) => url.replace(/\/+$/, "")),
-  BETTER_AUTH_SECRET: z
-    .string()
-    .min(32, "BETTER_AUTH_SECRET must be at least 32 characters (openssl rand -base64 32)"),
+  BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 characters (openssl rand -base64 32)"),
   AUTH_RATE_LIMIT_ENABLED: booleanString.optional(),
   DEFAULT_MARKET: z
     .string()
@@ -35,9 +31,7 @@ export function env(): Env {
   if (cached) return cached;
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
-      .join("\n");
+    const issues = parsed.error.issues.map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`).join("\n");
     throw new Error(`Invalid environment configuration:\n${issues}\nSee .env.example.`);
   }
   cached = parsed.data;

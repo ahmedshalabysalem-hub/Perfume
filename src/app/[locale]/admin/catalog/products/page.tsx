@@ -45,7 +45,10 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
   const result = await listProducts({ actor, meta: await getRequestMeta() }, rawQuery, locale);
   const [brands, categories] = await Promise.all([
     db.brand.findMany({ orderBy: { nameEn: "asc" }, select: { id: true, nameEn: true, nameAr: true } }),
-    db.category.findMany({ orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }], select: { id: true, nameEn: true, nameAr: true } }),
+    db.category.findMany({
+      orderBy: [{ sortOrder: "asc" }, { nameEn: "asc" }],
+      select: { id: true, nameEn: true, nameAr: true },
+    }),
   ]);
 
   const t = await getTranslations("products");
@@ -74,10 +77,30 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
         searchPlaceholder={t("searchPlaceholder")}
         autoFocusSearch
         filters={[
-          { name: "status", label: t("filters.status"), value: query.status, options: PRODUCT_STATUSES.map((s) => ({ value: s, label: statusLabels(s) })) },
-          { name: "brand", label: t("filters.brand"), value: query.brand, options: brands.map((b) => ({ value: b.id, label: localized(locale, b.nameAr, b.nameEn) })) },
-          { name: "category", label: t("filters.category"), value: query.category, options: categories.map((c) => ({ value: c.id, label: localized(locale, c.nameAr, c.nameEn) })) },
-          { name: "type", label: t("filters.type"), value: query.type, options: PRODUCT_TYPES.map((type) => ({ value: type, label: typeLabels(type) })) },
+          {
+            name: "status",
+            label: t("filters.status"),
+            value: query.status,
+            options: PRODUCT_STATUSES.map((s) => ({ value: s, label: statusLabels(s) })),
+          },
+          {
+            name: "brand",
+            label: t("filters.brand"),
+            value: query.brand,
+            options: brands.map((b) => ({ value: b.id, label: localized(locale, b.nameAr, b.nameEn) })),
+          },
+          {
+            name: "category",
+            label: t("filters.category"),
+            value: query.category,
+            options: categories.map((c) => ({ value: c.id, label: localized(locale, c.nameAr, c.nameEn) })),
+          },
+          {
+            name: "type",
+            label: t("filters.type"),
+            value: query.type,
+            options: PRODUCT_TYPES.map((type) => ({ value: type, label: typeLabels(type) })),
+          },
         ]}
         sort={{
           name: "sort",
@@ -95,14 +118,20 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
         <Alert variant="info" className="mb-4 items-center justify-between" data-testid="exact-match">
           <ScanBarcode />
           <span className="flex-1">{t("exactMatch", { query: query.q ?? "", sku: result.exactMatch.sku })}</span>
-          <Link href={`/admin/catalog/products/${result.exactMatch.productId}`} className={buttonVariants({ size: "sm" })}>
+          <Link
+            href={`/admin/catalog/products/${result.exactMatch.productId}`}
+            className={buttonVariants({ size: "sm" })}
+          >
             {t("openVariant")}
           </Link>
         </Alert>
       ) : null}
 
       {result.rows.length === 0 ? (
-        <EmptyState title={(await getTranslations("common"))("noResults")} hint={(await getTranslations("common"))("noResultsHint")} />
+        <EmptyState
+          title={(await getTranslations("common"))("noResults")}
+          hint={(await getTranslations("common"))("noResultsHint")}
+        />
       ) : (
         <TableCard>
           <Table>
@@ -130,8 +159,12 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
                         )}
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-medium group-hover:underline">{localized(locale, row.nameAr, row.nameEn)}</span>
-                        <span className="block text-xs text-muted-foreground">{localized(locale, row.brandNameAr, row.brandNameEn)}</span>
+                        <span className="block font-medium group-hover:underline">
+                          {localized(locale, row.nameAr, row.nameEn)}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {localized(locale, row.brandNameAr, row.brandNameEn)}
+                        </span>
                       </span>
                     </Link>
                   </TableCell>
@@ -167,7 +200,14 @@ export default async function ProductsPage({ params, searchParams }: PageProps<"
         page={result.page}
         pageCount={result.pageCount}
         total={result.total}
-        params={{ q: query.q, status: query.status, brand: query.brand, category: query.category, type: query.type, sort: query.sort }}
+        params={{
+          q: query.q,
+          status: query.status,
+          brand: query.brand,
+          category: query.category,
+          type: query.type,
+          sort: query.sort,
+        }}
       />
     </div>
   );
