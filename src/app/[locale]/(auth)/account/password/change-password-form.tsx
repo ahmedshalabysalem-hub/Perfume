@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { Field, fieldAria } from "@/components/forms/field";
+import { useHydrated } from "@/components/forms/use-hydrated";
 import { useActionSubmit } from "@/components/forms/use-action-submit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ export function ChangePasswordForm() {
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
   const submit = useActionSubmit(form.setError);
+  const hydrated = useHydrated();
   const errors = form.formState.errors;
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -35,7 +37,8 @@ export function ChangePasswordForm() {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="change-password-form">
+    // method="post" keeps passwords out of the URL even on a native submission.
+    <form method="post" onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="change-password-form">
       <Field id="currentPassword" label={t("currentPassword")} error={errors.currentPassword?.message} required>
         <Input
           type="password"
@@ -69,7 +72,7 @@ export function ChangePasswordForm() {
           {...form.register("confirmPassword")}
         />
       </Field>
-      <Button type="submit" disabled={form.formState.isSubmitting}>
+      <Button type="submit" disabled={!hydrated || form.formState.isSubmitting} data-testid="change-password-submit">
         {form.formState.isSubmitting ? common("saving") : common("save")}
       </Button>
     </form>

@@ -45,11 +45,7 @@ export function FormDialog({
           {trigger}
         </Button>
       </DialogTrigger>
-      <DialogContent
-        closeLabel={t("close")}
-        className={cn(wide && "max-w-2xl")}
-        aria-describedby={description ? undefined : undefined}
-      >
+      <DialogContent closeLabel={t("close")} className={cn(wide && "max-w-2xl")}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description ? (

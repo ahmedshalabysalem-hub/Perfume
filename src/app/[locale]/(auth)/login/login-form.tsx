@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Field, fieldAria } from "@/components/forms/field";
+import { useHydrated } from "@/components/forms/use-hydrated";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/primitives";
@@ -19,6 +20,7 @@ export function LoginForm({ next }: { next: string }) {
   const t = useTranslations("auth");
   const errors = useTranslations("errors");
   const router = useRouter();
+  const hydrated = useHydrated();
   const [formError, setFormError] = useState<string | null>(null);
   const form = useForm<Values>({ resolver: zodResolver(signInSchema), defaultValues: { email: "", password: "" } });
   const fieldErrors = form.formState.errors;
@@ -44,7 +46,9 @@ export function LoginForm({ next }: { next: string }) {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="login-form">
+    // method="post": should the browser ever submit natively, credentials go
+    // in the request body, never into the URL, history or access logs.
+    <form method="post" onSubmit={onSubmit} noValidate className="grid gap-4" data-testid="login-form">
       {formError ? <Alert variant="destructive">{formError}</Alert> : null}
       <Field id="email" label={t("email")} error={fieldErrors.email?.message} required>
         <Input
@@ -65,7 +69,7 @@ export function LoginForm({ next }: { next: string }) {
           {...form.register("password")}
         />
       </Field>
-      <Button type="submit" variant="default" size="lg" disabled={form.formState.isSubmitting}>
+      <Button type="submit" variant="default" size="lg" disabled={!hydrated || form.formState.isSubmitting}>
         {form.formState.isSubmitting ? t("signingIn") : t("signIn")}
       </Button>
     </form>
