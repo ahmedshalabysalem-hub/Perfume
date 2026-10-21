@@ -21,6 +21,8 @@ _Last updated: 2026-10-21 — end of session 1_
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
+- CI run 2 ([39683660413](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39683660413),
+  commit `f23858a`, with actions v5 and the masked secret): all steps green.
 - Local, end of session: `npm run verify` (lint, typecheck, 108 tests, build) passed; build warning
   about whole-project tracing fixed and re-built without warnings.
 - `npm audit --omit=dev`: 0 vulnerabilities; dev-only tooling: 5 high (SEC-001).

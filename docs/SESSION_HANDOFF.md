@@ -25,8 +25,8 @@ BUSINESS_RULES, DATABASE, ERD, RBAC, API_SPEC, TEST_PLAN), `docs/reference/ORIGI
 - `npm ci`, `npm run db:deploy`, `npm run db:sync-rbac`, `npm run db:seed` (second run: nothing created).
 - `npm run verify` — passed (108 tests). `npm run build` again after the storage fix — passed, 0 warnings.
 - `npx prettier --check .` — clean. YAML of CI and compose parsed with js-yaml.
-- CI run 1 on `25b1b15` — all steps green, 16/16 e2e. (A second run is triggered by this session's
-  final push; check it at the start of the next session.)
+- CI run 1 on `25b1b15` — all steps green, 16/16 e2e.
+- CI run 2 on `f23858a` (run 39683660413) — all steps green.
 
 ## Unresolved
 
