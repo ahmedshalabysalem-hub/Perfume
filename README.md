@@ -133,21 +133,22 @@ docs/                 Project documentation (see below)
 
 ## Documentation
 
-| Document                                                             | Contents                                       |
-| -------------------------------------------------------------------- | ---------------------------------------------- |
-| [`CLAUDE.md`](CLAUDE.md)                                             | Working rules for contributors and AI sessions |
-| [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)                   | Current phase, evidence, blockers, next action |
-| [`docs/TASK_BOARD.md`](docs/TASK_BOARD.md)                           | Task register                                  |
-| [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)         | Phases, milestones, exit criteria              |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)                             | Architectural decision log                     |
-| [`docs/PRD.md`](docs/PRD.md)                                         | Product requirements                           |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                       | System design                                  |
-| [`docs/BUSINESS_RULES.md`](docs/BUSINESS_RULES.md)                   | Business rules                                 |
-| [`docs/DATABASE.md`](docs/DATABASE.md), [`docs/ERD.md`](docs/ERD.md) | Data model and diagram                         |
-| [`docs/RBAC.md`](docs/RBAC.md)                                       | Roles, permissions, scopes                     |
-| [`docs/API_SPEC.md`](docs/API_SPEC.md)                               | Server Actions and HTTP endpoints              |
-| [`docs/COUNTRY_COMPLIANCE.md`](docs/COUNTRY_COMPLIANCE.md)           | KSA and Egypt regulatory register              |
-| [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)                             | Test strategy and coverage                     |
+| Document                                                               | Contents                                       |
+| ---------------------------------------------------------------------- | ---------------------------------------------- |
+| [`CLAUDE.md`](CLAUDE.md)                                               | Working rules for contributors and AI sessions |
+| [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)                     | Current phase, evidence, blockers, next action |
+| [`docs/TASK_BOARD.md`](docs/TASK_BOARD.md)                             | Task register                                  |
+| [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)           | Phases, milestones, exit criteria              |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)                               | Architectural decision log                     |
+| [`docs/PRD.md`](docs/PRD.md)                                           | Product requirements                           |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                         | System design                                  |
+| [`docs/BUSINESS_RULES.md`](docs/BUSINESS_RULES.md)                     | Business rules                                 |
+| [`docs/DATABASE.md`](docs/DATABASE.md), [`docs/ERD.md`](docs/ERD.md)   | Data model and diagram                         |
+| [`docs/RBAC.md`](docs/RBAC.md)                                         | Roles, permissions, scopes                     |
+| [`docs/API_SPEC.md`](docs/API_SPEC.md)                                 | Server Actions and HTTP endpoints              |
+| [`docs/COUNTRY_COMPLIANCE.md`](docs/COUNTRY_COMPLIANCE.md)             | KSA and Egypt regulatory register              |
+| [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md)                               | Test strategy and coverage                     |
+| [`docs/reference/ORIGINAL_BRIEF.md`](docs/reference/ORIGINAL_BRIEF.md) | Original project brief (verbatim)              |
 
 ## Security notes
 

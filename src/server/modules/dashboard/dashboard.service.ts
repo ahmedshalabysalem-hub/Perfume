@@ -31,7 +31,7 @@ export type DashboardData = {
 };
 
 /**
- * KPI definitions (see docs/IMPLEMENTATION_PLAN.md §KPIs):
+ * KPI definitions (see docs/BUSINESS_RULES.md §Dashboard KPIs):
  *  - Active SKUs: variants with status ACTIVE (any product status).
  *  - Priced SKUs per market: ACTIVE variants with an ACTIVE price in that country.
  *  - Published without price: PUBLISHED products with no ACTIVE variant priced

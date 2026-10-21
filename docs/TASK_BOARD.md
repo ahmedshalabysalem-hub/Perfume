@@ -2,196 +2,204 @@
 
 Statuses: **Backlog** → **Ready** (spec complete, dependencies met) → **In Progress** → **Review** →
 **Done**; **Blocked** when an external input is missing. Priority: **P0** blocks release · **P1** current
-phase · **P2** next phase · **P3** later. New tasks use `docs/TASK_TEMPLATE.md`. Change a status only
-with evidence (commands run, tests passing). Phases and milestones: `docs/IMPLEMENTATION_PLAN.md`.
+or next phase · **P2** the phase after · **P3** later. New specifications use `docs/TASK_TEMPLATE.md`.
+Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open tasks
 
-| ID        | Title                                                     | Status  | Pri               | Depends on                                   |
-| --------- | --------------------------------------------------------- | ------- | ----------------- | -------------------------------------------- |
-| GOV-001   | Project governance and session handoff                    | Done    | P1                | —                                            |
-| COMP-001  | Country compliance register (KSA, Egypt)                  | Done    | P1                | —                                            |
-| DOC-001   | README and local development setup                        | Ready   | P1                | —                                            |
-| OPS-001   | docker-compose for local PostgreSQL                       | Ready   | P1                | —                                            |
-| CI-001    | GitHub Actions CI pipeline                                | Ready   | P1                | —                                            |
-| DOC-002   | PRD, architecture and business rules documents            | Ready   | P1                | —                                            |
-| DOC-003   | Database, ERD, RBAC, API spec and test plan documents     | Ready   | P1                | —                                            |
-| PUR-001   | Supplier register                                         | Backlog | P2                | Phase 1 closed                               |
-| INV-001   | Inventory ledger and stock levels                         | Backlog | P2                | Phase 1 closed, ADR-018                      |
-| INV-002   | Batches, lots and expiry (FEFO)                           | Backlog | P2                | INV-001                                      |
-| PUR-002   | Purchase orders and goods receipt                         | Backlog | P2                | INV-001, PUR-001                             |
-| INV-003   | Stock transfers and stock counts                          | Backlog | P2                | INV-001                                      |
-| CAT-002   | Refuse GS1 demo-range barcodes outside development/test   | Backlog | P2                | —                                            |
-| OPS-002   | S3-compatible storage adapter                             | Backlog | P2                | —                                            |
-| SEC-002   | Multi-factor authentication for staff                     | Backlog | P2                | —                                            |
-| PRC-001   | Tax rates and price calculation engine                    | Backlog | P2                | CAT-001                                      |
-| CUST-001  | Customer accounts, addresses and consent                  | Backlog | P2                | AUTH-001, COMP-001                           |
-| SHIP-001  | Shipping zones, methods and fees                          | Backlog | P2                | ORG-001                                      |
-| STORE-002 | Seller identification and legal pages per market          | Backlog | P2                | ORG-001, COMP-001                            |
-| ORD-001   | Cart, checkout and order lifecycle with stock reservation | Backlog | P2                | INV-001, PRC-001, CUST-001, SHIP-001         |
-| PAY-001   | Cash on delivery and bank-transfer verification           | Backlog | P2                | ORD-001                                      |
-| PAY-002   | Online card payments via a payment provider               | Blocked | P2                | PAY-001; provider + credentials              |
-| ORD-002   | Fulfilment, returns and refunds                           | Backlog | P2                | ORD-001, PAY-001                             |
-| POS-001   | Point of sale and cashier sessions                        | Backlog | P3                | INV-001, PRC-001, PAY-001                    |
-| FIN-001   | Accounting foundation (chart of accounts, journals)       | Backlog | P3                | ADR-018 confirmed, ORD-001, PUR-002, POS-001 |
-| EINV-001  | ZATCA e-invoicing (FATOORA, integration phase)            | Blocked | P3                | ORD-001, POS-001, PRC-001; ZATCA onboarding  |
-| EINV-002  | Egypt ETA e-invoice and e-receipt                         | Blocked | P3                | ORD-001, POS-001, PRC-001; ETA registration  |
-| MKT-001   | Coupons and promotions                                    | Backlog | P3                | PRC-001, ORD-001                             |
-| LOY-001   | Loyalty points                                            | Backlog | P3                | ORD-001, POS-001                             |
-| RPT-001   | Operational and financial reports                         | Backlog | P3                | FIN-001 (financial part)                     |
-| INT-001   | Integration API and webhooks (n8n)                        | Backlog | P3                | ORD-001                                      |
-| AI-001    | AI-assisted features behind business rules                | Backlog | P3                | INT-001                                      |
-| OPS-003   | Production deployment, backups and observability          | Backlog | P1 before release | OPS-002                                      |
-| SEC-003   | Pre-release security review                               | Backlog | P0 before release | all release scope                            |
-| SEC-001   | Dev-dependency audit follow-up                            | Backlog | P3                | —                                            |
+| ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
+| --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
+| OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
+| INV-001   | Stock ledger and balances                                    | 2     | Ready   | P1               | Phase 1 closed                            |
+| APR-001   | Approval workflow framework                                  | 2     | Backlog | P1               | —                                         |
+| PUR-001   | Suppliers and supplier products                              | 2     | Backlog | P1               | —                                         |
+| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
+| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001                          |
+| INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
+| INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
+| CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
+| PRC-001   | Tax rates and price calculation                              | 3     | Backlog | P2               | CAT-001                                   |
+| SHIP-001  | Shipping zones, methods and fees                             | 3     | Backlog | P2               | ORG-001                                   |
+| ORD-001   | Cart, checkout and order creation with reservation           | 3     | Backlog | P2               | INV-004, CUST-001, PRC-001, SHIP-001      |
+| ORD-002   | Order lifecycle administration and notifications             | 3     | Backlog | P2               | ORD-001                                   |
+| STORE-002 | Seller identification and legal pages per market             | 3     | Backlog | P2               | ORG-001                                   |
+| PAY-001   | Payment adapters (manual/mock), COD, bank transfer, webhooks | 4     | Backlog | P3               | ORD-001                                   |
+| PAY-002   | Online payment provider integration per market               | 4     | Blocked | P3               | PAY-001; provider choice and credentials  |
+| SHIP-002  | Carrier abstraction, shipments and tracking                  | 4     | Backlog | P3               | ORD-002                                   |
+| RET-001   | Returns, dispositions and refunds                            | 4     | Backlog | P3               | PAY-001, SHIP-002                         |
+| POS-001   | POS foundations: lookup, scan, sale, tender, receipt         | 4     | Backlog | P3               | INV-004, PRC-001, PAY-001                 |
+| INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog | P3               | ORD-001, POS-001                          |
+| EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding |
+| EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog | P0 for EG sales  | INVC-001; live use needs ETA registration |
+| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog | P3               | ADR-018 confirmed, INVC-001, PUR-002      |
+| FIN-002   | Expense categories and expenses                              | 5     | Backlog | P3               | FIN-001                                   |
+| FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog | P3               | FIN-001                                   |
+| PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog | P3               | PUR-002, FIN-001                          |
+| CRM-001   | Segmentation and support notes                               | 6     | Backlog | P3               | CUST-001                                  |
+| LOY-001   | Loyalty ledger                                               | 6     | Backlog | P3               | ORD-001, RET-001                          |
+| MKT-001   | Coupons and promotions                                       | 6     | Backlog | P3               | PRC-001, ORD-001                          |
+| REV-001   | Product reviews and moderation                               | 6     | Backlog | P3               | CUST-001                                  |
+| POS-002   | Cashier sessions, drawer reconciliation, sales channels      | 6     | Backlog | P3               | POS-001                                   |
+| SETL-001  | COD and supplier settlement workflows                        | 6     | Backlog | P3               | PAY-001, PUR-003                          |
+| RPT-001   | Operational and financial dashboards and reports             | 7     | Backlog | P3               | FIN-003                                   |
+| AUD-002   | Audit retention settings and export                          | 7     | Backlog | P3               | AUD-001                                   |
+| INT-001   | Integration API, business events, webhooks (n8n)             | 7     | Backlog | P3               | ORD-001                                   |
+| AI-001    | AI-assisted features behind business rules                   | 7     | Backlog | P3               | INT-001                                   |
+| REL-001   | Release verification suite                                   | 8     | Backlog | P0               | release scope                             |
+| SEC-003   | Pre-release security review                                  | 8     | Backlog | P0               | release scope                             |
+| OPS-003   | Production hosting, backups, observability                   | 8     | Backlog | P0               | OPS-002                                   |
+| CAT-002   | Refuse GS1 demo-range barcodes in production                 | —     | Backlog | P2               | —                                         |
+| CAT-003   | Product import/export with validation                        | —     | Backlog | P2               | CAT-001                                   |
+| OPS-002   | S3-compatible storage adapter                                | —     | Backlog | P2               | —                                         |
+| SEC-002   | Multi-factor authentication for staff                        | —     | Backlog | P2               | —                                         |
+| SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog | P3               | upstream fix                              |
 
 ## Done
 
-Commits are where the work landed; tests are the evidence that it still holds.
+Commits are where the work landed; tests are the evidence that it still holds. CI run 1
+([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967), commit
+`25b1b15`) passed lint, format, typecheck, 108 Vitest tests, build and 16 Playwright tests.
 
-| ID        | Title                                                                                                                         | Commits                         | Evidence                                                                                                 |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| BOOT-001  | Next.js 16 + TS strict + Tailwind 4 + ESLint/Prettier bootstrap                                                               | `4767a8f`                       | lint, typecheck, format check clean                                                                      |
-| DB-001    | Schema (27 tables), migration with 29 CHECKs + 3 audit triggers, safe seed                                                    | `4767a8f`                       | integration suites run on `migrate deploy`                                                               |
-| AUTH-001  | Staff sign-in/out, DB sessions, rate limit, password policy, change password                                                  | `6513a01`, `648acd9`, `e6c131f` | `tests/integration/auth.test.ts` (6), e2e `auth.spec.ts` (3)                                             |
-| AUTH-002  | RBAC: 48 permissions, 12 roles, scoped assignments, escalation guard                                                          | `4767a8f`, `648acd9`            | `tests/unit/rbac.test.ts` (16), `access-and-organization.test.ts` (18), e2e `access-control.spec.ts` (2) |
-| AUD-001   | Append-only audit log, same-transaction writes, redaction, viewer                                                             | `4767a8f`, `648acd9`            | audit rows asserted in integration suites; triggers verified by fixture purge                            |
-| I18N-001  | Arabic RTL / English LTR, typed messages, parity test, negotiation                                                            | `6513a01`                       | `tests/unit/messages.test.ts` (3), e2e `storefront.spec.ts`                                              |
-| ORG-001   | Countries, legal entities, stores, warehouses (scoped)                                                                        | `648acd9`                       | `access-and-organization.test.ts`                                                                        |
-| ADM-001   | Admin shell, scoped navigation, dashboard KPIs                                                                                | `6513a01`                       | manual check of KPIs against seed; e2e access spec                                                       |
-| ACC-001   | Staff users and role-assignment management                                                                                    | `648acd9`                       | `access-and-organization.test.ts`                                                                        |
-| CAT-001   | Catalogue: brands, categories, attributes, products, variants, SKU/GTIN, market prices, images, compliance references, labels | `6513a01`, `1cb7076`            | `catalog.test.ts` (28), e2e `catalog.spec.ts` (4)                                                        |
-| STORE-001 | Read-only storefront: market selection, listing, filters, product pages, sitemap                                              | `b1b2848`                       | `storefront.test.ts` (6), e2e `storefront.spec.ts` (7)                                                   |
-| QA-001    | Vitest unit + integration and Playwright e2e infrastructure                                                                   | `4767a8f`, `e6c131f`            | 108 Vitest tests passing; e2e see `docs/PROJECT_STATUS.md`                                               |
+| ID        | Title                                                                                                                         | Commits                         | Evidence                                                                                      |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
+| BOOT-001  | Next.js 16 + TS strict + Tailwind 4 + ESLint/Prettier bootstrap                                                               | `4767a8f`                       | lint, typecheck, format check clean                                                           |
+| DB-001    | Schema (27 tables), migration with 29 CHECKs + 3 audit triggers, safe seed                                                    | `4767a8f`                       | integration suites on `migrate deploy`; seed re-run idempotent                                |
+| AUTH-001  | Staff sign-in/out, DB sessions, rate limit, password policy, change password                                                  | `6513a01`, `648acd9`, `e6c131f` | `auth.test.ts` (6), e2e `auth.spec.ts` (3)                                                    |
+| AUTH-002  | RBAC: 48 permissions, 12 roles, scoped assignments, escalation guard                                                          | `4767a8f`, `648acd9`            | `rbac.test.ts` (16), `access-and-organization.test.ts` (18), e2e `access-control.spec.ts` (2) |
+| AUD-001   | Append-only audit log, same-transaction writes, redaction, viewer                                                             | `4767a8f`, `648acd9`            | audit rows asserted in integration suites; trigger rejections observed in CI                  |
+| I18N-001  | Arabic RTL / English LTR, typed messages, parity test, negotiation                                                            | `6513a01`                       | `messages.test.ts` (3), e2e `storefront.spec.ts`                                              |
+| ORG-001   | Countries, legal entities, stores, warehouses (scoped)                                                                        | `648acd9`                       | `access-and-organization.test.ts`                                                             |
+| ADM-001   | Admin shell, scoped navigation, dashboard KPIs                                                                                | `6513a01`                       | KPIs checked against seed; e2e access spec                                                    |
+| ACC-001   | Staff users and role-assignment management                                                                                    | `648acd9`                       | `access-and-organization.test.ts`                                                             |
+| CAT-001   | Catalogue: brands, categories, attributes, products, variants, SKU/GTIN, market prices, images, compliance references, labels | `6513a01`, `1cb7076`            | `catalog.test.ts` (28), e2e `catalog.spec.ts` (4)                                             |
+| STORE-001 | Read-only storefront: market selection, listing, filters, product pages, sitemap                                              | `b1b2848`                       | `storefront.test.ts` (6), e2e `storefront.spec.ts` (7)                                        |
+| QA-001    | Vitest unit + integration and Playwright e2e infrastructure                                                                   | `4767a8f`, `e6c131f`            | CI run 1                                                                                      |
+| GOV-001   | Governance files and session handoff                                                                                          | `c7ad28a`                       | files reviewed against code and tests                                                         |
+| COMP-001  | Country compliance register (KSA, Egypt)                                                                                      | `ba959d4`                       | 16 requirements, official sources, statuses, open questions                                   |
+| DOC-001   | README and local development setup                                                                                            | `25b1b15`                       | `npm ci`, `db:deploy`, `db:sync-rbac`, `db:seed` (re-run) executed                            |
+| CI-001    | GitHub Actions CI pipeline                                                                                                    | `25b1b15`                       | CI run 1 green                                                                                |
+| DOC-002   | PRD, architecture and business-rules documents                                                                                | session 1 docs commit           | statements checked against services, schema and tests                                         |
+| DOC-003   | Database, ERD, RBAC, API spec and test plan documents                                                                         | session 1 docs commit           | counts verified: 27 tables, 29 CHECKs, 3 triggers, 48 permissions, 12 roles                   |
 
 ---
 
-## Ready task specifications
+## Ready specifications
 
-### GOV-001 — Project governance and session handoff
+### INV-001 — Stock ledger and balances
 
-- **Objective:** A new session can resume work from files alone in a few minutes.
-- **Scope:** `CLAUDE.md`, `docs/PROJECT_STATUS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/TASK_BOARD.md`,
-  `docs/DECISIONS.md`, `docs/SESSION_HANDOFF.md`, `docs/TASK_TEMPLATE.md`, reconciled with the code.
-- **Out of scope:** Technical reference documents (DOC-002, DOC-003).
-- **Acceptance:** Files exist; statuses match the repository and test evidence; the handoff names the
-  next task; `CLAUDE.md` stays short and links to detail instead of copying it.
-- **Verification:** Review against `git log`, test counts and file tree; Prettier check passes.
+- **Status:** Ready · **Priority:** P1 · **Effort:** highest (inventory concurrency, migration)
+- **Depends on:** Phase 1 closed; ADR-018 (proposed costing) — cost is captured, not yet valued.
 
-### COMP-001 — Country compliance register
+**Objective** — Every stock quantity per variant, warehouse and stock status comes from an immutable
+movement ledger, balances change atomically with their movement, and stock can never go negative or
+be oversold, even under concurrency.
 
-- **Objective:** One register of regulatory requirements for KSA and Egypt that later tasks reference.
-- **Scope:** `docs/COUNTRY_COMPLIANCE.md` covering VAT (ZATCA, ETA), e-invoicing (FATOORA phase 2; ETA
-  e-invoice and e-receipt), cosmetics market authorisation (SFDA, EDA), e-commerce and consumer
-  protection, personal data protection (PDPL, Egypt Law 151/2020), GS1 barcodes. Each entry: official
-  source URL, date checked, requirement, implementation status, owning task, unresolved questions.
-- **Out of scope:** Implementing any integration; legal advice.
-- **Acceptance:** Every requirement cites an official source; nothing is marked compliant or integrated;
-  how sources were accessed is disclosed; open questions are listed for a qualified advisor.
-- **Security/data:** No credentials or taxpayer identifiers in the document.
+**Context and relevant files** — Brief Module 2 and §7; `docs/BUSINESS_RULES.md` §Planned rules;
+`docs/DECISIONS.md` ADR-004/005/008/018; warehouses (`prisma/schema/organization.prisma`,
+`src/server/modules/organization`); variants and `track_inventory` (`prisma/schema/catalog.prisma`);
+permissions `inventory.*` (`src/server/rbac/permissions.ts`, currently `available: false`); audit
+trigger pattern in `prisma/migrations/20261021195313_init/migration.sql`; scope filters in
+`src/server/rbac/authorize.ts`.
 
-### DOC-001 — README and local development setup
+**Scope**
 
-- **Objective:** A developer can install, migrate, seed, run and test the app from the README alone.
-- **Scope:** `README.md` (purpose, stack, prerequisites, setup with Docker or a local PostgreSQL,
-  environment variables, commands, demo accounts and how their password is set, tests, project layout,
-  troubleshooting, links to docs). `.env.example` reviewed.
-- **Acceptance:** Every command in the README exists in `package.json` or is a standard tool command and
-  was executed in this repository at least once (or is explicitly marked unverified).
+1. Design note in `docs/DECISIONS.md` (new ADR): balance granularity (variant × warehouse × status;
+   batch dimension reserved for INV-002), quantity type (integer units), unit-cost precision and
+   currency, locking strategy, idempotency keys.
+2. Migration: `stock_movements` (append-only, trigger like `audit_logs`; type, signed quantity,
+   status from/to, unit cost, document reference, reason, actor, correlation id, unique idempotency
+   key) and `stock_balances` (on hand, reserved, CHECKs: on hand ≥ 0, 0 ≤ reserved ≤ on hand).
+3. Service `postStockMovements(tx, ctx, lines)` used by every future module: locks or conditionally
+   updates balance rows, inserts movements, rejects insufficient stock with a domain error, is
+   idempotent by key.
+4. Opening balances: one guarded admin flow (permission `inventory.adjust.approve`, reason required)
+   so stock can be entered before purchasing exists.
+5. Back office: stock overview per warehouse (search by SKU/barcode, filter by status) and movement
+   history per variant; scoped by warehouse/legal entity/country; Arabic and English.
+6. Enable `inventory.view` (and the permission used for opening balances) in the catalogue; sync roles.
 
-### OPS-001 — docker-compose for local PostgreSQL
+**Out of scope** — Batches and expiry (INV-002), receipts from purchase orders (PUR-002), approval
+workflow for adjustments, counts and transfers (INV-003), reservations (INV-004), valuation reports
+(FIN-003), storefront availability display.
 
-- **Objective:** `docker compose up -d` provides the databases `.env.example` expects.
-- **Scope:** `docker-compose.yml` (PostgreSQL 16, credentials matching `.env.example`, init script
-  creating `perfume_test`/`perfume_e2e`, health check, named volume).
-- **Acceptance:** Valid compose file; documented as **unverified** while Docker is unavailable in the
-  build sandbox. Verify on a machine with Docker and record the result here.
+**Acceptance criteria**
 
-### CI-001 — GitHub Actions CI pipeline
+1. A balance never changes without a movement in the same transaction; a failure after the movement
+   insert rolls back both (integration test).
+2. N parallel transactions each removing 1 unit from a balance of K < N succeed exactly K times; the
+   rest fail with an insufficient-stock error; final balance 0; Σ movements = balance (test with
+   separate connections).
+3. Negative stock is refused by the service and by a database CHECK.
+4. Re-posting with the same idempotency key creates no second movement.
+5. UPDATE/DELETE on `stock_movements` is refused by the database.
+6. Users only see and post stock for warehouses within their scope (integration tests per scope type).
+7. Opening balances require the permission and a reason, and are audited.
+8. Stock pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
 
-- **Objective:** Every push and pull request runs the same checks a developer runs locally.
-- **Scope:** `.github/workflows/ci.yml`: Node from `.nvmrc`, `npm ci`, lint, typecheck, format check,
-  unit + integration tests against a PostgreSQL 16 service, production build, Playwright e2e with
-  browsers installed by `npx playwright install --with-deps chromium`; artefacts on failure.
-- **Acceptance:** Workflow is syntactically valid and mirrors local commands; first remote run result is
-  recorded in `docs/PROJECT_STATUS.md` (pass, or failure with cause).
-- **Security:** Test-only secrets generated in the job; no repository secrets required.
+**Security and data integrity** — server-side authorization on every read and write; integer
+quantities; costs as exact decimals; no client-supplied totals; migration reviewed for data loss
+(new tables only); CHECKs and triggers documented in `docs/DATABASE.md`.
 
-### DOC-002 — PRD, architecture and business rules documents
+**Required tests** — unit (pure helpers), integration (rollback, concurrency, idempotency, trigger,
+scopes, permission checks), e2e (opening balance → stock visible → history entry).
 
-- **Scope:** `docs/PRD.md` (vision, markets, personas, functional scope by module and phase, NFRs),
-  `docs/ARCHITECTURE.md` (layers, modules, request flow, auth, authorization, audit, i18n, storefront,
-  storage, security headers, error handling, integration and AI design boundaries),
-  `docs/BUSINESS_RULES.md` (money, prices, tax display, lifecycles, publish rule, SKU/barcode policy,
-  deletion policy, user lifecycle; planned rules clearly marked).
-- **Acceptance:** Statements match the code; planned behaviour is labelled planned; decisions link to
-  `docs/DECISIONS.md` rather than repeating them.
+## Backlog outlines
 
-### DOC-003 — Database, ERD, RBAC, API spec and test plan documents
+Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
-- **Scope:** `docs/DATABASE.md` (conventions, tables by domain, constraints, triggers, indexes,
-  migration and seed workflow), `docs/ERD.md` (Mermaid), `docs/RBAC.md` (roles × permissions, scopes,
-  rules), `docs/API_SPEC.md` (Server Actions and HTTP endpoints implemented; planned integration API),
-  `docs/TEST_PLAN.md` (layers, commands, coverage map, gaps).
-- **Acceptance:** Counts and names match the schema and code (27 tables, 29 CHECK constraints, 3 audit
-  triggers, 48 permissions, 12 roles at the time of writing).
-
-## Backlog task outlines
-
-Turn an outline into a full specification (template) before moving it to Ready.
-
-- **PUR-001 Supplier register** — suppliers with country, tax number, contacts, payment terms,
-  active/inactive; scoped permissions (`suppliers.manage`); audit. Independent CRUD — good first Phase 2
-  task while inventory design is reviewed.
-- **INV-001 Inventory ledger** — append-only `stock_movements` (receipt, adjustment, transfer, sale,
-  return, count correction) with unit cost; `stock_levels` per variant and warehouse (on hand, reserved)
-  updated in the same transaction with row-level locking; no negative stock (CHECK + locked update);
-  adjustments need a reason and approval (request/approve permissions); audit. Acceptance includes a
-  concurrency test proving parallel decrements cannot oversell. Valuation reports are out of scope.
-- **INV-002 Batches and expiry** — lots with expiry per variant (`trackBatches`/`trackExpiry`), FEFO
-  allocation, expiry alerts.
-- **PUR-002 Purchase orders and receipt** — PO lifecycle with approval, partial receipts posting RECEIPT
-  movements with batch and landed cost.
-- **INV-003 Transfers and counts** — two-step transfers (in transit), cycle counts posting corrections.
-- **CAT-002 GS1 demo-range guard** — reject `952…` GTINs when `NODE_ENV=production` unless explicitly
-  allowed; GS1 says demo numbers must never identify real items.
-- **OPS-002 Object storage** — S3-compatible `FileStorage` adapter, signed URLs or proxying, migration
-  of local files.
-- **SEC-002 Staff MFA** — TOTP for back-office users, mandatory for Super Admin and finance roles.
-- **PRC-001 Tax and price engine** — tax rates with effective dates per country (KSA 15 %, Egypt 14 %
-  standard — confirm per COMP-001), inclusive/exclusive display, half-up rounding per line, totals.
-- **CUST-001 Customers** — storefront sign-up/sign-in, e-mail verification, addresses (KSA national
-  address fields, Egyptian governorates), marketing consent, data export/erasure requests.
-- **SHIP-001 Shipping** — zones by country/city, methods, fees, COD availability rules.
-- **STORE-002 Seller identification and legal pages** — per-market footer and pages showing the legal
-  entity's name, address, contact, CR and VAT/tax numbers (KSA-COM-01), terms of sale, returns, privacy
-  notice (PDPL); content managed by staff, bilingual. Required before live sales.
-- **ORD-001 Orders** — cart, checkout, price/tax snapshot, stock reservation with expiry, order numbers
-  per country, status workflow, notifications.
-- **PAY-001 COD and bank transfer** — payment records, manual bank-transfer verification with proof,
-  COD collection reconciliation; never store card data.
-- **PAY-002 Online payments** — provider abstraction, hosted payment page or tokenisation, webhook
-  signature verification, idempotency, refunds. **Blocked:** provider choice and credentials per country.
-- **ORD-002 Fulfilment and returns** — pick/pack/ship, return authorisation (KSA e-commerce 7-day return
-  right per COMP-001), refunds with approval.
-- **POS-001 Point of sale** — cashier sessions, barcode scanning, payments, receipts, offline strategy
-  decision, sessions reconciliation.
-- **FIN-001 Accounting** — chart of accounts per legal entity, journals from sales, purchases,
-  inventory and payments; period close. Requires ADR-018 confirmed.
-- **EINV-001 ZATCA** — FATOORA onboarding (CSID), XML (UBL) generation, cryptographic stamp, QR (TLV),
-  clearance (B2B) and reporting (B2C within 24 h). **Blocked:** taxpayer onboarding and credentials.
-- **EINV-002 ETA** — e-invoice (B2B) and e-receipt (POS/B2C) submission with signing, POS registration,
-  UUID chaining. **Blocked:** ETA registration, POS credentials, signing certificate.
-- **MKT-001, LOY-001, RPT-001** — promotions, loyalty and reporting after orders and accounting exist.
-- **INT-001 Integration API** — versioned REST over existing services, API clients with scoped keys,
-  HMAC-signed webhooks, idempotency keys, rate limits; n8n consumes it.
-- **AI-001 AI features** — drafting translations/descriptions, search assistance and summaries through
-  INT-001 with the same authorization; no AI action bypasses business rules, payment verification or
-  inventory controls; human approval for writes.
-- **OPS-003 Production operations** — hosting, managed PostgreSQL with backups and restore drills,
-  secrets management, structured logs, error tracking, uptime checks on `/api/health`.
-- **SEC-003 Pre-release review** — threat model, dependency audit, authz matrix tests, CSP review,
-  penetration test.
-- **SEC-001 Dev dependencies** — `npm audit` reports 5 high-severity issues in development-only
-  tooling (`braces` via the Next.js ESLint plugin chain); production dependencies report 0. Update when
-  upstream releases a fix; do not force-downgrade.
+- **OPS-001** — Done except the Docker run: run `docker compose up -d`, then the README quick start, and
+  record the result.
+- **APR-001 Approvals** — generic approval requests/actions (requester, approver with permission and
+  scope, decision, reason), separation of duties (requester cannot approve), audit; used by INV-003,
+  PUR-002, RET-001, FIN-001.
+- **PUR-001 Suppliers** — profiles, contacts, country, tax number, payment terms, supplier product
+  codes and last costs; active/inactive; `suppliers.manage`; audit.
+- **INV-002 Batches** — lot number, manufacturing and expiry dates, supplier and receipt reference,
+  inspection status (pending, released, quarantined, rejected); only released stock is sellable; FEFO.
+- **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
+  quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
+- **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
+  corrections; two-step transfers (in transit).
+- **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
+- **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
+  receiving and counting screens.
+- **CUST-001** — customer sign-up/sign-in, verification, addresses (KSA national address, Egyptian
+  governorates), consent records, export and erasure/anonymisation requests (PDPL).
+- **PRC-001** — tax rates with effective dates per country; inclusive/exclusive; half-up per line;
+  totals; snapshots.
+- **SHIP-001** — zones by country/city, methods, fees, COD availability.
+- **ORD-001** — guest/registered carts, live validation, checkout, order numbers per country, snapshots,
+  reservation, failure recovery.
+- **ORD-002** — documented state machine and history, cancellation with authorisation, notes, search,
+  customer tracking, notifications (provider needed for e-mail/SMS).
+- **STORE-002** — per-market seller identification (legal name, address, contact, CR, VAT/tax number),
+  terms, returns and privacy pages (KSA-COM-01, PDPL); required before live sales.
+- **PAY-001** — provider interface, clearly labelled manual/mock adapter (never active in production),
+  COD and bank-transfer verification with evidence, webhook signature checks and event deduplication.
+- **PAY-002** — real provider per market after documenting the provider, official API, credentials,
+  market support and sandbox procedure. **Blocked** on selection and credentials.
+- **SHIP-002, RET-001** — carrier interface, shipments, tracking, failed deliveries; returns with
+  inspection and disposition (sellable, damaged, quarantined, supplier return) and refunds.
+- **POS-001, POS-002** — online-only POS: lookup, scanning, tenders, receipts, discounts by permission,
+  returns; cashier sessions with drawer reconciliation.
+- **INVC-001** — invoice and credit-note documents, sequences per entity, tax breakdowns, seller/buyer
+  details, storage.
+- **EINV-001 / EINV-002** — adapters producing authority formats with configuration checklists;
+  sandbox validation when credentials exist; live submission blocked on onboarding (KSA-EINV-02,
+  EG-EINV-01/02). Nothing is reported as submitted without an authority acknowledgement.
+- **FIN-001…003, PUR-003** — chart of accounts, periods, balanced immutable journals, expenses,
+  inventory cost and COGS per ADR-018, supplier invoices/returns/payments/balances.
+- **CRM-001, LOY-001, MKT-001, REV-001, SETL-001** — segmentation and notes, loyalty ledger, coupons
+  and promotions with stacking rules, reviews with moderation, COD and supplier settlements.
+- **RPT-001, AUD-002, INT-001, AI-001** — reports with written KPI definitions, audit retention and
+  export, versioned integration API with scoped API clients, idempotency and signed webhooks, AI
+  features that propose rather than bypass.
+- **REL-001, SEC-003, OPS-003** — release verification suite, security review, hosting with backups and
+  restore drills, monitoring on `/api/health`.
+- **CAT-002** — refuse `952…` GTINs in production (GS1: demo numbers must never identify real items).
+- **CAT-003** — CSV/XLSX import with row-level validation and dry run; export of the catalogue.
+- **OPS-002** — S3-compatible `FileStorage` adapter.
+- **SEC-002** — TOTP MFA for staff; mandatory for Super Admin and finance roles.
+- **SEC-001** — `npm audit`: 5 high in development-only tooling (`braces` via the Next.js ESLint plugin
+  chain); production dependencies 0. Update when upstream fixes; do not force-downgrade.

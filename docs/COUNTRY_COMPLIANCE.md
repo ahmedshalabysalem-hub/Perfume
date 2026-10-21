@@ -28,14 +28,14 @@
 | KSA-EINV-01 | SA      | E-invoicing phase 1 (generation)        | Not implemented           | EINV-001           |
 | KSA-EINV-02 | SA      | E-invoicing phase 2 (integration)       | Not implemented — blocked | EINV-001           |
 | KSA-COS-01  | SA      | SFDA cosmetics notification (listing)   | Data captured only        | CAT-001 / decision |
-| KSA-COM-01  | SA      | E-commerce disclosures, consumer rights | Not implemented           | STORE-002, ORD-002 |
+| KSA-COM-01  | SA      | E-commerce disclosures, consumer rights | Not implemented           | STORE-002, RET-001 |
 | KSA-PDP-01  | SA      | Personal Data Protection Law (PDPL)     | Partially implemented     | CUST-001, OPS-003  |
 | EG-TAX-01   | EG      | VAT standard rate 14 %, table tax       | Not implemented           | PRC-001            |
 | EG-ID-01    | EG      | Tax registration number (RIN) format    | Implemented (untested)    | ORG-001            |
 | EG-EINV-01  | EG      | ETA e-invoice (B2B)                     | Not implemented — blocked | EINV-002           |
 | EG-EINV-02  | EG      | ETA e-receipt (B2C / POS)               | Not implemented — blocked | EINV-002, POS-001  |
 | EG-COS-01   | EG      | EDA cosmetics notification              | Data captured only        | CAT-001 / decision |
-| EG-COM-01   | EG      | Consumer protection (Law 181/2018)      | Not implemented           | STORE-002, ORD-002 |
+| EG-COM-01   | EG      | Consumer protection (Law 181/2018)      | Not implemented           | STORE-002, RET-001 |
 | EG-PDP-01   | EG      | Personal Data Protection (Law 151/2020) | Not implemented           | CUST-001, OPS-003  |
 | GS1-01      | Both    | GTIN and barcode integrity              | Implemented (tested)      | CAT-001, CAT-002   |
 
@@ -144,7 +144,7 @@
   permission; no misleading advertising. The CR number appears on correspondence and printed material.
 - **Implementation:** Not implemented. Legal-entity fields (CR, VAT number, address) exist; the
   storefront footer shows only a demonstration notice. STORE-002 (seller identification and legal pages)
-  and ORD-002 (returns) own this.
+  and RET-001 (returns) own this.
 - **Open questions:** Current text of the E-Commerce Law implementing regulations; any e-commerce
   authentication/registration required for the store.
 
@@ -249,7 +249,7 @@
 - **Requirement:** An invoice is mandatory and shows the advertised price; for defective products the
   supplier replaces, repairs or refunds at no extra cost; the Agency issues binding decisions in
   disputes.
-- **Implementation:** Not implemented (STORE-002, ORD-002).
+- **Implementation:** Not implemented (STORE-002, RET-001).
 - **Open questions:** The withdrawal period for distance (online) sales under the law and its executive
   regulations was not confirmed from official sources.
 
