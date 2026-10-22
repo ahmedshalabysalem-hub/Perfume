@@ -172,8 +172,9 @@ for data loss and lock duration; CHECKs and triggers documented in `docs/DATABAS
 quantities other than the posted lines; dates validated as calendar dates in the warehouse's time zone.
 
 **Required tests** — unit (FEFO ordering, schemas), integration (batch required/refused, inspection
-transitions, sellability by state and expiry, concurrency per batch, migration carry-over, scopes,
-audit), e2e (create batch on opening balance → quarantine → release → visible as sellable).
+transitions, sellability by state and expiry, concurrency per batch including two postings with
+lines in opposite order (lock order with the batch in the key), migration carry-over on populated
+INV-001 data run twice, scopes, audit), e2e (create batch on opening balance → quarantine → release → visible as sellable).
 
 **Review** — separate review pass against the criteria; read the migration SQL and the posting changes
 line by line.
