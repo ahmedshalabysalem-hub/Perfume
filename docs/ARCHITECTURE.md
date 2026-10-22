@@ -136,7 +136,10 @@ are typed and checked for key parity by a unit test. Layout uses logical CSS pro
 `start-`), Radix `DirectionProvider`, and `rtl:` variants for icons. Fonts are self-hosted (IBM Plex Sans
 Arabic, Amiri, Inter, Cormorant Garamond). Numbers and money use Latin digits; Arabic-Indic digits are
 accepted on input. Bilingual business data is stored in `*_en` / `*_ar` columns and chosen with
-`localized()`, falling back to the other language.
+`localized()`, falling back to the other language. The language choice is kept in a one-year
+`NEXT_LOCALE` cookie and, for signed-in users, in `users.preferred_locale` (ADR-009 amendment). Stored
+codes shown to users (audit actions, permission modules) get labels under `auditActions.*` and
+`permissionModules.*`; a unit test fails when code writes an audit action without a label.
 
 ## 9. Storefront
 

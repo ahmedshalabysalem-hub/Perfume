@@ -49,7 +49,13 @@ export default async function BatchPage({ params }: PageProps<"/[locale]/admin/i
       })
     : [];
   const dateOnly = (value: string | null) =>
-    value ? format.dateTime(new Date(`${value}T00:00:00Z`), { dateStyle: "medium", timeZone: "UTC" }) : "—";
+    value
+      ? format.dateTime(new Date(`${value}T00:00:00Z`), {
+          dateStyle: "medium",
+          timeZone: "UTC",
+          numberingSystem: "latn",
+        })
+      : "—";
   const yesNo = (value: boolean | null) => (value === null ? "—" : value ? t("check.PASS") : t("check.FAIL"));
 
   const facts: Array<[string, React.ReactNode]> = [

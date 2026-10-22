@@ -54,7 +54,9 @@ export async function ProductCard({
           </p>
         ) : null}
         <p className="mt-1 text-sm">
-          <span className="font-semibold tabular-nums">{product.variantCount > 1 ? t("from", { price }) : price}</span>
+          <span className="font-semibold tabular-nums" data-testid="price">
+            {product.variantCount > 1 ? t("from", { price }) : price}
+          </span>
           {product.compareAtPrice ? (
             <span className="ms-2 text-muted-foreground tabular-nums line-through">
               {formatMoney(product.compareAtPrice, market.currencyCode, locale, market.minorUnits)}

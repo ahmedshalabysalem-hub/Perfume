@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { AuditAction } from "@/components/admin/audit-action";
 import { NoAccess, PageHeader } from "@/components/admin/page-parts";
 import { Alert, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/primitives";
 import { Link } from "@/i18n/navigation";
@@ -59,7 +60,7 @@ export default async function DashboardPage({ params }: PageProps<"/[locale]/adm
   ];
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6">
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6">
       <PageHeader title={t("welcome", { name: actor.name })} description={t("subtitle")} />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
@@ -134,11 +135,11 @@ export default async function DashboardPage({ params }: PageProps<"/[locale]/adm
                 {data.recentActivity.map((entry) => (
                   <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
                     <span className="flex min-w-0 items-center gap-2">
-                      <code className="ltr-value rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
+                      <AuditAction action={entry.action} className="shrink-0" />
                       <span className="truncate text-muted-foreground">{entry.summary}</span>
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {entry.actorName ?? "—"} · {format.relativeTime(entry.occurredAt)}
+                      {entry.actorName ?? "—"} · {format.relativeTime(entry.occurredAt, { numberingSystem: "latn" })}
                     </span>
                   </li>
                 ))}

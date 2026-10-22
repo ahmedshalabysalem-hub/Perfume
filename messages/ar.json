@@ -75,7 +75,9 @@
     "goToStore": "عرض المتجر",
     "goToAdmin": "لوحة الإدارة",
     "home": "الرئيسية",
-    "activateConfirm": "هل تريد إتاحة هذا السجل مرة أخرى؟"
+    "activateConfirm": "هل تريد إتاحة هذا السجل مرة أخرى؟",
+    "notifications": "الإشعارات",
+    "unsavedChangesSwitch": "لديك تغييرات غير محفوظة في هذه الصفحة. هل تريد تغيير اللغة وتجاهلها؟"
   },
   "errors": {
     "unauthenticated": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
@@ -982,5 +984,170 @@
     "verified": "تم تسجيل التحقق.",
     "statusChanged": "تم تسجيل القرار.",
     "detailsSaved": "تم حفظ بيانات التشغيلة."
+  },
+  "auditActions": {
+    "approvals": {
+      "request": {
+        "approve": "اعتماد طلب موافقة",
+        "cancel": "إلغاء طلب موافقة",
+        "reject": "رفض طلب موافقة",
+        "submit": "تقديم طلب موافقة"
+      }
+    },
+    "auth": {
+      "login": "تسجيل دخول",
+      "logout": "تسجيل خروج",
+      "password": {
+        "change": "تغيير كلمة المرور الشخصية"
+      }
+    },
+    "catalog": {
+      "brand": {
+        "activate": "تفعيل علامة تجارية",
+        "create": "إنشاء علامة تجارية",
+        "deactivate": "إيقاف علامة تجارية",
+        "update": "تعديل علامة تجارية"
+      },
+      "category": {
+        "activate": "تفعيل تصنيف",
+        "create": "إنشاء تصنيف",
+        "deactivate": "إيقاف تصنيف",
+        "update": "تعديل تصنيف"
+      },
+      "compliance": {
+        "create": "إضافة سجل امتثال",
+        "remove": "حذف سجل امتثال",
+        "update": "تعديل سجل امتثال"
+      },
+      "concentration": {
+        "activate": "تفعيل تركيز",
+        "create": "إنشاء تركيز",
+        "deactivate": "إيقاف تركيز",
+        "update": "تعديل تركيز"
+      },
+      "family": {
+        "activate": "تفعيل عائلة عطرية",
+        "create": "إنشاء عائلة عطرية",
+        "deactivate": "إيقاف عائلة عطرية",
+        "update": "تعديل عائلة عطرية"
+      },
+      "image": {
+        "primary": "تعيين الصورة الرئيسية",
+        "remove": "حذف صورة",
+        "upload": "رفع صورة"
+      },
+      "note": {
+        "activate": "تفعيل نوتة عطرية",
+        "create": "إنشاء نوتة عطرية",
+        "deactivate": "إيقاف نوتة عطرية",
+        "update": "تعديل نوتة عطرية"
+      },
+      "price": {
+        "update": "تعديل سعر"
+      },
+      "product": {
+        "content": {
+          "update": "تعديل محتوى منتج"
+        },
+        "create": "إنشاء منتج",
+        "notes": {
+          "update": "تعديل نوتات منتج"
+        },
+        "status": "تغيير حالة منتج",
+        "update": "تعديل منتج"
+      },
+      "variant": {
+        "create": "إنشاء صنف",
+        "status": "تغيير حالة صنف",
+        "update": "تعديل صنف"
+      }
+    },
+    "inventory": {
+      "batch": {
+        "create": "إنشاء تشغيلة",
+        "status": "تغيير حالة تشغيلة",
+        "update": "تعديل تشغيلة",
+        "verify": "تحقق من تشغيلة"
+      },
+      "opening_balance": {
+        "post": "ترحيل رصيد افتتاحي"
+      }
+    },
+    "organization": {
+      "country": {
+        "update": "تعديل دولة"
+      },
+      "legal_entity": {
+        "activate": "تفعيل كيان قانوني",
+        "create": "إنشاء كيان قانوني",
+        "deactivate": "إيقاف كيان قانوني",
+        "update": "تعديل كيان قانوني"
+      },
+      "store": {
+        "activate": "تفعيل متجر",
+        "create": "إنشاء متجر",
+        "deactivate": "إيقاف متجر",
+        "update": "تعديل متجر"
+      },
+      "warehouse": {
+        "activate": "تفعيل مستودع",
+        "create": "إنشاء مستودع",
+        "deactivate": "إيقاف مستودع",
+        "update": "تعديل مستودع"
+      }
+    },
+    "procurement": {
+      "supplier": {
+        "activate": "تفعيل مورد",
+        "create": "إنشاء مورد",
+        "deactivate": "إيقاف مورد",
+        "update": "تعديل مورد"
+      },
+      "supplier_contact": {
+        "create": "إضافة جهة اتصال لمورد",
+        "remove": "حذف جهة اتصال لمورد",
+        "update": "تعديل جهة اتصال لمورد"
+      },
+      "supplier_product": {
+        "activate": "تفعيل منتج مورد",
+        "create": "إضافة منتج مورد",
+        "deactivate": "إيقاف منتج مورد",
+        "update": "تعديل منتج مورد"
+      }
+    },
+    "system": {
+      "seed": "تهيئة بيانات النظام"
+    },
+    "users": {
+      "create": "إنشاء مستخدم",
+      "password": {
+        "reset": "إعادة تعيين كلمة المرور"
+      },
+      "preferences": {
+        "update": "تعديل التفضيلات"
+      },
+      "role": {
+        "assign": "إسناد دور",
+        "revoke": "سحب دور"
+      },
+      "status": "تغيير حالة مستخدم",
+      "update": "تعديل مستخدم"
+    }
+  },
+  "permissionModules": {
+    "access": "الوصول والمستخدمون",
+    "accounting": "المحاسبة",
+    "admin": "لوحة الإدارة",
+    "catalog": "الكتالوج",
+    "crm": "العملاء",
+    "integrations": "التكاملات",
+    "inventory": "المخزون",
+    "marketing": "التسويق",
+    "organization": "المؤسسة",
+    "payments": "المدفوعات",
+    "pos": "نقاط البيع",
+    "procurement": "المشتريات",
+    "reports": "التقارير",
+    "sales": "المبيعات والطلبات"
   }
 }

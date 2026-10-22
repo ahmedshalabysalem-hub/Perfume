@@ -64,8 +64,14 @@ export function ExpiryText({
   const date = new Date(`${expiresOn}T00:00:00Z`);
   const text =
     precision === "MONTH"
-      ? format.dateTime(date, { year: "numeric", month: "long", timeZone: "UTC" })
-      : format.dateTime(date, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+      ? format.dateTime(date, { year: "numeric", month: "long", timeZone: "UTC", numberingSystem: "latn" })
+      : format.dateTime(date, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          timeZone: "UTC",
+          numberingSystem: "latn",
+        });
   return (
     <span className={state === "EXPIRED" ? "font-medium text-destructive" : undefined} data-expiry-state={state}>
       {text}

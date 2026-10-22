@@ -75,7 +75,9 @@
     "goToStore": "View storefront",
     "goToAdmin": "Back office",
     "home": "Home",
-    "activateConfirm": "Make this record available again?"
+    "activateConfirm": "Make this record available again?",
+    "notifications": "Notifications",
+    "unsavedChangesSwitch": "You have unsaved changes on this page. Switch language and discard them?"
   },
   "errors": {
     "unauthenticated": "Your session has expired. Please sign in again.",
@@ -982,5 +984,170 @@
     "verified": "Verification recorded.",
     "statusChanged": "Decision recorded.",
     "detailsSaved": "Batch details saved."
+  },
+  "auditActions": {
+    "approvals": {
+      "request": {
+        "approve": "Approval request approved",
+        "cancel": "Approval request cancelled",
+        "reject": "Approval request rejected",
+        "submit": "Approval request submitted"
+      }
+    },
+    "auth": {
+      "login": "Signed in",
+      "logout": "Signed out",
+      "password": {
+        "change": "Own password changed"
+      }
+    },
+    "catalog": {
+      "brand": {
+        "activate": "Brand activated",
+        "create": "Brand created",
+        "deactivate": "Brand deactivated",
+        "update": "Brand updated"
+      },
+      "category": {
+        "activate": "Category activated",
+        "create": "Category created",
+        "deactivate": "Category deactivated",
+        "update": "Category updated"
+      },
+      "compliance": {
+        "create": "Compliance record added",
+        "remove": "Compliance record removed",
+        "update": "Compliance record updated"
+      },
+      "concentration": {
+        "activate": "Concentration activated",
+        "create": "Concentration created",
+        "deactivate": "Concentration deactivated",
+        "update": "Concentration updated"
+      },
+      "family": {
+        "activate": "Fragrance family activated",
+        "create": "Fragrance family created",
+        "deactivate": "Fragrance family deactivated",
+        "update": "Fragrance family updated"
+      },
+      "image": {
+        "primary": "Primary image set",
+        "remove": "Image removed",
+        "upload": "Image uploaded"
+      },
+      "note": {
+        "activate": "Fragrance note activated",
+        "create": "Fragrance note created",
+        "deactivate": "Fragrance note deactivated",
+        "update": "Fragrance note updated"
+      },
+      "price": {
+        "update": "Price updated"
+      },
+      "product": {
+        "content": {
+          "update": "Product content updated"
+        },
+        "create": "Product created",
+        "notes": {
+          "update": "Product notes updated"
+        },
+        "status": "Product status changed",
+        "update": "Product updated"
+      },
+      "variant": {
+        "create": "Variant created",
+        "status": "Variant status changed",
+        "update": "Variant updated"
+      }
+    },
+    "inventory": {
+      "batch": {
+        "create": "Batch created",
+        "status": "Batch status changed",
+        "update": "Batch updated",
+        "verify": "Batch verified"
+      },
+      "opening_balance": {
+        "post": "Opening balance posted"
+      }
+    },
+    "organization": {
+      "country": {
+        "update": "Country updated"
+      },
+      "legal_entity": {
+        "activate": "Legal entity activated",
+        "create": "Legal entity created",
+        "deactivate": "Legal entity deactivated",
+        "update": "Legal entity updated"
+      },
+      "store": {
+        "activate": "Store activated",
+        "create": "Store created",
+        "deactivate": "Store deactivated",
+        "update": "Store updated"
+      },
+      "warehouse": {
+        "activate": "Warehouse activated",
+        "create": "Warehouse created",
+        "deactivate": "Warehouse deactivated",
+        "update": "Warehouse updated"
+      }
+    },
+    "procurement": {
+      "supplier": {
+        "activate": "Supplier activated",
+        "create": "Supplier created",
+        "deactivate": "Supplier deactivated",
+        "update": "Supplier updated"
+      },
+      "supplier_contact": {
+        "create": "Supplier contact added",
+        "remove": "Supplier contact removed",
+        "update": "Supplier contact updated"
+      },
+      "supplier_product": {
+        "activate": "Supplier product activated",
+        "create": "Supplier product added",
+        "deactivate": "Supplier product deactivated",
+        "update": "Supplier product updated"
+      }
+    },
+    "system": {
+      "seed": "System data seeded"
+    },
+    "users": {
+      "create": "Staff user created",
+      "password": {
+        "reset": "Password reset"
+      },
+      "preferences": {
+        "update": "Preferences updated"
+      },
+      "role": {
+        "assign": "Role assigned",
+        "revoke": "Role revoked"
+      },
+      "status": "User status changed",
+      "update": "Staff user updated"
+    }
+  },
+  "permissionModules": {
+    "access": "Access and users",
+    "accounting": "Accounting",
+    "admin": "Back office",
+    "catalog": "Catalogue",
+    "crm": "Customers",
+    "integrations": "Integrations",
+    "inventory": "Inventory",
+    "marketing": "Marketing",
+    "organization": "Organisation",
+    "payments": "Payments",
+    "pos": "Point of sale",
+    "procurement": "Procurement",
+    "reports": "Reports",
+    "sales": "Sales and orders"
   }
 }
