@@ -2,7 +2,9 @@
 
 Business choices the code must not invent. Each request names the task it blocks, the question and the
 answer. Ahmed (or whoever he names) decides; the answer is recorded here with its date and carried into
-the task's ADR in `docs/DECISIONS.md`. Replace an entry's text when it is decided rather than appending
+the task's ADR in `docs/DECISIONS.md`. Accounting requests are approved by either the business's
+accountant or the owner (Ahmed); who approves is chosen when each request comes up, and the record
+names who approved (Ahmed, 2026-10-22). Replace an entry's text when it is decided rather than appending
 history; git keeps the history.
 
 | ID     | Topic                                          | Blocks           | Status             |
@@ -15,7 +17,7 @@ history; git keeps the history.
 | DR-006 | Near-expiry filter and alerts                  | INV-002, INV-005 | Decided 2026-10-22 |
 | DR-007 | Lot number format, month-only expiry, defaults | INV-002          | Decided 2026-10-22 |
 | DR-008 | Stock that exists before batches               | INV-002          | Decided 2026-10-22 |
-| DR-009 | Inventory costing method (ADR-018)             | FIN-001, FIN-003 | Accepted (dev)     |
+| DR-009 | Inventory costing method (ADR-018)             | FIN-001, FIN-003 | Decided 2026-10-22 |
 | DR-010 | Sale eligibility of LEGACY and unknown expiry  | INV-002          | Decided 2026-10-22 |
 
 ## INV-002 — batches, inspection and expiry (ADR-023)
@@ -154,14 +156,14 @@ Ahmed clarified the same day):
 - **Blocks:** FIN-001 (journals), FIN-003 (valuation), RPT-001 profitability. **Does not block** INV-002
   or INV-003, provided movements keep recording unit cost per batch line so option B stays possible.
   Question 3 also feeds the PUR-002 cost-precision ADR; PUR-002 must not assume an allocation rule.
-- **Answer:** none from the accountant yet. On 2026-10-22 Ahmed delegated the choice to the project
-  ("decide what is most suitable and continue"); ADR-018, ADR-024 and the development defaults below are
-  therefore **accepted for development**. This is not accountant approval: the accountant responsible
-  for each legal entity must confirm them in writing before production use (go-live gate, REL-001).
+- **Decided:** 2026-10-22 by Ahmed (owner): he delegated the choice to the project ("decide what is most
+  suitable and continue"), then accepted the result ("consider it approved"). ADR-018, ADR-024 and the
+  defaults below are **Accepted**, approved by the owner (no accountant review needed under the approval
+  rule above).
 
-#### Development defaults (in force for building and testing, 2026-10-22)
+#### Defaults (in force, 2026-10-22)
 
-Where the simulated answers below leave a point open, development uses:
+Where the simulated answers below leave a point open, the system uses:
 
 1. **Allocation:** weight-priced freight by `weight_grams`; a receipt line without a weight blocks
    weight allocation until the weight is entered, or the user allocates that cost by value and the
@@ -173,7 +175,8 @@ Where the simulated answers below leave a point open, development uses:
    and what was already sold (cost of goods sold adjustment).
 4. **Foreign currency:** inventory cost uses the exchange rate of the receipt date, with source and date
    stored; payment differences go to exchange gain/loss, never to inventory.
-5. **Write-offs:** every write-off needs ADR-019 approval (no thresholds until the business sets them);
+5. **Write-offs:** every write-off needs ADR-019 approval by the accountant or the owner, chosen per
+   request (no thresholds until the business sets them);
    one inventory write-off loss account per entity; no automatic near-expiry write-down, a review
    report instead.
 6. **Returns and samples:** customer returns re-enter at the original outbound unit cost after
@@ -181,8 +184,8 @@ Where the simulated answers below leave a point open, development uses:
    never enter a sellable item's average.
 7. **Rounding:** half-up to minor units per journal line; differences to a dedicated rounding account
    (ADR-024).
-8. **Opening balances:** entered by holders of `inventory.adjust.approve` (as today) for development;
-   before go-live the accountant signs off the opening valuation.
+8. **Opening balances:** entered by holders of `inventory.adjust.approve` (as today); the opening
+   valuation is signed off by the accountant or the owner, chosen when it is submitted.
 9. **Between entities:** stock never moves between the Saudi and Egyptian entities in the system;
    transfers stay inside one entity. Inter-company sales are a later, separate design.
 
