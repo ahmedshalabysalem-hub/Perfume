@@ -214,5 +214,5 @@ certified statutory accounting, any authority integration without credentials an
 
 Final brand name (placeholder "Perfume House"); legal-entity details per country; payment providers per
 country; shipping carriers; return and refund policy per market; loyalty earning and expiry rules;
-accountant review of the inventory costing method (ADR-018 Accepted by the owner; review recommended); whether regulatory registration must exist before
+whether regulatory registration must exist before
 publishing (COUNTRY_COMPLIANCE open questions); hosting region (PDPL).

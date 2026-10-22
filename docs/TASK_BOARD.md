@@ -325,8 +325,7 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   export, versioned integration API with scoped API clients, idempotency and signed webhooks, AI
   features that propose rather than bypass.
 - **REL-001, SEC-003, OPS-003** — release verification suite, security review, hosting with backups and
-  restore drills, monitoring on `/api/health`. Recommended before go-live: an accountant review
-  of ADR-018, ADR-024 and the DR-009 defaults for each legal entity (not a gate; Ahmed, 2026-10-22).
+  restore drills, monitoring on `/api/health`.
 - **CAT-002** — refuse `952…` GTINs in production (GS1: demo numbers must never identify real items).
 - **CAT-003** — CSV/XLSX import with row-level validation and dry run; export of the catalogue.
 - **OPS-002** — S3-compatible `FileStorage` adapter.

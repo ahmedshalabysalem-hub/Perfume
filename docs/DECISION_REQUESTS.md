@@ -2,7 +2,9 @@
 
 Business choices the code must not invent. Each request names the task it blocks, the question and the
 answer. Ahmed (or whoever he names) decides; the answer is recorded here with its date and carried into
-the task's ADR in `docs/DECISIONS.md`. Replace an entry's text when it is decided rather than appending
+the task's ADR in `docs/DECISIONS.md`. Accounting requests are approved by either the business's
+accountant or the owner (Ahmed); who approves is chosen when each request comes up, and the record
+names who approved (Ahmed, 2026-10-22). Replace an entry's text when it is decided rather than appending
 history; git keeps the history.
 
 | ID     | Topic                              | Blocks           | Status             |
@@ -48,8 +50,8 @@ DR-001…DR-008 (INV-002) are in PR #5; when merging, keep that header and table
   Question 3 also feeds the PUR-002 cost-precision ADR; PUR-002 must not assume an allocation rule.
 - **Decided:** 2026-10-22 by Ahmed (owner): he delegated the choice to the project ("decide what is most
   suitable and continue"), then accepted the result ("consider it approved"). ADR-018, ADR-024 and the
-  defaults below are **Accepted**. No accountant has reviewed them; a review by the accountant of each
-  legal entity is recommended before statutory accounts or tax returns rely on the system.
+  defaults below are **Accepted**, approved by the owner (no accountant review needed under the approval
+  rule above).
 
 #### Defaults (in force, 2026-10-22)
 
@@ -65,7 +67,8 @@ Where the simulated answers below leave a point open, the system uses:
    and what was already sold (cost of goods sold adjustment).
 4. **Foreign currency:** inventory cost uses the exchange rate of the receipt date, with source and date
    stored; payment differences go to exchange gain/loss, never to inventory.
-5. **Write-offs:** every write-off needs ADR-019 approval (no thresholds until the business sets them);
+5. **Write-offs:** every write-off needs ADR-019 approval by the accountant or the owner, chosen per
+   request (no thresholds until the business sets them);
    one inventory write-off loss account per entity; no automatic near-expiry write-down, a review
    report instead.
 6. **Returns and samples:** customer returns re-enter at the original outbound unit cost after
@@ -73,8 +76,8 @@ Where the simulated answers below leave a point open, the system uses:
    never enter a sellable item's average.
 7. **Rounding:** half-up to minor units per journal line; differences to a dedicated rounding account
    (ADR-024).
-8. **Opening balances:** entered by holders of `inventory.adjust.approve` (as today); an
-   accountant sign-off of the opening valuation is recommended.
+8. **Opening balances:** entered by holders of `inventory.adjust.approve` (as today); the opening
+   valuation is signed off by the accountant or the owner, chosen when it is submitted.
 9. **Between entities:** stock never moves between the Saudi and Egyptian entities in the system;
    transfers stay inside one entity. Inter-company sales are a later, separate design.
 

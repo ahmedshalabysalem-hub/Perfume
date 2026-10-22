@@ -112,7 +112,7 @@ tracking; returns with disposition and refunds; POS sales through the ledger.
 ## Phase 5 — Invoicing and financial foundation
 
 Tasks: INVC-001, EINV-001, EINV-002, FIN-001, FIN-002, FIN-003, PUR-003. ADR-018 and ADR-024 are Accepted
-(Ahmed, 2026-10-22); an accountant review is recommended. Exit: invoices and credit notes with tax breakdowns and sequences; fiscal-document adapters
+(approved by the owner, 2026-10-22); accounting approvals come from the accountant or the owner. Exit: invoices and credit notes with tax breakdowns and sequences; fiscal-document adapters
 with configuration checklists, validated in authority sandboxes when credentials exist; balanced,
 immutable journals; expenses; inventory cost and COGS; basic financial reports.
 

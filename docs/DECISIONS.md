@@ -183,11 +183,10 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   shipment insurance, clearance, other qualifying direct costs), excluding recoverable VAT. Expired,
   damaged and lost stock is expensed at the current average through an approved, audited adjustment.
   Precision and rounding: ADR-024. Defaults for the remaining points: DR-009.
-- **Basis:** Accepted by Ahmed (owner) on 2026-10-22 without an accountant's review ("consider it approved"), after
-  delegating the choices to the project; the content follows the answers recorded under DR-009. No
-  accountant has confirmed it. **Recommended, not blocking:** have the accountant of each legal entity
-  review this ADR, ADR-024 and the DR-009 defaults before statutory financial statements or tax returns
-  are prepared from the system; a change after that review supersedes this entry.
+- **Basis:** approved by Ahmed as owner on 2026-10-22 ("consider it approved"), after delegating the
+  choices to the project; the content follows the answers recorded under DR-009. Accounting decisions
+  are approved by the accountant or the owner, chosen per request (`docs/DECISION_REQUESTS.md`); this
+  one was approved by the owner. A later change by either supersedes this entry.
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
 - **Consequences:** FIN-001, FIN-003 and RPT-001 build on this rule; their other dependencies are
   unchanged. INV-001 already records unit cost per movement, so a different method after a later
@@ -320,8 +319,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   - Any difference between a document's or entry's total and the sum of its rounded lines is posted to
     a dedicated rounding account, never spread over items, so every journal entry balances.
   - Exchange differences are not part of inventory cost (DR-009 defaults).
-- **Basis:** as ADR-018 — accepted by Ahmed (owner) on 2026-10-22 without an accountant's review; the
-  same accountant review is recommended.
+- **Basis:** as ADR-018 — approved by Ahmed as owner on 2026-10-22.
 - **Alternatives:** keep 2 decimals for purchase prices (unit costs of bulk or landed-cost allocations
   lose precision); banker's rounding (less familiar to the business; can be adopted after review).
 - **Consequences:** PUR-002 and FIN-001 tests cover rounding on purchases, returns, landed costs, the
