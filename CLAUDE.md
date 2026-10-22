@@ -92,7 +92,7 @@ Report with the completion format in `docs/TASK_TEMPLATE.md`.
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | State, next action     | `docs/PROJECT_STATUS.md`, `docs/SESSION_HANDOFF.md`                                                                                                  |
 | Tasks and roadmap      | `docs/TASK_BOARD.md`, `docs/IMPLEMENTATION_PLAN.md`                                                                                                  |
-| Decisions              | `docs/DECISIONS.md`                                                                                                                                  |
+| Decisions              | `docs/DECISIONS.md`, open requests `docs/DECISION_REQUESTS.md`                                                                                       |
 | Requirements and rules | `docs/PRD.md`, `docs/BUSINESS_RULES.md`, `docs/COUNTRY_COMPLIANCE.md`; original brief (verbatim, read by section) `docs/reference/ORIGINAL_BRIEF.md` |
 | Design                 | `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/ERD.md`, `docs/RBAC.md`, `docs/API_SPEC.md`                                                        |
 | Testing                | `docs/TEST_PLAN.md`                                                                                                                                  |
