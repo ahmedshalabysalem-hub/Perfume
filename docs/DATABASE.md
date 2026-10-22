@@ -18,7 +18,7 @@ ADR-008 in `docs/DECISIONS.md`.
 - Integrity rules that protect money, identity or history are enforced in the database too (CHECKs,
   unique indexes, composite foreign keys, triggers) — not only in services.
 
-## Tables (27)
+## Tables (29)
 
 ### Organisation (`prisma/schema/organization.prisma`)
 
@@ -63,11 +63,13 @@ ADR-008 in `docs/DECISIONS.md`.
 
 ### Governance (`prisma/schema/governance.prisma`)
 
-| Table        | Purpose and key rules                                                                                                                                                                          |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `audit_logs` | Append-only: time, actor type and user, action, entity type and id, summary, redacted `before`/`after` JSON, reason, correlation id, IP, user agent; indexed by entity, actor, time and action |
+| Table               | Purpose and key rules                                                                                                                                                                                                                                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `audit_logs`        | Append-only: time, actor type and user, action, entity type and id, summary, redacted `before`/`after` JSON, reason, correlation id, IP, user agent; indexed by entity, actor, time and action                                                                                                                                                                     |
+| `approval_requests` | Maker-checker requests (ADR-019): subject type and id, status PENDING/APPROVED/REJECTED/CANCELLED, resolved scope (country, legal entity, store, warehouse), summary, redacted snapshot, request reason, requester, decider, decision time and reason; at most one PENDING per subject (partial unique index); never deleted; a decided request is final (trigger) |
+| `approval_actions`  | Append-only history per request: SUBMITTED/APPROVED/REJECTED/CANCELLED, actor type and user, reason, time                                                                                                                                                                                                                                                          |
 
-## CHECK constraints (29)
+## CHECK constraints (39)
 
 | Area               | Constraints                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,6 +82,7 @@ ADR-008 in `docs/DECISIONS.md`.
 | Variants           | `product_variants_sku_format`, `product_variants_barcode_consistency` (barcode, type, source all set or all null), `product_variants_gtin_format` (digit counts per GTIN type), `product_variants_internal_barcode_code128`, `product_variants_size_positive`, `product_variants_weight_positive`, `product_variants_batches_require_inventory`, `product_variants_expiry_requires_batches` |
 | Prices             | `product_prices_amount_positive`, `product_prices_compare_at_gt_amount`                                                                                                                                                                                                                                                                                                                     |
 | Images, compliance | `product_images_size_positive`, `product_compliance_date_order`                                                                                                                                                                                                                                                                                                                             |
+| Approvals          | `approval_requests_subject_type_format`, `_subject_id_not_blank`, `_summary_not_blank`, `_request_reason_not_blank`, `_decision_consistency` (decided exactly when not PENDING), `_decision_has_decider`, `_requester_cannot_decide` (separation of duties), `_cancelled_by_requester`, `_rejection_has_reason`; `approval_actions_actor_consistency`                                       |
 
 GTIN check digits are verified in the service (`src/lib/barcode.ts`); the database checks shape.
 
@@ -88,7 +91,8 @@ GTIN check digits are verified in the service (`src/lib/barcode.ts`); the databa
 SKU, barcode, slugs (brands, categories, notes, products), codes (families, concentrations, legal
 entities, stores, warehouses), `product_prices (variant_id, country_code)`, image storage key, user
 e-mail, session token, account `(provider_id, account_id)`, role key, rate-limit key,
-`user_roles (user_id, role_id, scope_key)`, and the composite candidate keys `countries (code,
+`user_roles (user_id, role_id, scope_key)`, `approval_requests_one_pending_per_subject` (partial, `status =
+'PENDING'`), and the composite candidate keys `countries (code,
 currency_code)` and `legal_entities (id, country_code)` used by composite foreign keys.
 
 Search: `products_search_text_trgm_idx` — GIN index with `gin_trgm_ops` on `products.search_text`
@@ -102,9 +106,15 @@ transaction that sets `app.audit_retention_purge = 'on'` (retention jobs and tes
 should additionally run the application with a database role lacking UPDATE/DELETE/TRUNCATE on
 `audit_logs` (OPS-003).
 
+`approval_requests_guard_update` / `_guard_delete` call `approval_requests_guard()`: DELETE is always
+rejected; UPDATE is rejected once a request has left PENDING, and the requested content (subject, scope,
+summary, snapshot, reason, requester, time) can never change. `approval_actions_no_update`,
+`_no_delete` and `_no_truncate` call `approval_actions_block_mutation()`: the history is append-only;
+TRUNCATE is allowed only with `app.audit_retention_purge = 'on'` (test fixtures).
+
 ## Migrations
 
-- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`.
+- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`, `20261022071950_approvals`.
 - Change workflow: edit `prisma/schema/*.prisma` → `npm run db:migrate -- --name <change>` → review the
   generated SQL (data loss, defaults on large tables, locking) → add hand-written CHECKs/triggers to the
   same migration → `npx prisma generate` → tests.
@@ -137,6 +147,6 @@ Following the brief's table groups as modules are built (not before): inventory 
 payments and shipping (providers, payments, transactions, refunds, reconciliations, shipments, COD
 settlements, POS terminals/sessions/transactions), finance (chart of accounts, periods, journals,
 expenses, tax profiles and rates, exchange rates, fiscal documents), marketing and governance
-(promotions, coupons, loyalty, reviews, notifications, approval requests/actions, webhook events,
+(promotions, coupons, loyalty, reviews, notifications, webhook events,
 integration jobs/logs). The brief's `user_store_access` is replaced by scoped `user_roles` (ADR-007);
 `warehouse_locations` will be added only if bin-level stock is needed (INV-001 design note).
