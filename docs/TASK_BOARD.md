@@ -10,10 +10,10 @@ specification under Ready specifications).
 
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
-| OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
 | INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Ready   | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
 | INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002                 |
+| QA-003    | Close the High gaps of the 2026-10-22 test plan              | 2     | Backlog | P1               | INV-002 for G3 and G4                     |
 | INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
 | INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
 | CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
@@ -83,6 +83,8 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | INV-001   | Stock ledger, balances and opening balances (ADR-020)                                                                         | `e61e099`, merge `f064554`      | `inventory.test.ts` (27), `inventory-schemas.test.ts` (3), e2e `inventory.spec.ts` (2); CI green on PR #1 |
 | PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-021)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)               |
 | GOV-002   | Workflow audit: roles, effort and review policy, INV-002 spec, status reconciled (ADR-022)                                    | session 3 docs commit           | lint, typecheck, 181 Vitest tests, Prettier, reference check                                              |
+| OPS-001   | docker-compose for local PostgreSQL, validated by a real run and a CI job                                                     | session 4 commit                | compose healthy, 4 migrations, no drift; 193 Vitest, 20 e2e on it                                         |
+| QA-002    | Test-plan gap assessment; direct tests of ledger, approval and audit-log CHECKs                                               | session 4 commit                | `database-constraints.test.ts` (12); full Vitest suite                                                    |
 
 ---
 
@@ -280,8 +282,8 @@ contact → link variant with cost → visible in list and history).
 
 Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
-- **OPS-001** — Done except the Docker run: run `docker compose up -d`, then the README quick start, and
-  record the result.
+- **QA-003** — the High items G1–G4 of the test assessment in `docs/TEST_PLAN.md` (sign-in rate limiting,
+  image upload, opposite-order concurrent postings, migrations on populated data). Each needs a spec.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
   **Open decision, record an ADR before building:** supplier last costs are NUMERIC(14,2) (ADR-021) but
