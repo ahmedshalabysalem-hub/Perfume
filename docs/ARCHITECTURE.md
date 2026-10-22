@@ -179,7 +179,7 @@ restrictive CSP. S3-compatible storage is OPS-002 **(planned)**.
 
 - **Inventory (INV-001…003):** append-only stock movements plus per-warehouse stock levels updated in
   the same transaction with row locks; no negative stock (CHECK + guarded updates); unit cost recorded
-  on every movement (ADR-018, accepted for development: moving weighted average cost).
+  on every movement (ADR-018: moving weighted average cost).
 - **Orders and payments (ORD-001, PAY-001/002):** price and tax snapshots on orders; stock reservations
   with expiry; payment provider adapters behind an interface; webhooks verified by signature and
   processed idempotently; no card data stored (hosted payment pages or tokenisation).

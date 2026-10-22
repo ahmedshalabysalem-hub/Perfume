@@ -36,9 +36,8 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Blockers and open decisions
 
-- **Business:** ADR-018 costing and ADR-024 precision are accepted for development (Ahmed's delegation,
-  2026-10-22, not accountant approval); written accountant confirmation is a go-live gate (DR-009,
-  REL-001); payment and
+- **Business:** ADR-018 costing and ADR-024 precision are Accepted by Ahmed (2026-10-22) without an
+  accountant review; that review is recommended, not required (DR-009); payment and
   shipping provider selection (PAY-002 Blocked); ZATCA/ETA onboarding; legal-entity data; final brand
   name; foreign purchasing currencies (suppliers priced only in SAR/EGP today).
 - **Compliance:** summaries in `docs/COUNTRY_COMPLIANCE.md` still need advisor review. Nothing is
