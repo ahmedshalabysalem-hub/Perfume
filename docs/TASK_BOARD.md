@@ -94,13 +94,16 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
-- **Design (2026-10-22):** ADR-023 **Accepted** (approved by Ahmed); business answers DR-001…DR-008
-  in `docs/DECISION_REQUESTS.md`.
+- **Design (2026-10-22):** ADR-023 **Proposed** (amended for DR-010, awaiting Ahmed's approval);
+  business answers DR-001…DR-008 and DR-010 in `docs/DECISION_REQUESTS.md`. Implementation paused.
   Additions to this spec: batches owned per company (legal entity) with database isolation; inspection
   states `PENDING_INSPECTION`/`RELEASED`/`QUARANTINED`/`REJECTED`; permission `inventory.batches.manage`
   (Super Admin, Inventory Manager only); expiry precision `DAY`/`MONTH`; LEGACY batches with unknown
-  lot and dates for pre-existing stock; movement types `INSPECTION` and `BATCH_ASSIGNMENT`; one shared
-  availability function; tracking flags frozen once stock exists.
+  lot and dates for pre-existing stock, sellable only after a recorded verification (DR-010); explicit
+  expiry basis `RECORDED`/`UNKNOWN`/`NOT_TRACKED`; movement types `INSPECTION` and `BATCH_ASSIGNMENT`; one shared
+  eligibility function; tracking flags frozen once stock exists. INV-004, ORD-001 and POS-001 must
+  sell or allocate only through that function and test the DR-010 cases (verified legacy with unknown
+  expiry, unverified legacy, known expired, future expiry).
 
 **Objective** — Stock of batch-tracked variants is held and moved per batch (lot) with its expiry date and
 inspection state; only released, unexpired stock can be sellable; batches are listed in expiry order

@@ -38,8 +38,8 @@ migration changed.
 
 ## Next exact task
 
-**INV-002 implementation** — design approved 2026-10-22 (ADR-023 Accepted; LEGACY batches start
-RELEASED). First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
+**INV-002 implementation, after Ahmed approves the DR-010 amendment of ADR-023** (LEGACY batches
+start PENDING_INSPECTION and become sellable only through a recorded verification). First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
 for drift on the `NULLS NOT DISTINCT` unique index; fallback two partial unique indexes), then the
 ledger changes. Commit order and test plan: INV-002 board entry and ADR-023. Then INV-003 or PUR-002.
 

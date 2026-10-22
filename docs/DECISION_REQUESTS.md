@@ -15,10 +15,12 @@ history; git keeps the history.
 | DR-006 | Near-expiry filter and alerts                  | INV-002, INV-005 | Decided 2026-10-22 |
 | DR-007 | Lot number format, month-only expiry, defaults | INV-002          | Decided 2026-10-22 |
 | DR-008 | Stock that exists before batches               | INV-002          | Decided 2026-10-22 |
+| DR-010 | Sale eligibility of LEGACY and unknown expiry  | INV-002          | Decided 2026-10-22 |
 
 ## INV-002 — batches, inspection and expiry (ADR-023)
 
-All eight answered by Ahmed in the project thread on 2026-10-22.
+Answered by Ahmed in the project thread on 2026-10-22. DR-010 refines DR-008. (DR-009 is used by
+OPS-001/QA-002.)
 
 ### DR-001 — Who owns a batch record
 
@@ -88,3 +90,22 @@ notifications or configurable alert rules in INV-002 (INV-005).
 - Balances are reconciled before and after the migration.
 - If the migration cannot preserve traceability and accounting integrity, implementation stops and a new
   decision is requested.
+
+### DR-010 — Sale eligibility of LEGACY stock and unknown expiry
+
+**Decided** (refines DR-008; the earlier proposal that LEGACY batches start released is withdrawn):
+
+- Legacy stock is not written off or marked expired because batch or expiry data was never recorded,
+  but it may be sold only after an authorised employee verifies that it is physically fit for sale
+  and checks the manufacturer labelling; the verification status, employee, time and notes are
+  recorded. If fitness cannot be established, the stock stays unavailable for sale.
+- Stock known to be expired is never sold or allocated, LEGACY included, from the day after its
+  effective expiry date in the warehouse's local date, and no sales channel (POS, storefront, order
+  APIs, allocation) may bypass this.
+- A missing expiry date means neither expired nor safe: expiry is tracked as unknown until verified,
+  and an empty database field is not taken to mean unknown (the state is explicit).
+- No lot numbers or dates are fabricated; migration preserves transactions and quantities without
+  duplication; verifications and status changes are audited; authorised staff can complete legacy
+  details later.
+- Verification and release are restricted to authorised roles, need a recorded reason and are enforced
+  by the backend.

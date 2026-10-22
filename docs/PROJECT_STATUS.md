@@ -4,7 +4,8 @@ _Last updated: 2026-10-22 — session 4 (INV-002 design review)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done except OPS-001 (Docker run).
 **Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
-Design approved 2026-10-22 (ADR-023 Accepted, DR-001…DR-008 decided); implementation next.
+Design approved 2026-10-22, then amended for DR-010 (LEGACY stock sellable only after verification);
+ADR-023 Proposed again until Ahmed approves the amendment. No implementation yet.
 
 ## Completed
 

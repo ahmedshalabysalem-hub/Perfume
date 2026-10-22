@@ -28,7 +28,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 | ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 | ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
-| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Accepted | 2026-10-22 |
+| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Proposed | 2026-10-22 |
 
 ---
 
@@ -291,11 +291,10 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** `docs/TASK_TEMPLATE.md` carries a Review field; the completion report uses the board
   statuses.
 
-### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock
+### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock (Proposed)
 
-- **Status:** Accepted 2026-10-22 by Ahmed, with business answers DR-001…DR-008
-  (`docs/DECISION_REQUESTS.md`) and LEGACY batches starting RELEASED so existing sellable stock stays
-  sellable.
+- **Status:** Proposed. Ahmed approved the design on 2026-10-22, then decided DR-010 (LEGACY stock is
+  sellable only after a recorded verification); the amended design waits for his approval.
 - **Context:** ADR-020 reserved the batch dimension. The brief requires lot traceability, expiry dates
   where applicable, inspection/quarantine status, and that quarantined or rejected batches are never
   sold. On the base (`812fffc`) nothing reads `track_batches`/`track_expiry`, and `updateVariant` can
@@ -313,14 +312,19 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     cross-variant use; an insert trigger requires a batch exactly when the variant tracks batches and
     the batch's company to equal the warehouse's. Quantities still move only through
     `postStockMovements`.
-  - **Sellable gate.** A line adding to SELLABLE needs a RELEASED batch not expired on the warehouse's
-    local date. Expiry is a query rule (DR-003): one shared availability function excludes
-    non-released and expired batches, and every later sale, reservation or fulfilment path uses it.
-    Expired stock is never moved or deleted automatically.
+  - **Eligibility.** Three stored facts per batch — inspection status, expiry basis (`RECORDED` with a
+    date, `UNKNOWN`, `NOT_TRACKED`; never inferred from an empty field) and verification (who, when,
+    physical and label checks, notes) — and one derived answer from a single function: eligible only
+    when RELEASED, not expired on the warehouse's local date, and, if expiry is `UNKNOWN`, verified.
+    The ledger refuses lines into SELLABLE for ineligible batches; every sales, reservation and
+    fulfilment path must use the same function. Expired stock is never moved or deleted automatically
+    (DR-003, DR-010).
   - **Inspection.** Transitions: PENDING_INSPECTION → RELEASED, QUARANTINED or REJECTED; RELEASED →
-    QUARANTINED; QUARANTINED → RELEASED or REJECTED; REJECTED is final. Stock of a batch that is not
-    RELEASED is held in the QUARANTINED stock status; release and quarantine post `INSPECTION` movements
-    between SELLABLE and QUARANTINED in the same transaction. Every change needs a reason (DR-004) and
+    QUARANTINED; QUARANTINED → RELEASED or REJECTED; REJECTED is final. Quarantine moves SELLABLE
+    (unreserved) to QUARANTINED and release moves it back, except stock already quarantined before
+    INV-002, through `INSPECTION` movements in the same transaction. Releasing a LEGACY batch, or any
+    batch with unknown expiry, is the verification: both checks, an expiry outcome (a label date, or
+    unknown) and a reason; the database refuses a released LEGACY batch without them. Every change needs a reason (DR-004) and
     records actor, time and previous and new status. Lock order everywhere: batch row, then balances.
     Idempotency key `batch:<id>:inspection:v<version>`; a stale version is a conflict.
   - **Permission.** New `inventory.batches.manage` (sensitive) for Super Admin and Inventory Manager
@@ -329,11 +333,11 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     `inventory.adjust.approve`; without it the batch starts PENDING_INSPECTION and the stock must be
     entered as QUARANTINED.
   - **Flags.** Tracking flags cannot change once a variant has ledger history (service and trigger).
-  - **Carry-over.** Stock of batch-tracked variants entered before INV-002 moves to one LEGACY batch per
-    company and variant (lot unknown, dates unknown, marked incomplete) through compensating
-    `BATCH_ASSIGNMENT` movements; no movement row is changed. The carry-over runs as one atomic
-    statement, is idempotent by posting key, and reconciles quantities per variant, warehouse and
-    status before and after, aborting on any difference (DR-008).
+  - **Carry-over.** Stock of batch-tracked variants entered before INV-002 is re-keyed onto one LEGACY
+    batch per company and variant (lot and dates unknown, marked incomplete, PENDING_INSPECTION, not
+    verified) through compensating `BATCH_ASSIGNMENT` movements in the same stock status; no movement row
+    is changed. It runs as one atomic statement, is idempotent, and reconciles quantities per variant,
+    warehouse and status before and after, aborting on any difference (DR-008, DR-010).
   - **FEFO order:** earliest expiry first, no expiry last, then received date, then lot number.
 - **Alternatives:** a separate per-batch balance table beside `stock_balances` (a second ledger to keep
   consistent); inspection only as stock status without a batch state (loses the lot-level decision that
