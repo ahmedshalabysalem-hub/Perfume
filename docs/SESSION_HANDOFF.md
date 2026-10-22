@@ -1,43 +1,42 @@
 # Session handoff
 
-_Session 1 — 2026-10-21 — branch `ccr-04855f0a-4t6vb0`_
+_Session 2 — 2026-10-22 — branch `claude/project-thread-wabex7`_
 
 ## Completed in this session
 
-- Phase 1 implementation (foundation, catalogue, storefront, e2e) — commits `4767a8f` … `e6c131f`.
-- GOV-001 governance system; COMP-001 compliance register; DOC-001 README; CI-001 pipeline (green);
-  OPS-001 docker-compose (unverified); DOC-002 PRD/architecture/business rules; DOC-003 database, ERD,
-  RBAC, API spec, test plan; original brief preserved verbatim.
-- Plan and board re-aligned to the brief's phases 0–8; INV-001 fully specified (Ready).
-- Fixes: CI secret masked and actions moved to v5; build no longer traces the whole project
-  (`src/server/storage/storage.ts`); dashboard KPI comment points to `docs/BUSINESS_RULES.md`.
+- **APR-001 Approval workflow framework** (commit `436a974`, ADR-019): migration
+  `20261022071950_approvals` (`approval_requests`, `approval_actions`, 10 CHECKs, partial unique index,
+  5 triggers), service `src/server/modules/approvals/approvals.service.ts` (submit, decide, cancel, list,
+  get, `canDecideApproval`), policies `src/server/modules/approvals/subjects.ts`
+  (`inventory.adjustment`, `purchases.order`, `payments.refund`), Zod schemas
+  `src/lib/schemas/approvals.ts`, error messages (ar/en).
 
-## Files created or changed (this governance/documentation round)
+## Files created or changed
 
-`CLAUDE.md`, `README.md`, `docker-compose.yml`, `docker/postgres/init/01-test-databases.sql`,
-`.github/workflows/ci.yml`, `.prettierignore`, `docs/*.md` (PROJECT_STATUS, SESSION_HANDOFF,
-TASK_BOARD, TASK_TEMPLATE, IMPLEMENTATION_PLAN, DECISIONS, COUNTRY_COMPLIANCE, PRD, ARCHITECTURE,
-BUSINESS_RULES, DATABASE, ERD, RBAC, API_SPEC, TEST_PLAN), `docs/reference/ORIGINAL_BRIEF.md`,
-`src/server/storage/storage.ts`, `src/server/modules/dashboard/dashboard.service.ts`.
+`prisma/schema/{governance,identity,organization}.prisma`, `prisma/migrations/20261022071950_approvals/`,
+`src/server/modules/approvals/*`, `src/lib/schemas/approvals.ts`, `messages/{ar,en}.json`,
+`tests/unit/approvals.test.ts`, `tests/integration/approvals.test.ts`, `tests/integration/fixtures.ts`
+(approval tables in the reset, WAREHOUSE-scoped staff helper exported), docs (DECISIONS, DATABASE, RBAC,
+BUSINESS_RULES, TEST_PLAN, PRD, TASK_BOARD, PROJECT_STATUS, this file).
 
 ## Checks actually run
 
-- `npm ci`, `npm run db:deploy`, `npm run db:sync-rbac`, `npm run db:seed` (second run: nothing created).
-- `npm run verify` — passed (108 tests). `npm run build` again after the storage fix — passed, 0 warnings.
-- `npx prettier --check .` — clean. YAML of CI and compose parsed with js-yaml.
-- CI run 1 on `25b1b15` — all steps green, 16/16 e2e.
-- CI run 2 on `f23858a` (run 39683660413) — all steps green.
+- `npm run verify` — passed: lint, typecheck, 131 tests (12 files), build.
+- `npx prettier --check .` — clean. `prisma migrate diff --from-config-datasource --to-schema` — no drift.
+- E2E not run (no routes or UI changed). Branch not pushed yet: waiting for Ahmed's go-ahead, so CI has
+  not run on it.
 
 ## Unresolved
 
-- OPS-001 needs `docker compose up -d` on a machine with Docker.
-- Test gaps listed in `docs/TEST_PLAN.md`.
-- ADR-018 needs an accountant's confirmation before FIN-001 (not before INV-001).
+- Push the branch and open a PR once Ahmed approves; confirm CI green.
+- No approval screens: INV-003 / PUR-002 add their own approve/reject actions over the service; a
+  generic inbox would need per-subject effect handlers (ADR-019 consequences).
+- Carried over: OPS-001 Docker run; TEST_PLAN known gaps; ADR-018 accountant confirmation.
 
 ## Next exact task
 
 **INV-001 — Stock ledger and balances** (spec and acceptance criteria in `docs/TASK_BOARD.md`).
-First step: record the design ADR, then the migration.
+First step: record the design ADR, then the migration. INV-003 then consumes APR-001 for adjustments.
 
 ## Context that would otherwise be lost
 

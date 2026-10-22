@@ -1,9 +1,10 @@
 # Project status
 
-_Last updated: 2026-10-21 — end of session 1_
+_Last updated: 2026-10-22 — end of session 2_
 
 **Phase:** 1 complete except OPS-001 (docker-compose needs one run on a machine with Docker).
-**Next phase:** 2 — Inventory and suppliers. **Next task:** INV-001 (Ready, spec in `docs/TASK_BOARD.md`).
+**Current phase:** 2 — Inventory and suppliers. APR-001 (approval framework) done on branch
+`claude/project-thread-wabex7`, not yet merged. **Next task:** INV-001 (Ready, spec in `docs/TASK_BOARD.md`).
 
 ## Completed milestones
 
@@ -16,8 +17,16 @@ _Last updated: 2026-10-21 — end of session 1_
 - **M1.3 Closure** — governance files, compliance register, README, CI pipeline, full documentation set,
   original brief preserved in `docs/reference/ORIGINAL_BRIEF.md`.
 
+- **APR-001 Approvals** (session 2) — shared maker-checker workflow: requests with resolved scope and
+  append-only history, requester can never decide their own request (service + CHECK), scoped
+  approvers, one pending request per subject, final and race-safe decisions (ADR-019). No screens yet:
+  each consuming module (INV-003, PUR-002, RET-001) adds its own.
+
 ## Verification evidence
 
+- Session 2, commit `436a974`: `npm run verify` (lint, typecheck, 131 tests, build) passed;
+  `prettier --check .` clean; `prisma migrate diff` shows no drift. E2E not re-run (no UI change). CI
+  runs only after the branch is pushed.
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
@@ -39,7 +48,7 @@ _Last updated: 2026-10-21 — end of session 1_
 
 ## Recent decisions
 
-ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
+ADR-019 generic maker-checker approvals · ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).
 

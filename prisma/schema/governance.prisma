@@ -32,3 +32,79 @@ model AuditLog {
   @@index([action])
   @@map("audit_logs")
 }
+
+// ─── Approvals ───────────────────────────────────────────────────────────────
+// Generic maker-checker workflow (ADR-019). A module submits a request for a
+// subject (an adjustment, a purchase order, a refund…) inside its own
+// transaction; a different user holding the subject's approve permission at a
+// covering scope decides it. Separation of duties, decision consistency and
+// the append-only action history are also enforced by CHECKs and triggers in
+// the migration.
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ApprovalActionType {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ApprovalRequest {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  /// Key of the approval policy in src/server/modules/approvals/subjects.ts
+  subjectType    String         @map("subject_type") @db.VarChar(64)
+  subjectId      String         @map("subject_id") @db.VarChar(64)
+  status         ApprovalStatus @default(PENDING)
+  /// Where the subject lives; approvers need the permission at a covering scope.
+  countryCode    String?        @map("country_code") @db.Char(2)
+  legalEntityId  String?        @map("legal_entity_id") @db.Uuid
+  storeId        String?        @map("store_id") @db.Uuid
+  warehouseId    String?        @map("warehouse_id") @db.Uuid
+  summary        String         @db.VarChar(300)
+  /// Redacted snapshot of what the approver is asked to accept.
+  snapshot       Json?
+  requestReason  String         @map("request_reason") @db.VarChar(500)
+  requestedById  String         @map("requested_by_id") @db.Uuid
+  requestedAt    DateTime       @default(now()) @map("requested_at") @db.Timestamptz(3)
+  /// Null for a cancellation made by a system actor.
+  decidedById    String?        @map("decided_by_id") @db.Uuid
+  decidedAt      DateTime?      @map("decided_at") @db.Timestamptz(3)
+  decisionReason String?        @map("decision_reason") @db.VarChar(500)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  country     Country?         @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  legalEntity LegalEntity?     @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  store       Store?           @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  warehouse   Warehouse?       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  requestedBy User             @relation("ApprovalRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  decidedBy   User?            @relation("ApprovalDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  actions     ApprovalAction[]
+
+  @@index([subjectType, subjectId])
+  @@index([status, requestedAt])
+  @@index([requestedById])
+  @@map("approval_requests")
+}
+
+/// Append-only history of an approval request (UPDATE/DELETE blocked by trigger).
+model ApprovalAction {
+  id          String             @id @default(uuid(7)) @db.Uuid
+  requestId   String             @map("request_id") @db.Uuid
+  action      ApprovalActionType
+  actorType   ActorType          @map("actor_type")
+  actorUserId String?            @map("actor_user_id") @db.Uuid
+  reason      String?            @db.VarChar(500)
+  occurredAt  DateTime           @default(now()) @map("occurred_at") @db.Timestamptz(3)
+
+  request   ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  actorUser User?           @relation("ApprovalActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, occurredAt])
+  @@map("approval_actions")
+}

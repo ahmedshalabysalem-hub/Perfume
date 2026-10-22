@@ -41,10 +41,13 @@ model User {
   createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  sessions        Session[]
-  accounts        Account[]
-  roleAssignments UserRole[] @relation("UserRoleAssignee")
-  assignedRoles   UserRole[] @relation("UserRoleAssigner")
+  sessions           Session[]
+  accounts           Account[]
+  roleAssignments    UserRole[]        @relation("UserRoleAssignee")
+  assignedRoles      UserRole[]        @relation("UserRoleAssigner")
+  approvalsRequested ApprovalRequest[] @relation("ApprovalRequester")
+  approvalsDecided   ApprovalRequest[] @relation("ApprovalDecider")
+  approvalActions    ApprovalAction[]  @relation("ApprovalActor")
 
   @@index([type, status])
   @@map("users")
