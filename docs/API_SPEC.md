@@ -83,7 +83,7 @@ type ErrorCode =
 
 Stock reads (`listStock`, `getVariantStock`) are called by the pages directly and filtered to the
 warehouses covered by the actor's `inventory.view` assignments. Other modules change stock only through
-`postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-019).
+`postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-020).
 
 ### Access — `src/app/[locale]/admin/access/actions.ts`, `src/app/[locale]/(auth)/actions.ts`
 

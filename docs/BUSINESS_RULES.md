@@ -147,7 +147,7 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 | Active staff               | Staff users with status ACTIVE (shown with `users.view`)                                   |
 | Recent activity            | Latest audit entries (shown with GLOBAL `audit.view`)                                      |
 
-## Inventory (INV-001, ADR-019)
+## Inventory (INV-001, ADR-020)
 
 - Stock is kept per variant, warehouse and status: sellable, quarantined, damaged, returned. Quantities
   are whole units. Only variants with inventory tracking hold stock.

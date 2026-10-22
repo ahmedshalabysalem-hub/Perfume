@@ -1,5 +1,5 @@
 // ─── Inventory ───────────────────────────────────────────────────────────────
-// Stock ledger (ADR-019). Every quantity change is a row in `stock_movements`
+// Stock ledger (ADR-020). Every quantity change is a row in `stock_movements`
 // (append-only, enforced by triggers) and updates exactly one `stock_balances`
 // row in the same transaction. Only `postStockMovements` in
 // src/server/modules/inventory writes either table. CHECK constraints and the

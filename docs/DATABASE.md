@@ -61,7 +61,7 @@ ADR-008 in `docs/DECISIONS.md`.
 | `product_images`           | Storage key (unique), MIME type, size, dimensions, alt text (en/ar), optional variant, order                                                                                                                                            |
 | `product_compliance`       | Regulatory references per product and country: authority, reference type/number, status, issue and expiry dates, notes                                                                                                                  |
 
-### Inventory (`prisma/schema/inventory.prisma`, ADR-019)
+### Inventory (`prisma/schema/inventory.prisma`, ADR-020)
 
 | Table             | Purpose and key rules                                                                                                                                                                                                                                                   |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -152,4 +152,4 @@ settlements, POS terminals/sessions/transactions), finance (chart of accounts, p
 expenses, tax profiles and rates, exchange rates, fiscal documents), marketing and governance
 (promotions, coupons, loyalty, reviews, notifications, approval requests/actions, webhook events,
 integration jobs/logs). The brief's `user_store_access` is replaced by scoped `user_roles` (ADR-007);
-`warehouse_locations` will be added only if bin-level stock is needed (ADR-019).
+`warehouse_locations` will be added only if bin-level stock is needed (ADR-020).

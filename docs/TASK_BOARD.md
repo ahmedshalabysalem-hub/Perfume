@@ -90,11 +90,11 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 
 - **Status:** Review (implemented 2026-10-22 on `claude/project-thread-qunsge`; Done once merged with CI
   green) · **Priority:** P1 · **Effort:** highest (inventory concurrency, migration)
-- **Delivered:** ADR-019; migration `20261022071737_inventory_stock_ledger` (2 tables, 11 CHECKs, 3
+- **Delivered:** ADR-020; migration `20261022071737_inventory_stock_ledger` (2 tables, 11 CHECKs, 3
   triggers); `src/server/modules/inventory/{ledger,stock.service}.ts`; pages under
   `/admin/inventory`; `tests/integration/inventory.test.ts` (27), `tests/unit/inventory-schemas.test.ts`
   (3), `tests/e2e/inventory.spec.ts` (2). Deviation: one status per movement row (a status change is
-  two lines) instead of "status from/to" columns — see ADR-019.
+  two lines) instead of "status from/to" columns — see ADR-020.
 - **Depends on:** Phase 1 closed; ADR-018 (proposed costing) — cost is captured, not yet valued.
 
 **Objective** — Every stock quantity per variant, warehouse and stock status comes from an immutable

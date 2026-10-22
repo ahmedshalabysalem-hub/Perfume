@@ -5,7 +5,7 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-0
 ## Completed in this session
 
 - **INV-001 stock ledger and balances** (status Review until the PR is merged with CI green):
-  - ADR-019 in `docs/DECISIONS.md` — per-status balances, one balance per movement row, integer units,
+  - ADR-020 in `docs/DECISIONS.md` — per-status balances, one balance per movement row, integer units,
     unit cost NUMERIC(19,4) in the warehouse country's currency, sorted conditional updates, posting
     keys with advisory locks, append-only ledger, opening-balance rules.
   - Migration `20261022071737_inventory_stock_ledger`: `stock_balances`, `stock_movements`, enums

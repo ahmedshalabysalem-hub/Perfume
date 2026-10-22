@@ -18,7 +18,7 @@ needs one run on a machine with Docker).
 - **M1.3 Closure** — governance files, compliance register, README, CI pipeline, full documentation set,
   original brief preserved in `docs/reference/ORIGINAL_BRIEF.md`.
 - **M2.1 Stock ledger (INV-001, in review)** — append-only movement ledger and per-status balances
-  (ADR-019), concurrency-safe posting service with idempotency keys, opening balances, stock overview
+  (ADR-020), concurrency-safe posting service with idempotency keys, opening balances, stock overview
   and per-variant movement history in Arabic and English.
 
 ## Verification evidence
@@ -47,7 +47,7 @@ needs one run on a machine with Docker).
 
 ## Recent decisions
 
-ADR-019 stock ledger (per-status balances, conditional updates, posting keys) ·
+ADR-020 stock ledger (per-status balances, conditional updates, posting keys) ·
 ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).

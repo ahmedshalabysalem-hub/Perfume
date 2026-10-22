@@ -24,7 +24,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-016 | Forms: shared Zod schemas, translatable message descriptors          | Accepted | 2026-10-21 |
 | ADR-017 | File-based project governance and session handoff                    | Accepted | 2026-10-21 |
 | ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
-| ADR-019 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
+| ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 
 ---
 
@@ -177,7 +177,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible.
 
-### ADR-019 — Stock ledger: per-status balances, conditional updates, posting keys
+### ADR-020 — Stock ledger: per-status balances, conditional updates, posting keys
 
 - **Context:** INV-001 introduces the stock ledger every later module posts through (receipts, sales,
   POS, returns, transfers, counts). The brief requires same-transaction balance updates, no negative
@@ -214,3 +214,6 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** Callers (orders, POS, receipts) only call `postStockMovements(tx, ctx, posting)`
   inside their own transaction and never write balances. Reservations (INV-004) will change `reserved`
   through the same service.
+- **Numbering note:** first drafted as ADR-019 on the INV-001 branch and renumbered because ADR-019 went to
+  the approval framework (APR-001). The comment in migration `20261022071737_inventory_stock_ledger` still
+  says ADR-019; it is left unchanged because migrations are immutable once shared.

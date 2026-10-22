@@ -7,7 +7,7 @@ import type { Tx } from "@/server/db";
 import { ConflictError, InvalidStateError, NotFoundError } from "@/server/errors";
 
 /**
- * The stock ledger (ADR-019). Every module that changes stock — opening
+ * The stock ledger (ADR-020). Every module that changes stock — opening
  * balances, receipts, sales, POS, returns, transfers, counts — calls
  * `postStockMovements` inside its own transaction. Nothing else writes
  * `stock_balances` or `stock_movements`.

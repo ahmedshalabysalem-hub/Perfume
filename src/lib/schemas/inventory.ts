@@ -8,7 +8,7 @@ export const STOCK_MOVEMENT_TYPES = ["OPENING_BALANCE", "ADJUSTMENT"] as const;
 
 export type StockStatusValue = (typeof STOCK_STATUSES)[number];
 
-/** Unit costs carry up to 4 decimals (ADR-019); more is rejected, not rounded. */
+/** Unit costs carry up to 4 decimals (ADR-020); more is rejected, not rounded. */
 export const UNIT_COST_SCALE = 4;
 /** Largest quantity accepted on one movement line. */
 export const MAX_LINE_QUANTITY = 1_000_000;
