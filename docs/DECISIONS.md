@@ -179,7 +179,17 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible. Request:
-  DR-009 in `docs/DECISION_REQUESTS.md` (Open, not yet sent).
+  DR-009 in `docs/DECISION_REQUESTS.md` (Open; only a simulated test answer exists).
+- **Draft wording if DR-009 is genuinely confirmed (not in force; drafted from the simulated answer):**
+  Perpetual inventory at moving weighted average cost, one average per variant and legal entity across
+  that entity's warehouses; the Saudi and Egyptian entities never share costs or balances. Each inbound
+  movement recomputes the average as (on-hand value + inbound value) / (on-hand quantity + inbound
+  quantity); outbound movements leave it unchanged and are costed at it. Receipt cost is the purchase
+  price plus capitalised landed costs (freight, non-recoverable duties, insurance, clearance, other
+  qualifying direct costs), excluding recoverable VAT, allocated by a documented basis per cost type.
+  Expired, damaged and lost stock is expensed at the current average through an approved, audited
+  adjustment. Unit cost is kept to 4 decimals; journal lines are rounded to 2 decimals by one rule, and
+  any difference is posted so every entry balances. Open points before acceptance: DR-009's list.
 
 ### ADR-019 — Generic maker-checker approvals inside the subject's transaction
 
