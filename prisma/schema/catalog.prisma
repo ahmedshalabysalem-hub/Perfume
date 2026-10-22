@@ -261,6 +261,9 @@ model ProductVariant {
   prices  ProductPrice[]
   images  ProductImage[]
 
+  stockBalances  StockBalance[]
+  stockMovements StockMovement[]
+
   @@index([productId])
   @@index([status])
   @@map("product_variants")

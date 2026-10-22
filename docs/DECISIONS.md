@@ -24,6 +24,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-016 | Forms: shared Zod schemas, translatable message descriptors          | Accepted | 2026-10-21 |
 | ADR-017 | File-based project governance and session handoff                    | Accepted | 2026-10-21 |
 | ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
+| ADR-019 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 
 ---
 
@@ -175,3 +176,41 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible.
+
+### ADR-019 — Stock ledger: per-status balances, conditional updates, posting keys
+
+- **Context:** INV-001 introduces the stock ledger every later module posts through (receipts, sales,
+  POS, returns, transfers, counts). The brief requires same-transaction balance updates, no negative
+  stock, no overselling under concurrency and safe retries (brief Module 2, rules 1–4 and 9).
+- **Decision:**
+  - **Granularity.** One `stock_balances` row per variant × warehouse × stock status (`SELLABLE`,
+    `QUARANTINED`, `DAMAGED`, `RETURNED`). The batch dimension is added by INV-002; no bin locations
+    until a real need appears.
+  - **Movements.** Each `stock_movements` row changes exactly one balance row by a signed, non-zero
+    integer quantity and stores the resulting `balance_after`. A status change (e.g. sellable →
+    quarantined) is two rows in one posting, so the ledger always sums to the balance per key. This
+    replaces the "status from/to" columns sketched in the task spec.
+  - **Quantities** are integer units (bottles, sets). Decants and refills are separate variants.
+  - **Unit cost** is NUMERIC(19,4) in the currency of the warehouse's country, required on inbound
+    opening balances, otherwise optional; more than 4 decimals is rejected, not rounded. Valuation stays
+    with ADR-018/FIN-003.
+  - **Locking.** Lines are applied in a fixed order (warehouse, variant, status) to avoid deadlocks.
+    Inbound lines use `INSERT … ON CONFLICT DO UPDATE`; outbound lines use a conditional
+    `UPDATE … WHERE on_hand - reserved >= quantity`, which PostgreSQL re-checks after waiting for a
+    concurrent writer, so two sellers can never take the same unit. Zero rows updated is a domain
+    error (`errors.invalidState.insufficientStock`). CHECK constraints (`on_hand >= 0`,
+    `0 <= reserved <= on_hand`, reserved only on sellable stock) are the backstop.
+  - **Idempotency.** Every posting carries a caller-chosen key (e.g. `order:<id>:ship`). A
+    transaction-scoped advisory lock on the key serialises duplicates; a repeated posting with the same
+    lines returns the original movements, a different payload under the same key is a conflict.
+  - **Append-only.** Triggers reject UPDATE and DELETE on `stock_movements`; TRUNCATE only with
+    `app.stock_ledger_purge = 'on'` (test databases). Corrections are compensating movements.
+  - **Opening balances** are the only manual inbound path until INV-003: permission
+    `inventory.adjust.approve` at the warehouse's scope, a reason, a unit cost, and only for a variant
+    with no ledger history in that warehouse.
+- **Alternatives:** `SELECT … FOR UPDATE` then update (two round trips, same guarantee); SERIALIZABLE
+  transactions with retries (more aborts, retry logic in every caller); balances maintained by a database
+  trigger (harder to turn into domain errors).
+- **Consequences:** Callers (orders, POS, receipts) only call `postStockMovements(tx, ctx, posting)`
+  inside their own transaction and never write balances. Reservations (INV-004) will change `reserved`
+  through the same service.

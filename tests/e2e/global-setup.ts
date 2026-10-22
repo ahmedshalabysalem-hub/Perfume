@@ -17,7 +17,7 @@ async function ensureDatabase(url: string): Promise<void> {
   }
 }
 
-/** Empty every application table (the audit log needs the retention-purge switch). */
+/** Empty every application table (the audit log and stock ledger need their purge switches). */
 async function emptyDatabase(url: string): Promise<void> {
   const client = new pg.Client({ connectionString: url });
   await client.connect();
@@ -28,6 +28,7 @@ async function emptyDatabase(url: string): Promise<void> {
     if (rows.length === 0) return;
     await client.query("BEGIN");
     await client.query("SET LOCAL app.audit_retention_purge = 'on'");
+    await client.query("SET LOCAL app.stock_ledger_purge = 'on'");
     await client.query(`TRUNCATE TABLE ${rows.map((row) => `"${row.tablename}"`).join(", ")} CASCADE`);
     await client.query("COMMIT");
   } finally {

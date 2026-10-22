@@ -61,13 +61,20 @@ ADR-008 in `docs/DECISIONS.md`.
 | `product_images`           | Storage key (unique), MIME type, size, dimensions, alt text (en/ar), optional variant, order                                                                                                                                            |
 | `product_compliance`       | Regulatory references per product and country: authority, reference type/number, status, issue and expiry dates, notes                                                                                                                  |
 
+### Inventory (`prisma/schema/inventory.prisma`, ADR-019)
+
+| Table             | Purpose and key rules                                                                                                                                                                                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stock_balances`  | One row per variant × warehouse × stock status (`SELLABLE`, `QUARANTINED`, `DAMAGED`, `RETURNED`): integer `on_hand` and `reserved`; changed only by `postStockMovements` together with a movement                                                                      |
+| `stock_movements` | Append-only ledger: type, variant, warehouse, status, signed non-zero quantity, `balance_after`, optional unit cost NUMERIC(19,4) with currency, source document, reason, actor, correlation id; unique `(idempotency_key, line_no)`; indexed by variant/warehouse/time |
+
 ### Governance (`prisma/schema/governance.prisma`)
 
 | Table        | Purpose and key rules                                                                                                                                                                          |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `audit_logs` | Append-only: time, actor type and user, action, entity type and id, summary, redacted `before`/`after` JSON, reason, correlation id, IP, user agent; indexed by entity, actor, time and action |
 
-## CHECK constraints (29)
+## CHECK constraints (40)
 
 | Area               | Constraints                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,6 +87,8 @@ ADR-008 in `docs/DECISIONS.md`.
 | Variants           | `product_variants_sku_format`, `product_variants_barcode_consistency` (barcode, type, source all set or all null), `product_variants_gtin_format` (digit counts per GTIN type), `product_variants_internal_barcode_code128`, `product_variants_size_positive`, `product_variants_weight_positive`, `product_variants_batches_require_inventory`, `product_variants_expiry_requires_batches` |
 | Prices             | `product_prices_amount_positive`, `product_prices_compare_at_gt_amount`                                                                                                                                                                                                                                                                                                                     |
 | Images, compliance | `product_images_size_positive`, `product_compliance_date_order`                                                                                                                                                                                                                                                                                                                             |
+| Stock balances     | `stock_balances_on_hand_non_negative`, `stock_balances_reserved_range` (0 ≤ reserved ≤ on hand), `stock_balances_reserved_only_sellable`                                                                                                                                                                                                                                                    |
+| Stock movements    | `stock_movements_quantity_non_zero`, `stock_movements_balance_after_non_negative`, `stock_movements_line_no_positive`, `stock_movements_cost_currency`, `stock_movements_unit_cost_non_negative`, `stock_movements_opening_balance_inbound`, `stock_movements_actor_consistency`, `stock_movements_document_pair`                                                                           |
 
 GTIN check digits are verified in the service (`src/lib/barcode.ts`); the database checks shape.
 
@@ -101,6 +110,10 @@ call `audit_logs_block_mutation()`: UPDATE is always rejected; DELETE and TRUNCA
 transaction that sets `app.audit_retention_purge = 'on'` (retention jobs and test fixtures). Production
 should additionally run the application with a database role lacking UPDATE/DELETE/TRUNCATE on
 `audit_logs` (OPS-003).
+
+`stock_movements_no_update`, `stock_movements_no_delete` and `stock_movements_no_truncate` call
+`stock_movements_block_mutation()`: UPDATE and DELETE are always rejected; TRUNCATE only when the session
+sets `app.stock_ledger_purge = 'on'` (test-database resets). Corrections are compensating movements.
 
 ## Migrations
 
@@ -130,8 +143,8 @@ or internal codes. Idempotent: re-running creates nothing new and keeps password
 
 ## Planned tables
 
-Following the brief's table groups as modules are built (not before): inventory (`stock_movements`,
-`stock_balances`, `batches`, reservations, counts, adjustments), procurement (`suppliers`,
+Following the brief's table groups as modules are built (not before): inventory (`batches`,
+reservations, counts, adjustments), procurement (`suppliers`,
 `supplier_products`, purchase orders and receipts, supplier invoices/returns/payments), sales
 (`customers`, addresses, carts, orders with status history, invoices, credit notes, returns),
 payments and shipping (providers, payments, transactions, refunds, reconciliations, shipments, COD
@@ -139,4 +152,4 @@ settlements, POS terminals/sessions/transactions), finance (chart of accounts, p
 expenses, tax profiles and rates, exchange rates, fiscal documents), marketing and governance
 (promotions, coupons, loyalty, reviews, notifications, approval requests/actions, webhook events,
 integration jobs/logs). The brief's `user_store_access` is replaced by scoped `user_roles` (ADR-007);
-`warehouse_locations` will be added only if bin-level stock is needed (INV-001 design note).
+`warehouse_locations` will be added only if bin-level stock is needed (ADR-019).

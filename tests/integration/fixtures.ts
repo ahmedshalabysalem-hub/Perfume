@@ -6,6 +6,8 @@ import { syncRbac } from "@/server/rbac/sync";
 
 const TABLES = [
   "audit_logs",
+  "stock_movements",
+  "stock_balances",
   "product_compliance",
   "product_images",
   "product_prices",
@@ -34,10 +36,11 @@ const TABLES = [
   "currencies",
 ];
 
-/** Empty every table (audit log included, via the retention-purge switch). */
+/** Empty every table (audit log and stock ledger included, via their purge switches). */
 export async function resetDatabase(): Promise<void> {
   await db.$transaction(async (tx) => {
     await tx.$executeRawUnsafe("SET LOCAL app.audit_retention_purge = 'on'");
+    await tx.$executeRawUnsafe("SET LOCAL app.stock_ledger_purge = 'on'");
     await tx.$executeRawUnsafe(`TRUNCATE TABLE ${TABLES.map((table) => `"${table}"`).join(", ")} CASCADE`);
   });
 }
@@ -64,10 +67,15 @@ export async function reloadActor(userId: string): Promise<UserActor | null> {
   return row ? buildActor(row) : null;
 }
 
-async function createStaff(
+export async function createStaff(
   email: string,
   roleKey: string,
-  scope: { type: "GLOBAL" } | { type: "COUNTRY"; countryCode: string } | { type: "STORE"; storeId: string },
+  scope:
+    | { type: "GLOBAL" }
+    | { type: "COUNTRY"; countryCode: string }
+    | { type: "LEGAL_ENTITY"; legalEntityId: string }
+    | { type: "STORE"; storeId: string }
+    | { type: "WAREHOUSE"; warehouseId: string },
   options: { type?: "STAFF" | "CUSTOMER" } = {},
 ): Promise<UserActor> {
   const user = await db.user.create({ data: { email, name: email.split("@")[0]!, type: options.type ?? "STAFF" } });
@@ -78,7 +86,11 @@ async function createStaff(
       ? "GLOBAL"
       : scope.type === "COUNTRY"
         ? `COUNTRY:${scope.countryCode}`
-        : `STORE:${scope.storeId}`;
+        : scope.type === "LEGAL_ENTITY"
+          ? `LEGAL_ENTITY:${scope.legalEntityId}`
+          : scope.type === "STORE"
+            ? `STORE:${scope.storeId}`
+            : `WAREHOUSE:${scope.warehouseId}`;
   await db.userRole.create({
     data: {
       userId: user.id,
@@ -86,7 +98,9 @@ async function createStaff(
       scopeType: scope.type,
       scopeKey,
       countryCode: scope.type === "COUNTRY" ? scope.countryCode : null,
+      legalEntityId: scope.type === "LEGAL_ENTITY" ? scope.legalEntityId : null,
       storeId: scope.type === "STORE" ? scope.storeId : null,
+      warehouseId: scope.type === "WAREHOUSE" ? scope.warehouseId : null,
     },
   });
   const actor = await reloadActor(user.id);

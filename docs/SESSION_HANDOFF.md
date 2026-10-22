@@ -1,46 +1,61 @@
 # Session handoff
 
-_Session 1 — 2026-10-21 — branch `ccr-04855f0a-4t6vb0`_
+_Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-04855f0a-4t6vb0`)_
 
 ## Completed in this session
 
-- Phase 1 implementation (foundation, catalogue, storefront, e2e) — commits `4767a8f` … `e6c131f`.
-- GOV-001 governance system; COMP-001 compliance register; DOC-001 README; CI-001 pipeline (green);
-  OPS-001 docker-compose (unverified); DOC-002 PRD/architecture/business rules; DOC-003 database, ERD,
-  RBAC, API spec, test plan; original brief preserved verbatim.
-- Plan and board re-aligned to the brief's phases 0–8; INV-001 fully specified (Ready).
-- Fixes: CI secret masked and actions moved to v5; build no longer traces the whole project
-  (`src/server/storage/storage.ts`); dashboard KPI comment points to `docs/BUSINESS_RULES.md`.
+- **INV-001 stock ledger and balances** (status Review until the PR is merged with CI green):
+  - ADR-019 in `docs/DECISIONS.md` — per-status balances, one balance per movement row, integer units,
+    unit cost NUMERIC(19,4) in the warehouse country's currency, sorted conditional updates, posting
+    keys with advisory locks, append-only ledger, opening-balance rules.
+  - Migration `20261022071737_inventory_stock_ledger`: `stock_balances`, `stock_movements`, enums
+    `StockStatus` and `StockMovementType`, 11 CHECKs, 3 append-only triggers.
+  - `src/server/modules/inventory/ledger.ts` (`postStockMovements`, `lockPostingKey`) and
+    `stock.service.ts` (`listStock`, `getVariantStock`, `listStockWarehouses`, `postOpeningBalance`).
+  - Pages: `/admin/inventory/stock`, `/admin/inventory/stock/[variantId]`,
+    `/admin/inventory/opening-balances/new`; sidebar section "Inventory"; messages in both languages.
+  - `inventory.view` and `inventory.adjust.approve` now available (run `npm run db:sync-rbac` after
+    deploying; the seed also does it).
 
-## Files created or changed (this governance/documentation round)
+## Files created or changed
 
-`CLAUDE.md`, `README.md`, `docker-compose.yml`, `docker/postgres/init/01-test-databases.sql`,
-`.github/workflows/ci.yml`, `.prettierignore`, `docs/*.md` (PROJECT_STATUS, SESSION_HANDOFF,
-TASK_BOARD, TASK_TEMPLATE, IMPLEMENTATION_PLAN, DECISIONS, COUNTRY_COMPLIANCE, PRD, ARCHITECTURE,
-BUSINESS_RULES, DATABASE, ERD, RBAC, API_SPEC, TEST_PLAN), `docs/reference/ORIGINAL_BRIEF.md`,
-`src/server/storage/storage.ts`, `src/server/modules/dashboard/dashboard.service.ts`.
+`prisma/schema/inventory.prisma` (new), `prisma/schema/{catalog,organization}.prisma` (relations),
+`prisma/migrations/20261022071737_inventory_stock_ledger/`, `src/lib/schemas/inventory.ts`,
+`src/server/modules/inventory/*`, `src/app/[locale]/admin/inventory/**`, `src/server/admin-nav.ts`,
+`src/components/admin/{nav-types.ts,admin-shell.tsx}`, `src/server/rbac/permissions.ts`,
+`messages/{en,ar}.json`, `tests/integration/{inventory.test.ts,fixtures.ts}`,
+`tests/unit/inventory-schemas.test.ts`, `tests/e2e/{inventory.spec.ts,global-setup.ts}`, docs
+(DECISIONS, DATABASE, RBAC, API_SPEC, BUSINESS_RULES, TEST_PLAN, TASK_BOARD, PROJECT_STATUS, this file).
 
 ## Checks actually run
 
-- `npm ci`, `npm run db:deploy`, `npm run db:sync-rbac`, `npm run db:seed` (second run: nothing created).
-- `npm run verify` — passed (108 tests). `npm run build` again after the storage fix — passed, 0 warnings.
-- `npx prettier --check .` — clean. YAML of CI and compose parsed with js-yaml.
-- CI run 1 on `25b1b15` — all steps green, 16/16 e2e.
-- CI run 2 on `f23858a` (run 39683660413) — all steps green.
+- Fresh container setup: `npm ci`, local PostgreSQL roles/databases per README, `db:deploy`,
+  `db:sync-rbac`, `db:seed`.
+- `npm run lint`, `npm run typecheck`, `npx prettier --check .` — clean.
+- `npm test` — 138 passed (53 unit, 85 integration; `inventory.test.ts` 27).
+- `npm run build` — passed. `npx playwright test` against that build — 18/18 passed.
+- CI has not run on this branch yet.
 
 ## Unresolved
 
-- OPS-001 needs `docker compose up -d` on a machine with Docker.
-- Test gaps listed in `docs/TEST_PLAN.md`.
-- ADR-018 needs an accountant's confirmation before FIN-001 (not before INV-001).
+- OPS-001 still needs `docker compose up -d` on a machine with Docker.
+- ADR-018 (costing) still needs an accountant's confirmation before FIN-001.
+- Test gaps unchanged from session 1 (`docs/TEST_PLAN.md` §Known gaps).
+- Test fixtures and the e2e reset now also set `app.stock_ledger_purge = 'on'` to truncate the ledger;
+  any new reset script must do the same.
 
 ## Next exact task
 
-**INV-001 — Stock ledger and balances** (spec and acceptance criteria in `docs/TASK_BOARD.md`).
-First step: record the design ADR, then the migration.
+1. Merge the INV-001 PR after CI passes; move INV-001 to Done on the board with the CI run.
+2. **APR-001 — Approval workflow framework**: write its full spec in `docs/TASK_BOARD.md` (backlog
+   outline exists), then implement. It unblocks INV-003 and PUR-002.
 
 ## Context that would otherwise be lost
 
+- Callers change stock only via `postStockMovements(tx, ctx, posting)` inside their own transaction
+  (READ COMMITTED, the default); authorisation is the caller's job. Choose stable idempotency keys
+  (e.g. `order:<id>:ship`).
+- Opening balances use the key `opening-balance:<variant>:<warehouse>:<status>`.
 - After a container restart run `service postgresql start`. Databases: `perfume_dev`, `perfume_test`,
   `perfume_e2e` (role `perfume` with CREATEDB; password in the local, uncommitted `.env`).
 - Playwright here: `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`; reuse an existing build

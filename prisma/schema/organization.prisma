@@ -22,9 +22,10 @@ model Currency {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  countries Country[]
-  stores    Store[]
-  prices    ProductPrice[]
+  countries      Country[]
+  stores         Store[]
+  prices         ProductPrice[]
+  stockMovements StockMovement[]
 
   @@map("currencies")
 }
@@ -139,6 +140,9 @@ model Warehouse {
   legalEntity LegalEntity @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
   country     Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
   roleScopes  UserRole[]
+
+  stockBalances  StockBalance[]
+  stockMovements StockMovement[]
 
   @@index([legalEntityId])
   @@index([countryCode])

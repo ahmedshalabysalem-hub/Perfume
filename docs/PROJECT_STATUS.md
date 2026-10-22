@@ -1,9 +1,11 @@
 # Project status
 
-_Last updated: 2026-10-21 — end of session 1_
+_Last updated: 2026-10-22 — end of session 2_
 
-**Phase:** 1 complete except OPS-001 (docker-compose needs one run on a machine with Docker).
-**Next phase:** 2 — Inventory and suppliers. **Next task:** INV-001 (Ready, spec in `docs/TASK_BOARD.md`).
+**Phase:** 2 — Inventory and suppliers, in progress. Phase 1 complete except OPS-001 (docker-compose
+needs one run on a machine with Docker).
+**Current:** INV-001 stock ledger implemented, in Review (PR from `claude/project-thread-qunsge`).
+**Next task:** APR-001 approval workflow (needs its spec first), then INV-002/INV-003/INV-004.
 
 ## Completed milestones
 
@@ -15,15 +17,21 @@ _Last updated: 2026-10-21 — end of session 1_
   publish workflow; read-only storefront per market with search, filters, product pages, sitemap.
 - **M1.3 Closure** — governance files, compliance register, README, CI pipeline, full documentation set,
   original brief preserved in `docs/reference/ORIGINAL_BRIEF.md`.
+- **M2.1 Stock ledger (INV-001, in review)** — append-only movement ledger and per-status balances
+  (ADR-019), concurrency-safe posting service with idempotency keys, opening balances, stock overview
+  and per-variant movement history in Arabic and English.
 
 ## Verification evidence
 
+- Session 2, local, branch `claude/project-thread-qunsge`: lint, typecheck, `npx prettier --check .`,
+  138 Vitest tests (53 unit, 85 integration), build and **18/18 Playwright** tests — all passed. CI has
+  not yet run on this branch.
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
 - CI run 2 ([39683660413](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39683660413),
   commit `f23858a`, with actions v5 and the masked secret): all steps green.
-- Local, end of session: `npm run verify` (lint, typecheck, 108 tests, build) passed; build warning
+- Session 1, local: `npm run verify` (lint, typecheck, 108 tests, build) passed; build warning
   about whole-project tracing fixed and re-built without warnings.
 - `npm audit --omit=dev`: 0 vulnerabilities; dev-only tooling: 5 high (SEC-001).
 
@@ -39,12 +47,13 @@ _Last updated: 2026-10-21 — end of session 1_
 
 ## Recent decisions
 
+ADR-019 stock ledger (per-status balances, conditional updates, posting keys) ·
 ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).
 
 ## Next recommended action
 
-Start INV-001 at highest effort: write its design ADR (balance granularity, cost precision, locking,
-idempotency), then the migration, the posting service with concurrency tests, the opening-balance flow
-and the stock pages.
+Merge the INV-001 PR once CI is green. Then specify and build APR-001 (approval workflow), which
+unblocks INV-003 adjustments/counts/transfers and PUR-002 purchase orders; INV-002 batches and PUR-001
+suppliers can proceed in parallel.

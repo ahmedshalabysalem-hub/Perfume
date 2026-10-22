@@ -94,7 +94,8 @@
       "code": "This code is already used.",
       "email": "A user with this e-mail already exists.",
       "assignment": "This role is already assigned at that scope.",
-      "categoryInUse": "This category is in use and cannot be moved there."
+      "categoryInUse": "This category is in use and cannot be moved there.",
+      "stockPosting": "This stock posting was already recorded with different lines."
     },
     "invalidState": {
       "transition": "This status change is not allowed.",
@@ -106,7 +107,10 @@
       "scopeNotAllowed": "This role cannot be assigned at the selected scope.",
       "privilegeEscalation": "You cannot grant permissions that you do not hold yourself at that scope.",
       "variantProductInactive": "Variants of a discontinued product cannot be reactivated.",
-      "currencyMismatch": "Prices must use the market currency ({currency})."
+      "currencyMismatch": "Prices must use the market currency ({currency}).",
+      "insufficientStock": "Not enough available stock for {sku}.",
+      "inventoryNotTracked": "Inventory is not tracked for {sku}.",
+      "openingBalanceExists": "{sku} already has stock history for this warehouse and status. Use a stock adjustment instead."
     },
     "pageNotFound": "Page not found",
     "pageNotFoundHint": "The page you are looking for does not exist or has moved.",
@@ -114,7 +118,10 @@
     "unexpectedHint": "An unexpected error occurred. You can try again.",
     "tryAgain": "Try again",
     "noAccessTitle": "No access",
-    "noAccessHint": "Your account does not have access to this area. Contact an administrator if you believe this is a mistake."
+    "noAccessHint": "Your account does not have access to this area. Contact an administrator if you believe this is a mistake.",
+    "inventory": {
+      "variantNotFound": "No variant has this SKU or barcode."
+    }
   },
   "validation": {
     "required": "This field is required.",
@@ -157,7 +164,9 @@
     "dateOrder": "The expiry date must be after the issue date.",
     "timezone": "Enter a valid IANA time zone (e.g. Asia/Riyadh).",
     "duplicateNote": "Each note can only appear once per layer.",
-    "scopeTargetRequired": "Select the {scope} this role applies to."
+    "scopeTargetRequired": "Select the {scope} this role applies to.",
+    "quantity": "Enter a whole number of units between 1 and {max}.",
+    "costPrecision": "Use at most {scale} decimal places."
   },
   "auth": {
     "signInTitle": "Sign in to the back office",
@@ -196,7 +205,9 @@
     "access": "Access control",
     "users": "Staff users",
     "roles": "Roles & permissions",
-    "audit": "Audit log"
+    "audit": "Audit log",
+    "inventory": "Inventory",
+    "stock": "Stock levels"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -679,5 +690,67 @@
       "rights": "© {year} Perfume House",
       "admin": "Staff sign-in"
     }
+  },
+  "stockStatus": {
+    "SELLABLE": "Sellable",
+    "QUARANTINED": "Quarantined",
+    "DAMAGED": "Damaged",
+    "RETURNED": "Returned"
+  },
+  "movementType": {
+    "OPENING_BALANCE": "Opening balance",
+    "ADJUSTMENT": "Adjustment"
+  },
+  "inventory": {
+    "title": "Stock levels",
+    "subtitle": "Quantities per variant, warehouse and stock status. Every change is recorded in the stock ledger.",
+    "searchPlaceholder": "Scan a barcode, or search by SKU or product name",
+    "filters": {
+      "warehouse": "Warehouse",
+      "status": "Stock status"
+    },
+    "columns": {
+      "variant": "Variant",
+      "warehouse": "Warehouse",
+      "status": "Status",
+      "onHand": "On hand",
+      "reserved": "Reserved",
+      "available": "Available",
+      "postedAt": "Date",
+      "type": "Movement",
+      "quantity": "Quantity",
+      "balanceAfter": "Balance after",
+      "unitCost": "Unit cost",
+      "actor": "By",
+      "reason": "Reason"
+    },
+    "empty": "No stock recorded yet.",
+    "emptyHint": "Enter opening balances to start tracking stock in a warehouse.",
+    "openingBalance": "Opening balance",
+    "openingTitle": "Enter an opening balance",
+    "openingSubtitle": "Record stock that was on hand before the system was used. Allowed once per variant, warehouse and stock status; later corrections are stock adjustments.",
+    "fields": {
+      "variantCode": "SKU or barcode",
+      "variantCodeHint": "Scan the barcode or type the SKU.",
+      "warehouse": "Warehouse",
+      "status": "Stock status",
+      "quantity": "Quantity (units)",
+      "unitCost": "Unit cost ({currency})",
+      "unitCostAny": "Unit cost (warehouse currency)",
+      "unitCostHint": "Cost per unit in the warehouse's local currency, up to 4 decimals.",
+      "reason": "Reason",
+      "reasonPlaceholder": "e.g. Stock count on go-live day"
+    },
+    "submit": "Post opening balance",
+    "posted": "Opening balance posted.",
+    "noWarehouses": "You have no active warehouse in your scope.",
+    "variantTitle": "Stock of {sku}",
+    "balances": "Balances",
+    "movements": "Movement history",
+    "noMovements": "No movements recorded.",
+    "notTracked": "Inventory is not tracked for this variant.",
+    "viewStock": "Stock",
+    "system": "System",
+    "allWarehouses": "All warehouses"
   }
 }
