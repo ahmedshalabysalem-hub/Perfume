@@ -3,16 +3,16 @@
 Statuses: **Backlog** → **Ready** (spec complete, dependencies met) → **In Progress** → **Review** →
 **Done**; **Blocked** when an external input is missing. Priority: **P0** blocks release · **P1** current
 or next phase · **P2** the phase after · **P3** later. New specifications use `docs/TASK_TEMPLATE.md`.
-Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **INV-002 is in Review** (PR #5);
-next: INV-003 or PUR-002.
+Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **INV-002 is Done** (PR #5);
+next: INV-006 (DR-011 decided: Option A), then PUR-002 spec (or INV-003) — see `docs/SESSION_HANDOFF.md`.
 
 ## Open tasks
 
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
-| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Review  | P1               | INV-001                                   |
-| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
-| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002                 |
+| INV-006   | Release restores only inspection-held stock (DR-011)         | 2     | Backlog | P1               | INV-002                                   |
+| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001, INV-006        |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002, INV-006        |
 | QA-003    | Close the High gaps of the 2026-10-22 test plan (G1, G2)     | 2     | Backlog | P1               | — (G3, G4 closed by INV-002)              |
 | INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
 | INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
@@ -85,14 +85,19 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | GOV-002   | Workflow audit: roles, effort and review policy, INV-002 spec, status reconciled (ADR-022)                                    | session 3 docs commit           | lint, typecheck, 181 Vitest tests, Prettier, reference check                                              |
 | OPS-001   | docker-compose for local PostgreSQL, validated by a real run and a CI job                                                     | session 4 commit                | compose healthy, 4 migrations, no drift; 193 Vitest, 20 e2e on it                                         |
 | QA-002    | Test-plan gap assessment; direct tests of ledger, approval and audit-log CHECKs                                               | session 4 commit                | `database-constraints.test.ts` (12); full Vitest suite                                                    |
+| INV-002   | Batches/lots, inspection and quarantine, expiry (ADR-023)                                                                     | merge `4210b62` (PR #5)         | `batches.test.ts` (30), migration test (4), unit, e2e; 246 Vitest, 22 e2e; CI green; independent review   |
 
 ---
 
 ## Ready specifications
 
+None. The next task (PUR-002 or INV-003) needs its spec written from the outline below.
+
+## Completed specifications (reference)
+
 ### INV-002 — Batches/lots, inspection and quarantine, expiry
 
-- **Status:** Review (PR #5) · **Priority:** P1 · **Effort:** highest (ledger schema change, inventory concurrency,
+- **Status:** Done (PR #5, merge `4210b62`) · **Priority:** P1 · **Effort:** highest (ledger schema change, inventory concurrency,
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
@@ -206,8 +211,6 @@ INV-001 data run twice, scopes, audit), e2e (create batch on opening balance →
 
 **Review** — separate review pass against the criteria; read the migration SQL and the posting changes
 line by line.
-
-## Completed specifications (reference)
 
 ### INV-001 — Stock ledger and balances
 
@@ -328,17 +331,22 @@ contact → link variant with cost → visible in list and history).
 
 Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
-- **QA-003** — the High items G1–G4 of the test assessment in `docs/TEST_PLAN.md` (sign-in rate limiting,
-  image upload, opposite-order concurrent postings, migrations on populated data). Each needs a spec.
+- **QA-003** — the High items G1 and G2 of the test assessment in `docs/TEST_PLAN.md` (sign-in rate
+  limiting, image upload); G3 and G4 were closed by INV-002. Each needs a spec.
+- **INV-006 Release restores only inspection-held stock (DR-011, Option A)** — QUARANTINED → RELEASED
+  moves back to SELLABLE only the net quantity of the batch's own `INSPECTION` movements per warehouse;
+  stock quarantined for other reasons (damage) stays held. PENDING_INSPECTION → RELEASED is unchanged.
+  Replace the LEGACY carry-over subtraction with the same rule (handoff open item 2). Code:
+  `moveForDecision` in `src/server/modules/inventory/batches.service.ts`. Effort: highest (inventory
+  concurrency); integration tests for mixed inspection and damage quarantine, LEGACY, and replay.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
   Cost precision and rounding: ADR-024; landed-cost allocation, late costs and exchange rates: DR-009
-  defaults.
+  defaults. Receipts create batches PENDING_INSPECTION in QUARANTINED (DR-002). INV-006 (DR-011) lands
+  first, before damaged units go into QUARANTINED on a released batch.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
-  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Open item
-  from the INV-002 review: releasing a QUARANTINED batch restores all of its quarantined stock in a
-  warehouse (apart from LEGACY carry-over), including units quarantined for another reason (e.g.
-  damage); INV-003 must decide whether release returns only the batch's own INSPECTION net quantity.
+  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Builds on
+  INV-006: release returns only the batch's own INSPECTION net quantity (DR-011).
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
 - **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
   receiving and counting screens.
