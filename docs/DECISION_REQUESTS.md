@@ -1,15 +1,15 @@
 # Decision requests
 
-Business choices the code must not invent. Each request names the task it blocks, the options, and the
-default a session would propose. Ahmed (or whoever he names) decides; the answer moves into the task's
-ADR in `docs/DECISIONS.md` and the request is marked **Decided** with the date. Replace answered entries'
-"Status" line rather than appending history; git keeps the history.
+Business choices the code must not invent. Each request names the task it blocks, the question and the
+answer. Ahmed (or whoever he names) decides; the answer is recorded here with its date and carried into
+the task's ADR in `docs/DECISIONS.md`. Replace an entry's text when it is decided rather than appending
+history; git keeps the history.
 
 | ID     | Topic                              | Blocks           | Status |
 | ------ | ---------------------------------- | ---------------- | ------ |
-| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open   |
+| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open               |
 
-DR-001…DR-008 (INV-002) are proposed in draft PR #5; merge both lists when either lands.
+DR-001…DR-008 (INV-002) are in PR #5; when merging, keep that header and table and add the DR-009 row.
 
 ## FIN — inventory costing (ADR-018, Proposed)
 
