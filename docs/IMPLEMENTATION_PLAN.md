@@ -84,7 +84,7 @@ BOOT-001, DB-001. Stack chosen and documented (`docs/DECISIONS.md`), tooling, mi
 ## Phase 2 — Inventory and suppliers (in progress)
 
 Done: APR-001, INV-001, PUR-001. Order of the rest: INV-002 (Ready) → INV-003 and PUR-002 → INV-004,
-INV-005. PUR-002 first records an ADR on converting purchase prices into ledger unit costs.
+INV-005. PUR-002 follows ADR-024 for cost precision and rounding.
 
 Exit criteria: every quantity change is a ledger movement written in the same transaction as the
 balance; no overselling or negative stock under concurrent operations (parallel-transaction tests);
@@ -111,8 +111,8 @@ tracking; returns with disposition and refunds; POS sales through the ledger.
 
 ## Phase 5 — Invoicing and financial foundation
 
-Tasks: INVC-001, EINV-001, EINV-002, FIN-001, FIN-002, FIN-003, PUR-003. Requires ADR-018 confirmed by an
-accountant. Exit: invoices and credit notes with tax breakdowns and sequences; fiscal-document adapters
+Tasks: INVC-001, EINV-001, EINV-002, FIN-001, FIN-002, FIN-003, PUR-003. ADR-018 and ADR-024 are accepted for
+development; production use requires the accountant's written confirmation (go-live gate). Exit: invoices and credit notes with tax breakdowns and sequences; fiscal-document adapters
 with configuration checklists, validated in authority sandboxes when credentials exist; balanced,
 immutable journals; expenses; inventory cost and COGS; basic financial reports.
 

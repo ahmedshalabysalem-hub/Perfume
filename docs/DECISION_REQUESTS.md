@@ -5,9 +5,9 @@ answer. Ahmed (or whoever he names) decides; the answer is recorded here with it
 the task's ADR in `docs/DECISIONS.md`. Replace an entry's text when it is decided rather than appending
 history; git keeps the history.
 
-| ID     | Topic                              | Blocks           | Status                            |
-| ------ | ---------------------------------- | ---------------- | --------------------------------- |
-| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open — simulated test answer only |
+| ID     | Topic                              | Blocks           | Status         |
+| ------ | ---------------------------------- | ---------------- | -------------- |
+| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Accepted (dev) |
 
 DR-001…DR-008 (INV-002) are in PR #5; when merging, keep that header and table and add the DR-009 row.
 
@@ -46,7 +46,37 @@ DR-001…DR-008 (INV-002) are in PR #5; when merging, keep that header and table
 - **Blocks:** FIN-001 (journals), FIN-003 (valuation), RPT-001 profitability. **Does not block** INV-002
   or INV-003, provided movements keep recording unit cost per batch line so option B stays possible.
   Question 3 also feeds the PUR-002 cost-precision ADR; PUR-002 must not assume an allocation rule.
-- **Answer:** none from the accountant. A **simulated** answer (below) exists for testing only.
+- **Answer:** none from the accountant yet. On 2026-10-22 Ahmed delegated the choice to the project
+  ("decide what is most suitable and continue"); ADR-018, ADR-024 and the development defaults below are
+  therefore **accepted for development**. This is not accountant approval: the accountant responsible
+  for each legal entity must confirm them in writing before production use (go-live gate, REL-001).
+
+#### Development defaults (in force for building and testing, 2026-10-22)
+
+Where the simulated answers below leave a point open, development uses:
+
+1. **Allocation:** weight-priced freight by `weight_grams`; a receipt line without a weight blocks
+   weight allocation until the weight is entered, or the user allocates that cost by value and the
+   choice is recorded on the document. Volume-priced costs use value until product volume is captured.
+   Duties assessed per line are assigned to that line; other shared costs by value.
+2. **Taxes:** each charge type carries a per-entity "recoverable" setting maintained by finance staff,
+   with no seeded list; recoverable VAT is never capitalised.
+3. **Late landed costs:** split by quantity between what remains of the original receipt (inventory)
+   and what was already sold (cost of goods sold adjustment).
+4. **Foreign currency:** inventory cost uses the exchange rate of the receipt date, with source and date
+   stored; payment differences go to exchange gain/loss, never to inventory.
+5. **Write-offs:** every write-off needs ADR-019 approval (no thresholds until the business sets them);
+   one inventory write-off loss account per entity; no automatic near-expiry write-down, a review
+   report instead.
+6. **Returns and samples:** customer returns re-enter at the original outbound unit cost after
+   inspection; supplier returns leave at the receipt's cost. Free samples are separate variants and
+   never enter a sellable item's average.
+7. **Rounding:** half-up to minor units per journal line; differences to a dedicated rounding account
+   (ADR-024).
+8. **Opening balances:** entered by holders of `inventory.adjust.approve` (as today) for development;
+   before go-live the accountant signs off the opening valuation.
+9. **Between entities:** stock never moves between the Saudi and Egyptian entities in the system;
+   transfers stay inside one entity. Inter-company sales are a later, separate design.
 
 #### Simulated answer — TEST ONLY, not accountant approval
 
