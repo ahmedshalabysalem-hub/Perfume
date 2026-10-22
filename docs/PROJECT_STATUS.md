@@ -1,10 +1,10 @@
 # Project status
 
-_Last updated: 2026-10-22 — session 4 (INV-002 implementation)_
+_Last updated: 2026-10-22 — end of session 4 (complete handoff; INV-002 merged)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
-**Next task:** **INV-002** is in **Review** on PR #5 (implemented and tested; merges after CI is green
-and the review is approved). Then INV-003 or PUR-002.
+**Next task:** **PUR-002** (spec first), with DR-011 (what a release restores) put to Ahmed in
+parallel; INV-003 is the alternative. Details and prerequisites: `docs/SESSION_HANDOFF.md`. No open PRs.
 
 ## Completed
 
@@ -22,19 +22,23 @@ and the review is approved). Then INV-003 or PUR-002.
   safe posting with idempotency keys, opening balances, stock overview and movement history.
 - **PUR-001 Suppliers** (PR #3, ADR-021) — supplier profiles per buying legal entity, contacts, supplier
   product codes with dated last costs, `suppliers.view`, Procurement → Suppliers pages.
+- **INV-002 Batches, inspection and expiry** (PR #5, ADR-023, merge `4210b62`) — batches per company,
+  inspection and verification, expiry with DAY/MONTH precision, LEGACY carry-over, one shared sale
+  eligibility rule in the ledger, services and database; balance keys immutable; independent review
+  passed.
+- **OPS-001, QA-002** (PR #6) — Docker Compose validated and in CI; test-gap assessment.
+- **ADR-018 and ADR-024 Accepted** (PRs #7–#9) — by Ahmed as owner; accounting approvals come from
+  the accountant or the owner, chosen per request.
 - **Workflow audit** (session 3, ADR-022) — roles, effort and review policy in `CLAUDE.md`; INV-002
   specified; plan, board, PRD and status files reconciled with the merged code.
 
 ## In progress
 
-INV-002 in Review (PR #5, branch `claude/project-thread-1a8ij7`): ADR-023 Accepted (design v4);
-batches per company with inspection, expiry and verification; one shared eligibility rule in the
-ledger, the services and the database; LEGACY carry-over migration; batch pages; permission
-`inventory.batches.manage`.
+Nothing. All PRs (#1–#9) are merged.
 
 ## Pending (Phase 2, in order)
 
-INV-002 (Review) → INV-003 adjustments/counts/transfers and PUR-002 purchase orders → INV-004
+PUR-002 purchase orders and INV-003 adjustments/counts/transfers (DR-011 first) → INV-004
 reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Blockers and open decisions
@@ -46,11 +50,17 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 - **Compliance:** summaries in `docs/COUNTRY_COMPLIANCE.md` still need advisor review. Nothing is
   implemented for e-invoicing, payments or shipping integrations.
 - **Test gaps:** no Critical; High G1–G2 (sign-in rate limiting, image upload) tracked as QA-003 in
-  `docs/TEST_PLAN.md`; G3 and G4 are closed by INV-002 once PR #5 merges.
+  `docs/TEST_PLAN.md`; G3 and G4 closed by INV-002.
+- **Open item for INV-003/PUR-002 (DR-011, to ask Ahmed):** releasing a QUARANTINED batch restores all
+  of its quarantined stock, including units quarantined for another reason (damage).
+- **Repository:** the default branch is still named `ccr-04855f0a-4t6vb0`; renaming is the owner's call.
 
 ## Verification evidence
 
-- Session 4, INV-002 on PR #5 (base `2cf04f0` merged in): `npm run lint`, `npm run typecheck`, Prettier,
+- Session 4, INV-002 merged as `4210b62`: CI green on the PR head `e77d4a7`; base CI run
+  [39768475242](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39768475242) on the merge
+  commit. Locally at `e77d4a7`: lint, typecheck, Prettier, `npm test` (246), build, 22 e2e.
+- Session 4, INV-002 on PR #5 before review fixes (base `2cf04f0` merged in): `npm run lint`, `npm run typecheck`, Prettier,
   `npm test` (20 files, 245 tests: unit 82, integration incl. `batches.test.ts` 29 and
   `inventory-batches-migration.test.ts` 4), the opposite-order concurrency test 20 runs in a row,
   `npm run build` and `npm run test:e2e` (22 Playwright tests) — all passed. Migration also applied to
@@ -71,5 +81,5 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 ## Recent decisions
 
 ADR-019 approvals · ADR-020 stock ledger · ADR-021 suppliers · ADR-022 task workflow (roles in one
-session, effort and review by risk) · ADR-018 weighted average cost (**Proposed**) · ADR-023 batches
-(INV-002).
+session, effort and review by risk) · ADR-018 weighted average cost (Accepted) · ADR-023 batches
+(INV-002) · ADR-024 cost precision (Accepted).

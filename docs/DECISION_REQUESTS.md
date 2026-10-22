@@ -19,6 +19,7 @@ history; git keeps the history.
 | DR-008 | Stock that exists before batches               | INV-002          | Decided 2026-10-22 |
 | DR-009 | Inventory costing method (ADR-018)             | FIN-001, FIN-003 | Decided 2026-10-22 |
 | DR-010 | Sale eligibility of LEGACY and unknown expiry  | INV-002          | Decided 2026-10-22 |
+| DR-011 | What releasing a quarantined batch restores    | INV-003, PUR-002 | Open               |
 
 ## INV-002 — batches, inspection and expiry (ADR-023)
 
@@ -121,7 +122,23 @@ Ahmed clarified the same day):
    eligibility function. Future order, reservation, storefront, POS and other stock-consuming paths must
    use it and test the relevant cases.
 
-## FIN — inventory costing (ADR-018, Proposed)
+### DR-011 — What releasing a quarantined batch restores
+
+**Open** (raised by the INV-002 review, 2026-10-22; decide before INV-003 or PUR-002 put damaged or
+otherwise held units into QUARANTINED on a batch). Today `moveForDecision` in
+`src/server/modules/inventory/batches.service.ts` moves **all** of a batch's QUARANTINED stock in each
+warehouse back to SELLABLE when the batch goes QUARANTINED → RELEASED (except the LEGACY carry-over),
+including units quarantined for another reason, such as damage.
+
+- **Option A (recommended):** QUARANTINED → RELEASED moves back only the net quantity of the batch's
+  own `INSPECTION` movements; units quarantined for other reasons stay held until their own decision.
+  PENDING_INSPECTION → RELEASED keeps today's behaviour. The LEGACY subtraction becomes the same rule.
+- **Option B:** keep today's behaviour; damaged units must be moved out of QUARANTINED (adjusted or
+  written off) before a release.
+
+Answer: _pending — Ahmed._
+
+## FIN — inventory costing (ADR-018, Accepted)
 
 ### DR-009 — Inventory costing method and landed cost
 
