@@ -147,6 +147,34 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 | Active staff               | Staff users with status ACTIVE (shown with `users.view`)                                   |
 | Recent activity            | Latest audit entries (shown with GLOBAL `audit.view`)                                      |
 
+## Approvals (APR-001, ADR-019)
+
+- A request names its subject (type and id), a summary, a reason and the scope where the subject lives.
+  At most one request per subject is pending at a time.
+- Submitting requires the subject's request permission at that scope; approving or rejecting requires
+  its approve permission at that scope (`docs/RBAC.md` §Approvals).
+- **The requester can never approve or reject their own request**, even when they hold the approve
+  permission. A rejection must give a reason.
+- A decision is final. The requester may withdraw (cancel) a pending request; the owning module may
+  cancel it as the system when the subject is voided.
+- Submission, decision and cancellation are audited and recorded in the request's history, in the same
+  transaction as the subject's change.
+
+## Inventory (INV-001, ADR-020)
+
+- Stock is kept per variant, warehouse and status: sellable, quarantined, damaged, returned. Quantities
+  are whole units. Only variants with inventory tracking hold stock.
+- Every change is a movement in the append-only stock ledger, written in the same transaction as the
+  balance it changes; corrections are new movements, never edits.
+- Stock never goes negative and only unreserved stock can leave (`available = on hand − reserved`),
+  also under concurrent sales. A posting either applies all its lines or none.
+- Repeating a posting with the same key changes nothing; reusing a key for different lines is refused.
+- Unit costs are exact decimals with up to 4 places in the warehouse country's currency; more precision
+  is rejected.
+- Opening balances record stock that existed before the system: permission `inventory.adjust.approve`
+  for the warehouse, a reason and a unit cost (zero allowed), once per variant, warehouse and status,
+  and only while that balance has no history. Each is audited.
+
 ## Suppliers (PUR-001, ADR-021)
 
 - A supplier belongs to one buying legal entity (and its country), fixed after creation; a supplier
@@ -165,9 +193,9 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 
 ## Planned rules (later phases — not enforced yet)
 
-- **Inventory (INV-001/002):** every quantity change is a ledger movement; no negative stock;
-  adjustments need a reason and approval; batches with expiry are picked first-expiry-first-out;
-  valuation per ADR-018 once confirmed.
+- **Inventory (INV-002…005):** adjustments need a reason and approval; batches with expiry are picked
+  first-expiry-first-out; quarantined or rejected batches are never sold; valuation per ADR-018 once
+  confirmed.
 - **Orders (ORD-001):** prices, taxes and product names are snapshotted on the order; stock is reserved
   at checkout and released on expiry or cancellation; order numbers are sequential per country.
 - **Payments (PAY-001/002):** an order is paid only on verified evidence (provider confirmation with a

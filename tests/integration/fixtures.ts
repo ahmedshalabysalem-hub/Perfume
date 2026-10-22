@@ -6,6 +6,10 @@ import { syncRbac } from "@/server/rbac/sync";
 
 const TABLES = [
   "audit_logs",
+  "approval_actions",
+  "approval_requests",
+  "stock_movements",
+  "stock_balances",
   "supplier_products",
   "supplier_contacts",
   "suppliers",
@@ -37,10 +41,11 @@ const TABLES = [
   "currencies",
 ];
 
-/** Empty every table (audit log included, via the retention-purge switch). */
+/** Empty every table (audit log and stock ledger included, via their purge switches). */
 export async function resetDatabase(): Promise<void> {
   await db.$transaction(async (tx) => {
     await tx.$executeRawUnsafe("SET LOCAL app.audit_retention_purge = 'on'");
+    await tx.$executeRawUnsafe("SET LOCAL app.stock_ledger_purge = 'on'");
     await tx.$executeRawUnsafe(`TRUNCATE TABLE ${TABLES.map((table) => `"${table}"`).join(", ")} CASCADE`);
   });
 }
@@ -74,7 +79,8 @@ export async function createStaff(
     | { type: "GLOBAL" }
     | { type: "COUNTRY"; countryCode: string }
     | { type: "LEGAL_ENTITY"; legalEntityId: string }
-    | { type: "STORE"; storeId: string },
+    | { type: "STORE"; storeId: string }
+    | { type: "WAREHOUSE"; warehouseId: string },
   options: { type?: "STAFF" | "CUSTOMER" } = {},
 ): Promise<UserActor> {
   const user = await db.user.create({ data: { email, name: email.split("@")[0]!, type: options.type ?? "STAFF" } });
@@ -87,7 +93,9 @@ export async function createStaff(
         ? `COUNTRY:${scope.countryCode}`
         : scope.type === "LEGAL_ENTITY"
           ? `LEGAL_ENTITY:${scope.legalEntityId}`
-          : `STORE:${scope.storeId}`;
+          : scope.type === "STORE"
+            ? `STORE:${scope.storeId}`
+            : `WAREHOUSE:${scope.warehouseId}`;
   await db.userRole.create({
     data: {
       userId: user.id,
@@ -97,6 +105,7 @@ export async function createStaff(
       countryCode: scope.type === "COUNTRY" ? scope.countryCode : null,
       legalEntityId: scope.type === "LEGAL_ENTITY" ? scope.legalEntityId : null,
       storeId: scope.type === "STORE" ? scope.storeId : null,
+      warehouseId: scope.type === "WAREHOUSE" ? scope.warehouseId : null,
     },
   });
   const actor = await reloadActor(user.id);

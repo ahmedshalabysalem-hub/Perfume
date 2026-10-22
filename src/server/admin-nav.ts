@@ -31,6 +31,10 @@ const NAVIGATION: NavDefinition[] = [
     ],
   },
   {
+    section: "inventory",
+    items: [{ href: "/admin/inventory/stock", label: "stock", icon: "stock", permission: "inventory.view" }],
+  },
+  {
     section: "procurement",
     items: [
       { href: "/admin/procurement/suppliers", label: "suppliers", icon: "suppliers", permission: "suppliers.view" },

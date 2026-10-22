@@ -1,6 +1,6 @@
 # Entity-relationship diagrams
 
-Implemented schema (30 tables) as of migration `20261022072014_suppliers`. Columns are limited to keys and
+Implemented schema (34 tables) as of migration `20261022072014_suppliers`. Columns are limited to keys and
 the fields that define relationships; full definitions are in `prisma/schema/*.prisma` and
 `docs/DATABASE.md`.
 
@@ -197,15 +197,41 @@ erDiagram
   CURRENCIES |o--o{ SUPPLIER_PRODUCTS : "last cost currency"
 ```
 
-## Phase 2 — indicative only (designed in INV-001/INV-002/PUR-002)
+## Approvals (APR-001)
 
-Not implemented. The final design is recorded in `docs/DECISIONS.md` and this file when each task ends.
+```mermaid
+erDiagram
+  USERS ||--o{ APPROVAL_REQUESTS : "requests"
+  USERS |o--o{ APPROVAL_REQUESTS : "decides"
+  COUNTRIES |o--o{ APPROVAL_REQUESTS : "scope"
+  LEGAL_ENTITIES |o--o{ APPROVAL_REQUESTS : "scope"
+  STORES |o--o{ APPROVAL_REQUESTS : "scope"
+  WAREHOUSES |o--o{ APPROVAL_REQUESTS : "scope"
+  APPROVAL_REQUESTS ||--o{ APPROVAL_ACTIONS : "history"
+  USERS |o--o{ APPROVAL_ACTIONS : "acted by"
+```
+
+The subject (`subject_type`, `subject_id`) is a polymorphic reference without a foreign key (ADR-019).
+
+## Inventory (INV-001)
 
 ```mermaid
 erDiagram
   WAREHOUSES ||--o{ STOCK_BALANCES : "holds"
   PRODUCT_VARIANTS ||--o{ STOCK_BALANCES : "stocked as"
-  STOCK_BALANCES ||--o{ STOCK_MOVEMENTS : "changed only by"
+  WAREHOUSES ||--o{ STOCK_MOVEMENTS : "at"
+  PRODUCT_VARIANTS ||--o{ STOCK_MOVEMENTS : "of"
+  CURRENCIES |o--o{ STOCK_MOVEMENTS : "unit cost currency"
+```
+
+One balance per variant, warehouse and status; movements are append-only (ADR-020).
+
+## Phase 2 — indicative only (designed in INV-002/PUR-002)
+
+Not implemented. The final design is recorded in `docs/DECISIONS.md` and this file when each task ends.
+
+```mermaid
+erDiagram
   PRODUCT_VARIANTS ||--o{ BATCHES : "received in"
   BATCHES |o--o{ STOCK_MOVEMENTS : "of batch"
   SUPPLIERS ||--o{ PURCHASE_ORDERS : "supplies"

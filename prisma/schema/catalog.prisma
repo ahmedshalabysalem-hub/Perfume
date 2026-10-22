@@ -262,6 +262,9 @@ model ProductVariant {
   images    ProductImage[]
   suppliers SupplierProduct[]
 
+  stockBalances  StockBalance[]
+  stockMovements StockMovement[]
+
   @@index([productId])
   @@index([status])
   @@map("product_variants")

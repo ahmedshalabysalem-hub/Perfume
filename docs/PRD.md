@@ -52,23 +52,23 @@ states. Authorization is enforced on the server, never only by hiding UI.
 
 Status: **Done** (implemented and tested), **Partial**, **Planned**. Phase numbers follow the brief.
 
-| #   | Module                                 | Phase | Status                       | Tasks                                  |
-| --- | -------------------------------------- | ----- | ---------------------------- | -------------------------------------- |
-| 1   | Product catalogue                      | 1     | Done (import/export planned) | CAT-001, CAT-002, CAT-003              |
-| 2   | Inventory and warehouse management     | 2     | Partial (warehouses only)    | ORG-001, INV-001…005                   |
-| 3   | Suppliers and procurement              | 2     | Partial (suppliers done)     | PUR-001 ✓, PUR-002, PUR-003            |
-| 4   | Customers and CRM                      | 3, 6  | Planned                      | CUST-001, CRM-001                      |
-| 5   | Cart and checkout                      | 3     | Planned                      | ORD-001, PRC-001, SHIP-001             |
-| 6   | Order management                       | 3     | Planned                      | ORD-001, ORD-002                       |
-| 7   | Payments and refunds                   | 4     | Planned                      | PAY-001, PAY-002                       |
-| 8   | Shipping and returns                   | 4     | Planned                      | SHIP-002, RET-001                      |
-| 9   | Point of sale                          | 4, 6  | Planned                      | POS-001, POS-002                       |
-| 10  | Invoicing and country compliance       | 5     | Planned (research done)      | INVC-001, EINV-001, EINV-002, COMP-001 |
-| 11  | Operational accounting                 | 5     | Planned                      | FIN-001…003                            |
-| 12  | Loyalty, promotions, marketing         | 6     | Planned                      | MKT-001, LOY-001, REV-001              |
-| 13  | Dashboard and reporting                | 1, 7  | Partial (catalogue KPIs)     | ADM-001, RPT-001                       |
-| 14  | Users, RBAC, approvals, audit          | 1, 2  | Done except approvals        | AUTH-001/002, AUD-001, APR-001         |
-| 15  | System administration and integrations | 1, 7  | Partial (organisation)       | ORG-001, INT-001, AI-001               |
+| #   | Module                                 | Phase | Status                        | Tasks                                  |
+| --- | -------------------------------------- | ----- | ----------------------------- | -------------------------------------- |
+| 1   | Product catalogue                      | 1     | Done (import/export planned)  | CAT-001, CAT-002, CAT-003              |
+| 2   | Inventory and warehouse management     | 2     | Partial (warehouses only)     | ORG-001, INV-001…005                   |
+| 3   | Suppliers and procurement              | 2     | Partial (suppliers)           | PUR-001, PUR-002, PUR-003              |
+| 4   | Customers and CRM                      | 3, 6  | Planned                       | CUST-001, CRM-001                      |
+| 5   | Cart and checkout                      | 3     | Planned                       | ORD-001, PRC-001, SHIP-001             |
+| 6   | Order management                       | 3     | Planned                       | ORD-001, ORD-002                       |
+| 7   | Payments and refunds                   | 4     | Planned                       | PAY-001, PAY-002                       |
+| 8   | Shipping and returns                   | 4     | Planned                       | SHIP-002, RET-001                      |
+| 9   | Point of sale                          | 4, 6  | Planned                       | POS-001, POS-002                       |
+| 10  | Invoicing and country compliance       | 5     | Planned (research done)       | INVC-001, EINV-001, EINV-002, COMP-001 |
+| 11  | Operational accounting                 | 5     | Planned                       | FIN-001…003                            |
+| 12  | Loyalty, promotions, marketing         | 6     | Planned                       | MKT-001, LOY-001, REV-001              |
+| 13  | Dashboard and reporting                | 1, 7  | Partial (catalogue KPIs)      | ADM-001, RPT-001                       |
+| 14  | Users, RBAC, approvals, audit          | 1, 2  | Done (approval UI per module) | AUTH-001/002, AUD-001, APR-001         |
+| 15  | System administration and integrations | 1, 7  | Partial (organisation)        | ORG-001, INT-001, AI-001               |
 
 ### Module 1 — Product catalogue _(Done, except import/export)_
 
@@ -174,12 +174,13 @@ margin and COGS, inventory valuation, low and slow stock, expiry alerts, purchas
 performance, repeat purchases, supplier balances, COD outstanding, POS reconciliation, expenses,
 loyalty. Financial KPIs carry written definitions; sales are never labelled profit.
 
-### Module 14 — Users, RBAC, approvals, audit _(Done except approvals)_
+### Module 14 — Users, RBAC, approvals, audit _(Done; approval screens arrive with each module)_
 
 Server-side permission checks with data scopes by legal entity, country, store and warehouse; audit of
 sensitive actions with actor, time, action, target, safe before/after values, reason/approval reference
-and correlation id; no secrets or unnecessary personal data in logs. **Planned:** approval workflows for
-stock adjustments, purchase orders, refunds and financial postings (APR-001).
+and correlation id; no secrets or unnecessary personal data in logs. The approval framework
+(APR-001, ADR-019) gives stock adjustments, purchase orders and refunds a maker-checker workflow;
+financial postings will add their policy with FIN-001. Approval screens ship with each consuming module.
 
 ### Module 15 — Administration and integrations _(Partial)_
 

@@ -10,8 +10,6 @@ Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
 | OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
-| INV-001   | Stock ledger and balances                                    | 2     | Ready   | P1               | Phase 1 closed                            |
-| APR-001   | Approval workflow framework                                  | 2     | Backlog | P1               | —                                         |
 | INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
 | INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001                          |
@@ -60,27 +58,29 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967), commit
 `25b1b15`) passed lint, format, typecheck, 108 Vitest tests, build and 16 Playwright tests.
 
-| ID        | Title                                                                                                                         | Commits                         | Evidence                                                                                      |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| BOOT-001  | Next.js 16 + TS strict + Tailwind 4 + ESLint/Prettier bootstrap                                                               | `4767a8f`                       | lint, typecheck, format check clean                                                           |
-| DB-001    | Schema (27 tables), migration with 29 CHECKs + 3 audit triggers, safe seed                                                    | `4767a8f`                       | integration suites on `migrate deploy`; seed re-run idempotent                                |
-| AUTH-001  | Staff sign-in/out, DB sessions, rate limit, password policy, change password                                                  | `6513a01`, `648acd9`, `e6c131f` | `auth.test.ts` (6), e2e `auth.spec.ts` (3)                                                    |
-| AUTH-002  | RBAC: 48 permissions, 12 roles, scoped assignments, escalation guard                                                          | `4767a8f`, `648acd9`            | `rbac.test.ts` (16), `access-and-organization.test.ts` (18), e2e `access-control.spec.ts` (2) |
-| AUD-001   | Append-only audit log, same-transaction writes, redaction, viewer                                                             | `4767a8f`, `648acd9`            | audit rows asserted in integration suites; trigger rejections observed in CI                  |
-| I18N-001  | Arabic RTL / English LTR, typed messages, parity test, negotiation                                                            | `6513a01`                       | `messages.test.ts` (3), e2e `storefront.spec.ts`                                              |
-| ORG-001   | Countries, legal entities, stores, warehouses (scoped)                                                                        | `648acd9`                       | `access-and-organization.test.ts`                                                             |
-| ADM-001   | Admin shell, scoped navigation, dashboard KPIs                                                                                | `6513a01`                       | KPIs checked against seed; e2e access spec                                                    |
-| ACC-001   | Staff users and role-assignment management                                                                                    | `648acd9`                       | `access-and-organization.test.ts`                                                             |
-| CAT-001   | Catalogue: brands, categories, attributes, products, variants, SKU/GTIN, market prices, images, compliance references, labels | `6513a01`, `1cb7076`            | `catalog.test.ts` (28), e2e `catalog.spec.ts` (4)                                             |
-| STORE-001 | Read-only storefront: market selection, listing, filters, product pages, sitemap                                              | `b1b2848`                       | `storefront.test.ts` (6), e2e `storefront.spec.ts` (7)                                        |
-| QA-001    | Vitest unit + integration and Playwright e2e infrastructure                                                                   | `4767a8f`, `e6c131f`            | CI run 1                                                                                      |
-| GOV-001   | Governance files and session handoff                                                                                          | `c7ad28a`                       | files reviewed against code and tests                                                         |
-| COMP-001  | Country compliance register (KSA, Egypt)                                                                                      | `ba959d4`                       | 16 requirements, official sources, statuses, open questions                                   |
-| DOC-001   | README and local development setup                                                                                            | `25b1b15`                       | `npm ci`, `db:deploy`, `db:sync-rbac`, `db:seed` (re-run) executed                            |
-| CI-001    | GitHub Actions CI pipeline                                                                                                    | `25b1b15`                       | CI run 1 green                                                                                |
-| DOC-002   | PRD, architecture and business-rules documents                                                                                | session 1 docs commit           | statements checked against services, schema and tests                                         |
-| DOC-003   | Database, ERD, RBAC, API spec and test plan documents                                                                         | session 1 docs commit           | counts verified: 27 tables, 29 CHECKs, 3 triggers, 48 permissions, 12 roles                   |
-| PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-021)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)   |
+| ID        | Title                                                                                                                         | Commits                         | Evidence                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| BOOT-001  | Next.js 16 + TS strict + Tailwind 4 + ESLint/Prettier bootstrap                                                               | `4767a8f`                       | lint, typecheck, format check clean                                                                       |
+| DB-001    | Schema (27 tables), migration with 29 CHECKs + 3 audit triggers, safe seed                                                    | `4767a8f`                       | integration suites on `migrate deploy`; seed re-run idempotent                                            |
+| AUTH-001  | Staff sign-in/out, DB sessions, rate limit, password policy, change password                                                  | `6513a01`, `648acd9`, `e6c131f` | `auth.test.ts` (6), e2e `auth.spec.ts` (3)                                                                |
+| AUTH-002  | RBAC: 48 permissions, 12 roles, scoped assignments, escalation guard                                                          | `4767a8f`, `648acd9`            | `rbac.test.ts` (16), `access-and-organization.test.ts` (18), e2e `access-control.spec.ts` (2)             |
+| AUD-001   | Append-only audit log, same-transaction writes, redaction, viewer                                                             | `4767a8f`, `648acd9`            | audit rows asserted in integration suites; trigger rejections observed in CI                              |
+| I18N-001  | Arabic RTL / English LTR, typed messages, parity test, negotiation                                                            | `6513a01`                       | `messages.test.ts` (3), e2e `storefront.spec.ts`                                                          |
+| ORG-001   | Countries, legal entities, stores, warehouses (scoped)                                                                        | `648acd9`                       | `access-and-organization.test.ts`                                                                         |
+| ADM-001   | Admin shell, scoped navigation, dashboard KPIs                                                                                | `6513a01`                       | KPIs checked against seed; e2e access spec                                                                |
+| ACC-001   | Staff users and role-assignment management                                                                                    | `648acd9`                       | `access-and-organization.test.ts`                                                                         |
+| CAT-001   | Catalogue: brands, categories, attributes, products, variants, SKU/GTIN, market prices, images, compliance references, labels | `6513a01`, `1cb7076`            | `catalog.test.ts` (28), e2e `catalog.spec.ts` (4)                                                         |
+| STORE-001 | Read-only storefront: market selection, listing, filters, product pages, sitemap                                              | `b1b2848`                       | `storefront.test.ts` (6), e2e `storefront.spec.ts` (7)                                                    |
+| QA-001    | Vitest unit + integration and Playwright e2e infrastructure                                                                   | `4767a8f`, `e6c131f`            | CI run 1                                                                                                  |
+| GOV-001   | Governance files and session handoff                                                                                          | `c7ad28a`                       | files reviewed against code and tests                                                                     |
+| COMP-001  | Country compliance register (KSA, Egypt)                                                                                      | `ba959d4`                       | 16 requirements, official sources, statuses, open questions                                               |
+| DOC-001   | README and local development setup                                                                                            | `25b1b15`                       | `npm ci`, `db:deploy`, `db:sync-rbac`, `db:seed` (re-run) executed                                        |
+| CI-001    | GitHub Actions CI pipeline                                                                                                    | `25b1b15`                       | CI run 1 green                                                                                            |
+| DOC-002   | PRD, architecture and business-rules documents                                                                                | session 1 docs commit           | statements checked against services, schema and tests                                                     |
+| DOC-003   | Database, ERD, RBAC, API spec and test plan documents                                                                         | session 1 docs commit           | counts verified: 27 tables, 29 CHECKs, 3 triggers, 48 permissions, 12 roles                               |
+| APR-001   | Approval workflow framework: requests, append-only history, separation of duties, scoped approvers                            | `436a974`                       | `approvals.test.ts` unit (4) and integration (19); `npm run verify` 131 tests (session 2)                 |
+| INV-001   | Stock ledger, balances and opening balances (ADR-020)                                                                         | `e61e099`, merge `f064554`      | `inventory.test.ts` (27), `inventory-schemas.test.ts` (3), e2e `inventory.spec.ts` (2); CI green on PR #1 |
+| PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-021)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)               |
 
 ---
 
@@ -88,7 +88,12 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 
 ### INV-001 — Stock ledger and balances
 
-- **Status:** Ready · **Priority:** P1 · **Effort:** highest (inventory concurrency, migration)
+- **Status:** Done (merged 2026-10-22 as `f064554`, CI green on `3ce46c9`) · **Priority:** P1 · **Effort:** highest (inventory concurrency, migration)
+- **Delivered:** ADR-020; migration `20261022071737_inventory_stock_ledger` (2 tables, 11 CHECKs, 3
+  triggers); `src/server/modules/inventory/{ledger,stock.service}.ts`; pages under
+  `/admin/inventory`; `tests/integration/inventory.test.ts` (27), `tests/unit/inventory-schemas.test.ts`
+  (3), `tests/e2e/inventory.spec.ts` (2). Deviation: one status per movement row (a status change is
+  two lines) instead of "status from/to" columns — see ADR-020.
 - **Depends on:** Phase 1 closed; ADR-018 (proposed costing) — cost is captured, not yet valued.
 
 **Objective** — Every stock quantity per variant, warehouse and stock status comes from an immutable
@@ -202,9 +207,6 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
 - **OPS-001** — Done except the Docker run: run `docker compose up -d`, then the README quick start, and
   record the result.
-- **APR-001 Approvals** — generic approval requests/actions (requester, approver with permission and
-  scope, decision, reason), separation of duties (requester cannot approve), audit; used by INV-003,
-  PUR-002, RET-001, FIN-001.
 - **INV-002 Batches** — lot number, manufacturing and expiry dates, supplier and receipt reference,
   inspection status (pending, released, quarantined, rejected); only released stock is sellable; FEFO.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected

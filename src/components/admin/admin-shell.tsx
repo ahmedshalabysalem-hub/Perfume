@@ -2,6 +2,7 @@
 
 import {
   Building2,
+  Boxes,
   ClipboardList,
   Droplets,
   FlaskConical,
@@ -46,6 +47,7 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   notes: Sparkles,
   families: Droplets,
   concentrations: FlaskConical,
+  stock: Boxes,
   countries: Globe2,
   legalEntities: Building2,
   stores: Store,

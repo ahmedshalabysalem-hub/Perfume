@@ -22,11 +22,12 @@ model Currency {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  countries     Country[]
-  stores        Store[]
-  prices        ProductPrice[]
-  suppliers     Supplier[]
-  supplierCosts SupplierProduct[]
+  countries      Country[]
+  stores         Store[]
+  prices         ProductPrice[]
+  stockMovements StockMovement[]
+  suppliers      Supplier[]
+  supplierCosts  SupplierProduct[]
 
   @@map("currencies")
 }
@@ -48,14 +49,15 @@ model Country {
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  currency      Currency            @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
-  legalEntities LegalEntity[]
-  stores        Store[]
-  warehouses    Warehouse[]
-  prices        ProductPrice[]
-  compliance    ProductCompliance[]
-  roleScopes    UserRole[]
-  suppliers     Supplier[]
+  currency         Currency            @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
+  legalEntities    LegalEntity[]
+  stores           Store[]
+  warehouses       Warehouse[]
+  prices           ProductPrice[]
+  compliance       ProductCompliance[]
+  roleScopes       UserRole[]
+  approvalRequests ApprovalRequest[]
+  suppliers        Supplier[]
 
   /// Target of product_prices(country_code, currency_code): a price is always
   /// in its market's currency.
@@ -87,11 +89,12 @@ model LegalEntity {
   createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  country    Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
-  stores     Store[]
-  warehouses Warehouse[]
-  roleScopes UserRole[]
-  suppliers  Supplier[]
+  country          Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  stores           Store[]
+  warehouses       Warehouse[]
+  roleScopes       UserRole[]
+  approvalRequests ApprovalRequest[]
+  suppliers        Supplier[]
 
   @@unique([id, countryCode])
   @@index([countryCode])
@@ -116,10 +119,11 @@ model Store {
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  legalEntity LegalEntity @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
-  country     Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
-  currency    Currency    @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  roleScopes  UserRole[]
+  legalEntity      LegalEntity       @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country          Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  currency         Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  roleScopes       UserRole[]
+  approvalRequests ApprovalRequest[]
 
   @@index([legalEntityId])
   @@index([countryCode])
@@ -140,9 +144,13 @@ model Warehouse {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  legalEntity LegalEntity @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
-  country     Country     @relation(fields: [countryCode], references: [code], onDelete: Restrict)
-  roleScopes  UserRole[]
+  legalEntity      LegalEntity       @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country          Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  roleScopes       UserRole[]
+  approvalRequests ApprovalRequest[]
+
+  stockBalances  StockBalance[]
+  stockMovements StockMovement[]
 
   @@index([legalEntityId])
   @@index([countryCode])
