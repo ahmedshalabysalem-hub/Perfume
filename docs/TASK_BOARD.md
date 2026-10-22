@@ -10,7 +10,7 @@ Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
 | OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
-| INV-001   | Stock ledger and balances                                    | 2     | Review  | P1               | PR #1 (merge after PR #2)                 |
+| INV-001   | Stock ledger and balances                                    | 2     | Review  | P1               | PR #1 (PR #2 merged)                      |
 | PUR-001   | Suppliers and supplier products                              | 2     | Backlog | P1               | —                                         |
 | INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |

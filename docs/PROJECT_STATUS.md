@@ -4,9 +4,9 @@ _Last updated: 2026-10-22 — end of session 2_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 complete except OPS-001 (docker-compose
 needs one run on a machine with Docker).
-**In review:** APR-001 approval framework (PR #2) and INV-001 stock ledger (PR #1); merge order and ADR
-numbering in `docs/SESSION_HANDOFF.md`.
-**Next task:** INV-002 batches or INV-003 adjustments (both unblocked once #1 and #2 are merged).
+**Merged:** APR-001 approval framework (PR #2, 2026-10-22). **In review:** INV-001 stock ledger (PR #1);
+merge order and ADR numbering in `docs/SESSION_HANDOFF.md`.
+**Next task:** INV-002 batches or INV-003 adjustments (both unblocked once #1 is merged).
 
 ## Completed milestones
 
@@ -32,6 +32,8 @@ numbering in `docs/SESSION_HANDOFF.md`.
   `prettier --check .` clean; `prisma migrate diff` shows no drift.
 - Session 2, INV-001 branch `claude/project-thread-qunsge`: lint, typecheck, `npx prettier --check .`,
   138 Vitest tests (53 unit, 85 integration), build and **18/18 Playwright** tests — all passed.
+- Session 2, INV-001 after merging the base with APR-001: fresh databases, deploy (3 migrations), seed, no
+  drift; lint, Prettier check, typecheck, 161 Vitest tests, build and **18/18 Playwright** — all passed.
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
@@ -61,5 +63,5 @@ deviations (`docs/IMPLEMENTATION_PLAN.md`).
 
 ## Next recommended action
 
-Merge APR-001 (PR #2), then INV-001 (PR #1), once CI is green on each. That unblocks INV-003
+Merge INV-001 (PR #1) once CI is green (APR-001, PR #2, is merged). That unblocks INV-003
 adjustments/counts/transfers (needs both) and, with PUR-001 and INV-002, PUR-002 purchase orders.

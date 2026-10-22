@@ -4,7 +4,7 @@ _Session 2 — 2026-10-22 — parallel threads, each on its own branch from `ccr
 APR-001 on `claude/project-thread-wabex7` (PR #2), INV-001 on `claude/project-thread-qunsge` (PR #1)._
 
 ADR numbering after reconciliation: ADR-019 approvals (APR-001), ADR-020 stock ledger (INV-001).
-Recommended merge order: PR #2, then PR #1 (the INV-001 branch merges the base after #2 lands).
+Merge order: PR #2 (merged 2026-10-22, `185def3`), then PR #1 (this branch merged the base after #2).
 
 ## APR-001 — approval workflow framework
 
@@ -29,12 +29,10 @@ BUSINESS_RULES, TEST_PLAN, PRD, TASK_BOARD, PROJECT_STATUS, this file).
 
 - `npm run verify` — passed: lint, typecheck, 131 tests (12 files), build.
 - `npx prettier --check .` — clean. `prisma migrate diff --from-config-datasource --to-schema` — no drift.
-- E2E not run (no routes or UI changed). Branch not pushed yet: waiting for Ahmed's go-ahead, so CI has
-  not run on it.
+- E2E not run (no routes or UI changed). CI passed on PR #2 before it was merged.
 
 ### Unresolved
 
-- Confirm CI green on PR #2.
 - No approval screens: INV-003 / PUR-002 add their own approve/reject actions over the service; a
   generic inbox would need per-subject effect handlers (ADR-019 consequences).
 - Carried over: OPS-001 Docker run; TEST_PLAN known gaps; ADR-018 accountant confirmation.
@@ -85,7 +83,7 @@ BUSINESS_RULES, TEST_PLAN, PRD, TASK_BOARD, PROJECT_STATUS, this file).
 
 ## Next exact task
 
-1. Merge PR #2 (APR-001), then PR #1 (INV-001), each with CI green; move both to Done with the CI runs.
+1. Merge PR #1 (INV-001) with CI green (PR #2 is merged); move INV-001 to Done with its CI run.
 2. **INV-003 — adjustments, counts and transfers** (consumes the ledger and the approval service) or
    **INV-002 — batches**; expand the chosen outline into a full spec first.
 
