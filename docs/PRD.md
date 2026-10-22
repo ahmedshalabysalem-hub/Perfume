@@ -55,7 +55,7 @@ Status: **Done** (implemented and tested), **Partial**, **Planned**. Phase numbe
 | #   | Module                                 | Phase | Status                        | Tasks                                  |
 | --- | -------------------------------------- | ----- | ----------------------------- | -------------------------------------- |
 | 1   | Product catalogue                      | 1     | Done (import/export planned)  | CAT-001, CAT-002, CAT-003              |
-| 2   | Inventory and warehouse management     | 2     | Partial (warehouses only)     | ORG-001, INV-001…005                   |
+| 2   | Inventory and warehouse management     | 2     | Partial (stock ledger)        | ORG-001, INV-001…005                   |
 | 3   | Suppliers and procurement              | 2     | Partial (suppliers)           | PUR-001, PUR-002, PUR-003              |
 | 4   | Customers and CRM                      | 3, 6  | Planned                       | CUST-001, CRM-001                      |
 | 5   | Cart and checkout                      | 3     | Planned                       | ORD-001, PRC-001, SHIP-001             |
@@ -82,7 +82,7 @@ several sizes. Barcodes: scanning, uniqueness, label printing, never fabricated 
 **Open:** product import/export with validation (CAT-003); per-variant purchase cost arrives with
 procurement (PUR-002).
 
-### Module 2 — Inventory and warehouse _(Planned; warehouses exist)_
+### Module 2 — Inventory and warehouse _(Partial: warehouses, stock ledger, balances and opening balances — INV-001)_
 
 Warehouses and optional locations/shelves, balances, movements, reservations, goods receipts, counts,
 adjustments, transfers, statuses (sellable, damaged, quarantined, returned), reorder thresholds and

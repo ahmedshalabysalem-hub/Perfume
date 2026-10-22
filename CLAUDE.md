@@ -57,16 +57,34 @@ hand-written shadcn-style components · React Hook Form + Zod 4 · Prisma 7 (`pr
   weaken authorization for a demo.
 - Git: focused commits with descriptive messages; push only to the designated session branch; no
   force-push; never discard uncommitted work without permission.
-- Effort: routine CRUD/UI at normal effort; schema, authorization and integrations at high effort;
-  money, inventory concurrency, payments, migrations and security reviews at the highest.
-- Use subagents only for genuinely independent work; never let two agents edit the same files or
-  migrations.
+
+## Roles, effort and review (ADR-022)
+
+- Roles are responsibilities, not separate agents; one session normally covers all three.
+  **Director:** picks the next Ready task, checks dependencies, completes the spec and acceptance
+  criteria, keeps the architecture consistent, reviews the result, updates status/board/handoff.
+  **Implementer:** reads the spec and the code it touches, implements, writes tests, reports actual
+  results. **Reviewer/QA:** checks every acceptance criterion, authorization and data integrity, reads
+  the diff, runs the tests, names regressions and gaps.
+- Review depth follows risk: routine work — self-review of the diff plus the checks; high and highest
+  effort — a separate review pass against the acceptance criteria before the task is Done.
+- Subagents only for genuinely independent work, given only their task's context; never two agents on
+  the same files or migrations. Parallel threads each keep their own handoff section; ADR numbers and
+  the shared status files are reconciled at merge.
+- Effort is a recommendation per task (`Effort` field on the board): **normal** — CRUD, form validation,
+  UI styling, simple fixes, doc formatting; **high** — schema and relationship design, architecture,
+  complex business rules, authorization, integration design; **highest** — payments, financial
+  consistency, inventory concurrency, security-sensitive changes, destructive migrations, production
+  data recovery, hard production defects. The model and effort setting are chosen by the person in
+  the app; nothing switches them by task, so never claim to have changed them.
+- Report results and evidence, not narration; do not repeat analysis already recorded in the docs.
 
 ## End of every session
 
 Run the checks above, review `git diff`, then update `docs/TASK_BOARD.md`, `docs/PROJECT_STATUS.md`
-and `docs/SESSION_HANDOFF.md` (changes, checks actually run, open issues, next exact task). Report with
-the completion format in `docs/TASK_TEMPLATE.md`.
+and `docs/SESSION_HANDOFF.md` (changes, checks actually run, open issues, next exact task). Replace
+stale entries rather than appending; the handoff describes the latest state, git keeps the history.
+Report with the completion format in `docs/TASK_TEMPLATE.md`.
 
 ## Documentation map
 

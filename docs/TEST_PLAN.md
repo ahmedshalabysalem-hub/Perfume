@@ -68,7 +68,7 @@ password; tests run with one worker.
 | Image upload and barcode label page have no automated tests              | Add integration test for `uploadProductImage` (sharp re-encoding, limits) and an e2e smoke for labels with the next catalogue change |
 | No automated accessibility checks                                        | Add axe-core checks to key pages (REL-001)                                                                                           |
 | `docker-compose.yml` not exercised                                       | OPS-001 manual verification                                                                                                          |
-| Concurrency, idempotency, financial consistency                          | Arrive with INV-001, ORD-001, PAY-001, FIN-001 (each task's acceptance criteria require them)                                        |
+| Order, payment and financial consistency                                 | Stock concurrency and idempotency covered by `inventory.test.ts` (INV-001); the rest arrive with ORD-001, PAY-001, FIN-001           |
 | Backup/restore, performance                                              | REL-001, OPS-003                                                                                                                     |
 
 ## Future test requirements by phase (from the brief)

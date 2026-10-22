@@ -9,8 +9,8 @@ sequencing decisions and verification gates.
 | Phase | Goal                                          | Status                                            |
 | ----- | --------------------------------------------- | ------------------------------------------------- |
 | 0     | Inspect, plan, bootstrap                      | Done                                              |
-| 1     | Working foundation + catalogue vertical slice | Closing — documentation (DOC-002/003) left        |
-| 2     | Inventory and suppliers                       | Next                                              |
+| 1     | Working foundation + catalogue vertical slice | Done except OPS-001 (Docker run)                  |
+| 2     | Inventory and suppliers                       | In progress — APR-001, INV-001, PUR-001 done      |
 | 3     | Storefront and orders                         | Browsing done early (STORE-001); rest not started |
 | 4     | Payments, shipping, returns, POS foundations  | Not started                                       |
 | 5     | Invoicing and financial foundation            | Compliance research done (COMP-001)               |
@@ -22,7 +22,7 @@ sequencing decisions and verification gates.
 flowchart LR
   P1[Phase 1 closed] --> INV001[INV-001] & APR001[APR-001] & PUR001[PUR-001]
   INV001 --> INV002[INV-002] & INV004[INV-004]
-  INV001 & APR001 --> INV003[INV-003]
+  INV001 & APR001 & INV002 --> INV003[INV-003]
   INV002 & PUR001 & APR001 --> PUR002[PUR-002]
   INV002 --> INV005[INV-005]
   P1 --> CUST001[CUST-001] & PRC001[PRC-001] & SHIP001[SHIP-001]
@@ -47,7 +47,9 @@ flowchart LR
 3. **Tax calculation in Phase 3** (PRC-001): checkout must snapshot taxes; invoice tax profiles and
    documents extend it in Phase 5 (INVC-001).
 4. **Shipping fees in Phase 3** (SHIP-001) for checkout totals; carriers and shipments stay Phase 4.
-5. **E-invoicing is release-critical:** no live sales in a market before its fiscal documents comply
+5. **Batches before adjustments** (INV-002 before INV-003): ADR-020 adds the batch dimension with
+   INV-002, so counts, adjustments and transfers are built once on batch-aware balances.
+6. **E-invoicing is release-critical:** no live sales in a market before its fiscal documents comply
    (`docs/COUNTRY_COMPLIANCE.md`), even though the brief places it in Phase 5.
 
 ## Phase 0 — Inspect, plan, bootstrap — Done
@@ -58,8 +60,8 @@ BOOT-001, DB-001. Stack chosen and documented (`docs/DECISIONS.md`), tooling, mi
 
 - **M1.1 Foundation — Done:** AUTH-001, AUTH-002, AUD-001, I18N-001, ORG-001, ADM-001, ACC-001.
 - **M1.2 Catalogue slice — Done:** CAT-001, STORE-001, QA-001.
-- **M1.3 Closure:** GOV-001 ✔, COMP-001 ✔, DOC-001 ✔, CI-001 ✔, OPS-001 (needs a Docker run), DOC-002,
-  DOC-003.
+- **M1.3 Closure:** GOV-001 ✔, COMP-001 ✔, DOC-001 ✔, CI-001 ✔, DOC-002 ✔, DOC-003 ✔, OPS-001 (needs a
+  Docker run).
 
 | Acceptance criterion (brief §10)                              | State                                                          |
 | ------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -77,11 +79,12 @@ BOOT-001, DB-001. Stack chosen and documented (`docs/DECISIONS.md`), tooling, mi
 | Automated tests for product workflows and security boundaries | Met — 108 Vitest + 16 Playwright                               |
 | Production build succeeds                                     | Met — CI run 1 (2026-10-21)                                    |
 | No inert buttons or fabricated success                        | Met by review                                                  |
-| Required documentation                                        | DOC-002/003 in progress                                        |
+| Required documentation                                        | Met — DOC-001…003                                              |
 
-## Phase 2 — Inventory and suppliers (next)
+## Phase 2 — Inventory and suppliers (in progress)
 
-Tasks: INV-001, APR-001, PUR-001, INV-002, PUR-002, INV-003, INV-004, INV-005.
+Done: APR-001, INV-001, PUR-001. Order of the rest: INV-002 (Ready) → INV-003 and PUR-002 → INV-004,
+INV-005. PUR-002 first records an ADR on converting purchase prices into ledger unit costs.
 
 Exit criteria: every quantity change is a ledger movement written in the same transaction as the
 balance; no overselling or negative stock under concurrent operations (parallel-transaction tests);
