@@ -45,9 +45,12 @@ model Supplier {
   currency    Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
   contacts    SupplierContact[]
   products    SupplierProduct[]
+  batches     StockBatch[]
 
   /// NULL tax numbers are distinct in PostgreSQL, so suppliers without one never collide.
   @@unique([legalEntityId, taxRegistrationNo])
+  /// Target of the stock-batch FK that keeps a batch's supplier in its company.
+  @@unique([id, legalEntityId])
   @@index([countryCode])
   @@index([isActive])
   @@map("suppliers")

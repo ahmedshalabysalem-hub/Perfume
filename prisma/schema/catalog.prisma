@@ -264,6 +264,7 @@ model ProductVariant {
 
   stockBalances  StockBalance[]
   stockMovements StockMovement[]
+  stockBatches   StockBatch[]
 
   @@index([productId])
   @@index([status])

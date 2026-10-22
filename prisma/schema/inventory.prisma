@@ -1,9 +1,9 @@
 // ─── Inventory ───────────────────────────────────────────────────────────────
-// Stock ledger (ADR-020). Every quantity change is a row in `stock_movements`
-// (append-only, enforced by triggers) and updates exactly one `stock_balances`
-// row in the same transaction. Only `postStockMovements` in
-// src/server/modules/inventory writes either table. CHECK constraints and the
-// append-only triggers live in the migration SQL.
+// Stock ledger (ADR-020) with batches (ADR-023). Every quantity change is a row
+// in `stock_movements` (append-only, enforced by triggers) and updates exactly
+// one `stock_balances` row in the same transaction. Only `postStockMovements`
+// in src/server/modules/inventory writes either table. CHECK constraints and
+// triggers live in the migration SQL.
 
 enum StockStatus {
   SELLABLE
@@ -17,6 +17,95 @@ enum StockStatus {
 enum StockMovementType {
   OPENING_BALANCE
   ADJUSTMENT
+  /// Status move caused by a batch inspection decision (ADR-023).
+  INSPECTION
+  /// Re-keying of pre-batch stock onto a LEGACY batch (INV-002 migration).
+  BATCH_ASSIGNMENT
+}
+
+/// Physical / quality state of a batch (ADR-023). REJECTED is final.
+enum BatchInspectionStatus {
+  PENDING_INSPECTION
+  RELEASED
+  QUARANTINED
+  REJECTED
+}
+
+/// What is known about a batch's expiry. Never inferred from an empty field.
+enum ExpiryBasis {
+  /// `expires_on` holds the effective expiry date.
+  RECORDED
+  /// Expiry should exist but has not been established.
+  UNKNOWN
+  /// The variant's catalogue setting says expiry is not tracked.
+  NOT_TRACKED
+}
+
+enum ExpiryPrecision {
+  DAY
+  /// Label shows month and year only; `expires_on` is the month's last day.
+  MONTH
+}
+
+enum BatchVerificationResult {
+  NONE
+  PASSED
+  FAILED
+}
+
+/// One lot of one variant owned by one legal entity (ADR-023, DR-001).
+model StockBatch {
+  id                 String                  @id @default(uuid(7)) @db.Uuid
+  legalEntityId      String                  @map("legal_entity_id") @db.Uuid
+  countryCode        String                  @map("country_code") @db.Char(2)
+  variantId          String                  @map("variant_id") @db.Uuid
+  /// Upper-case; NULL only on a LEGACY batch whose lot is unknown.
+  lotNumber          String?                 @map("lot_number") @db.VarChar(64)
+  /// Created by the INV-002 carry-over for stock that predates batches.
+  isLegacy           Boolean                 @default(false) @map("is_legacy")
+  /// False while a LEGACY batch's details still need completing.
+  detailsComplete    Boolean                 @default(true) @map("details_complete")
+  manufacturedOn     DateTime?               @map("manufactured_on") @db.Date
+  expiryBasis        ExpiryBasis             @map("expiry_basis")
+  expiresOn          DateTime?               @map("expires_on") @db.Date
+  expiryPrecision    ExpiryPrecision?        @map("expiry_precision")
+  supplierId         String?                 @map("supplier_id") @db.Uuid
+  /// Receipt that brought the batch in, e.g. ("purchase_receipt", "<uuid>").
+  documentType       String?                 @map("document_type") @db.VarChar(40)
+  documentId         String?                 @map("document_id") @db.VarChar(64)
+  inspectionStatus   BatchInspectionStatus   @default(PENDING_INSPECTION) @map("inspection_status")
+  /// Reason of the latest inspection status change.
+  statusReason       String?                 @map("status_reason") @db.VarChar(500)
+  statusChangedAt    DateTime?               @map("status_changed_at") @db.Timestamptz(3)
+  statusChangedById  String?                 @map("status_changed_by_id") @db.Uuid
+  verificationResult BatchVerificationResult @default(NONE) @map("verification_result")
+  physicalCheckOk    Boolean?                @map("physical_check_ok")
+  labelCheckOk       Boolean?                @map("label_check_ok")
+  verificationNotes  String?                 @map("verification_notes") @db.VarChar(1000)
+  verifiedAt         DateTime?               @map("verified_at") @db.Timestamptz(3)
+  verifiedById       String?                 @map("verified_by_id") @db.Uuid
+  /// Bumped on every change; guards against stale screens and double submits.
+  version            Int                     @default(1)
+  createdAt          DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdById        String?                 @map("created_by_id") @db.Uuid
+  updatedAt          DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  legalEntity     LegalEntity     @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  variant         ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  supplier        Supplier?       @relation(fields: [supplierId, legalEntityId], references: [id, legalEntityId], onDelete: Restrict)
+  createdBy       User?           @relation("StockBatchCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  statusChangedBy User?           @relation("StockBatchStatusChanger", fields: [statusChangedById], references: [id], onDelete: Restrict)
+  verifiedBy      User?           @relation("StockBatchVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  balances        StockBalance[]
+  movements       StockMovement[]
+  country         Country         @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+
+  @@unique([legalEntityId, variantId, lotNumber])
+  @@unique([id, variantId])
+  @@index([variantId])
+  @@index([expiresOn])
+  @@index([inspectionStatus])
+  @@map("stock_batches")
 }
 
 model StockBalance {
@@ -24,6 +113,8 @@ model StockBalance {
   variantId   String      @map("variant_id") @db.Uuid
   warehouseId String      @map("warehouse_id") @db.Uuid
   status      StockStatus
+  /// Required exactly when the variant tracks batches (trigger).
+  batchId     String?     @map("batch_id") @db.Uuid
   onHand      Int         @default(0) @map("on_hand")
   /// Units held for orders or POS (INV-004); only on sellable stock.
   reserved    Int         @default(0)
@@ -32,9 +123,12 @@ model StockBalance {
 
   variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
   warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  batch     StockBatch?    @relation(fields: [batchId, variantId], references: [id, variantId], onDelete: Restrict)
 
-  @@unique([variantId, warehouseId, status])
+  /// NULLS NOT DISTINCT in the migration SQL: one row per key, batch or not.
+  @@unique([variantId, warehouseId, status, batchId])
   @@index([warehouseId, status])
+  @@index([batchId, warehouseId])
   @@map("stock_balances")
 }
 
@@ -45,11 +139,12 @@ model StockMovement {
   variantId      String            @map("variant_id") @db.Uuid
   warehouseId    String            @map("warehouse_id") @db.Uuid
   status         StockStatus
+  batchId        String?           @map("batch_id") @db.Uuid
   /// Signed, never zero: positive adds to the balance, negative removes.
   quantity       Int
   /// On-hand quantity of the balance row after this movement.
   balanceAfter   Int               @map("balance_after")
-  /// Cost per unit in the warehouse country's currency (ADR-018/019).
+  /// Cost per unit in the warehouse country's currency (ADR-018/020).
   unitCost       Decimal?          @map("unit_cost") @db.Decimal(19, 4)
   currencyCode   String?           @map("currency_code") @db.Char(3)
   /// Source document, e.g. ("purchase_receipt", "<uuid>").
@@ -67,8 +162,10 @@ model StockMovement {
   variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
   warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
   currency  Currency?      @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
+  batch     StockBatch?    @relation(fields: [batchId, variantId], references: [id, variantId], onDelete: Restrict)
 
   @@unique([idempotencyKey, lineNo])
+  @@index([batchId])
   @@index([variantId, warehouseId, postedAt])
   @@index([warehouseId, postedAt])
   @@index([documentType, documentId])

@@ -16,6 +16,8 @@ import { assertCan, can, scopeFilterFor } from "@/server/rbac/authorize";
 import type { PermissionKey } from "@/server/rbac/permissions";
 import { scopeFilterIsEmpty } from "@/server/rbac/scope";
 import { parseInput } from "@/server/validation";
+import { localDateIn } from "@/lib/inventory/batches";
+import { dateText, eligibilityOf, findOrCreateBatch } from "./batches.service";
 import { lockPostingKey, postStockMovements } from "./ledger";
 
 export const STOCK_PAGE_SIZE = 50;
@@ -169,7 +171,7 @@ export async function getVariantStock(ctx: ServiceContext, variantId: string, ra
   const query: MovementListQuery = movementListQuerySchema.parse(rawQuery ?? {});
   const variant = await db.productVariant.findUnique({
     where: { id: variantId },
-    select: { ...variantSummarySelect, trackInventory: true },
+    select: { ...variantSummarySelect, trackInventory: true, trackBatches: true },
   });
   if (!variant) return null;
 
@@ -182,7 +184,18 @@ export async function getVariantStock(ctx: ServiceContext, variantId: string, ra
       status: true,
       onHand: true,
       reserved: true,
-      warehouse: { select: { id: true, code: true, nameEn: true, nameAr: true } },
+      warehouse: { select: { id: true, code: true, nameEn: true, nameAr: true, timezone: true } },
+      batch: {
+        select: {
+          id: true,
+          lotNumber: true,
+          isLegacy: true,
+          inspectionStatus: true,
+          expiryBasis: true,
+          expiresOn: true,
+          verificationResult: true,
+        },
+      },
     },
   });
 
@@ -213,6 +226,7 @@ export async function getVariantStock(ctx: ServiceContext, variantId: string, ra
       reason: true,
       actorUserId: true,
       warehouse: { select: { id: true, code: true } },
+      batch: { select: { id: true, lotNumber: true, isLegacy: true } },
     },
   });
   const actorIds = [...new Set(movements.map((row) => row.actorUserId).filter((id): id is string => !!id))];
@@ -220,10 +234,28 @@ export async function getVariantStock(ctx: ServiceContext, variantId: string, ra
     ? await db.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true } })
     : [];
   const names = new Map(actors.map((actor) => [actor.id, actor.name]));
+  const now = new Date();
 
   return {
     variant: { ...variant, sizeMl: variant.sizeMl?.toString() ?? null },
-    balances: balances.map((balance) => ({ ...balance, available: balance.onHand - balance.reserved })),
+    balances: balances.map(({ batch, warehouse: { timezone, ...warehouse }, ...balance }) => {
+      const eligibility = batch ? eligibilityOf(batch, localDateIn(timezone, now)) : null;
+      return {
+        ...balance,
+        warehouse,
+        batch: batch
+          ? { id: batch.id, lotNumber: batch.lotNumber, isLegacy: batch.isLegacy, expiresOn: dateText(batch.expiresOn) }
+          : null,
+        available: balance.onHand - balance.reserved,
+        /** Units that may be sold now: SELLABLE, unreserved, and of an eligible batch (ADR-023). */
+        availableForSale:
+          balance.status === "SELLABLE" && (!eligibility || eligibility.eligible)
+            ? balance.onHand - balance.reserved
+            : 0,
+        ineligibleReason:
+          balance.status === "SELLABLE" && eligibility && !eligibility.eligible ? eligibility.reason : null,
+      };
+    }),
     movements: movements.map(({ actorUserId, unitCost, ...row }) => ({
       ...row,
       unitCost: unitCost?.toFixed(4) ?? null,
@@ -245,8 +277,12 @@ export function canPostOpeningBalances(ctx: ServiceContext): boolean {
 
 /**
  * Enter stock that existed before the system did. Allowed once per variant,
- * warehouse and stock status, and only while that balance has no ledger
- * history: later corrections are adjustments (INV-003), not new openings.
+ * warehouse, stock status and batch, and only while that balance has no
+ * ledger history: later corrections are adjustments (INV-003), not new
+ * openings. A variant that tracks batches needs a lot number; its batch is
+ * found or created here (ADR-023). A new batch entered as SELLABLE starts
+ * RELEASED only for a user who may release batches (DR-002); any other new
+ * batch starts PENDING_INSPECTION.
  */
 export async function postOpeningBalance(ctx: ServiceContext, input: unknown): Promise<{ movementId: string }> {
   assertCan(ctx.actor, "inventory.adjust.approve");
@@ -261,27 +297,58 @@ export async function postOpeningBalance(ctx: ServiceContext, input: unknown): P
   if (!warehouse.isActive)
     throw new InvalidStateError("errors.invalidState.inactiveReference", { entity: "warehouse" });
 
-  const found = await findVariantByCode(db, data.variantCode);
-  if (!found) throw new ValidationError({ variantCode: ["errors.inventory.variantNotFound"] });
+  const code = await findVariantByCode(db, data.variantCode);
+  if (!code) throw new ValidationError({ variantCode: ["errors.inventory.variantNotFound"] });
+  const found = await db.productVariant.findUniqueOrThrow({
+    where: { id: code.id },
+    select: { id: true, sku: true, trackBatches: true, trackExpiry: true },
+  });
+  if (found.trackBatches && !data.lotNumber) {
+    throw new ValidationError({ lotNumber: ["errors.inventory.lotRequired"] });
+  }
+  if (!found.trackBatches && (data.lotNumber || data.manufacturedOn || data.expiresOn)) {
+    throw new ValidationError({ lotNumber: ["errors.inventory.batchNotTracked"] });
+  }
+  const mayRelease = can(ctx.actor, "inventory.batches.manage", warehouseTarget(warehouse));
+  const lotKey = data.lotNumber ? `:${data.lotNumber}` : "";
 
-  const idempotencyKey = `opening-balance:${found.id}:${warehouse.id}:${data.status}`;
   return db.$transaction(async (tx) => {
     // Serialise concurrent openings of the same balance before checking history.
-    await lockPostingKey(tx, idempotencyKey);
+    await lockPostingKey(tx, `opening-balance:${found.id}:${warehouse.id}:${data.status}${lotKey}`);
+
+    let batch: { id: string; lotNumber: string | null; inspectionStatus: string } | null = null;
+    if (data.lotNumber) {
+      const result = await findOrCreateBatch(tx, ctx, {
+        legalEntityId: warehouse.legalEntityId,
+        countryCode: warehouse.countryCode,
+        variant: found,
+        lotNumber: data.lotNumber,
+        manufacturedOn: data.manufacturedOn,
+        expiresOn: data.expiresOn,
+        initialStatus: data.status === "SELLABLE" && mayRelease ? "RELEASED" : "PENDING_INSPECTION",
+        reason: data.reason,
+      });
+      batch = result.batch;
+      if (data.status === "SELLABLE" && result.created && !mayRelease) {
+        throw new InvalidStateError("errors.invalidState.releaseNeedsPermission");
+      }
+    }
+
     const history = await tx.stockMovement.count({
-      where: { variantId: found.id, warehouseId: warehouse.id, status: data.status },
+      where: { variantId: found.id, warehouseId: warehouse.id, status: data.status, batchId: batch?.id ?? null },
     });
     if (history > 0) throw new InvalidStateError("errors.invalidState.openingBalanceExists", { sku: found.sku });
 
     const { movements } = await postStockMovements(tx, ctx, {
       type: "OPENING_BALANCE",
-      idempotencyKey,
+      idempotencyKey: `opening-balance:${found.id}:${warehouse.id}:${data.status}${batch ? `:${batch.id}` : ""}`,
       reason: data.reason,
       lines: [
         {
           variantId: found.id,
           warehouseId: warehouse.id,
           status: data.status,
+          batchId: batch?.id ?? null,
           quantity: data.quantity,
           unitCost: data.unitCost,
         },
@@ -292,12 +359,15 @@ export async function postOpeningBalance(ctx: ServiceContext, input: unknown): P
       action: "inventory.opening_balance.post",
       entityType: "stock_movement",
       entityId: movement.id,
-      summary: `${found.sku} @ ${warehouse.code}: +${data.quantity} ${data.status}`,
+      summary: `${found.sku}${batch ? ` · ${batch.lotNumber}` : ""} @ ${warehouse.code}: +${data.quantity} ${data.status}`,
       after: {
         variantId: found.id,
         sku: found.sku,
         warehouseId: warehouse.id,
         status: data.status,
+        batchId: batch?.id ?? null,
+        lotNumber: batch?.lotNumber ?? null,
+        batchStatus: batch?.inspectionStatus ?? null,
         quantity: data.quantity,
         unitCost: data.unitCost,
         balanceAfter: movement.balanceAfter,

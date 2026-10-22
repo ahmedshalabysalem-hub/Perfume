@@ -1,5 +1,12 @@
 import "server-only";
-import type { StockMovementType, StockStatus } from "@/generated/prisma/enums";
+import type {
+  BatchInspectionStatus,
+  BatchVerificationResult,
+  ExpiryBasis,
+  StockMovementType,
+  StockStatus,
+} from "@/generated/prisma/enums";
+import { batchEligibility, localDateIn } from "@/lib/inventory/batches";
 import { parseMoneyInput } from "@/lib/money";
 import { MAX_LINE_QUANTITY, UNIT_COST_SCALE } from "@/lib/schemas/inventory";
 import type { ServiceContext } from "@/server/context";
@@ -15,12 +22,20 @@ import { ConflictError, InvalidStateError, NotFoundError } from "@/server/errors
  * Authorisation is the caller's job: the ledger is a mechanism, not an entry
  * point, and assumes the caller has already checked the actor's permission
  * for the warehouses involved.
+ *
+ * Batches (ADR-023): a line carries a batch exactly when its variant tracks
+ * batches, the batch must belong to the warehouse's company, and stock can
+ * only be added to SELLABLE while the batch is eligible for sale. Batch rows
+ * are locked (FOR SHARE) before balance rows, the same order batch decisions
+ * use, so the two never deadlock and a decision cannot interleave a posting.
  */
 
 export type StockMovementLine = {
   variantId: string;
   warehouseId: string;
   status: StockStatus;
+  /** Required for variants that track batches; must be absent otherwise. */
+  batchId?: string | null;
   /** Signed whole units: positive adds stock, negative removes it. */
   quantity: number;
   /** Cost per unit (decimal string, ≤ 4 decimals) in the warehouse country's currency. */
@@ -46,6 +61,7 @@ export type PostedMovement = {
   variantId: string;
   warehouseId: string;
   status: StockStatus;
+  batchId: string | null;
   quantity: number;
   balanceAfter: number;
 };
@@ -62,7 +78,7 @@ export async function lockPostingKey(tx: Tx, key: string): Promise<void> {
   await tx.$queryRaw`SELECT 1 AS locked FROM (SELECT pg_advisory_xact_lock(hashtextextended(${`stock:${key}`}, 0))) AS l`;
 }
 
-type NormalizedLine = StockMovementLine & { lineNo: number; unitCost: string | null };
+type NormalizedLine = StockMovementLine & { lineNo: number; unitCost: string | null; batchId: string | null };
 
 function normalizePosting(posting: StockPosting): NormalizedLine[] {
   const key = posting.idempotencyKey;
@@ -82,12 +98,12 @@ function normalizePosting(posting: StockPosting): NormalizedLine[] {
       if (!parsed.ok) throw new Error(`postStockMovements: line ${index + 1} unit cost is invalid (${parsed.reason})`);
       unitCost = parsed.value;
     }
-    return { ...line, unitCost, lineNo: index + 1 };
+    return { ...line, unitCost, batchId: line.batchId ?? null, lineNo: index + 1 };
   });
 }
 
-function balanceKey(line: { warehouseId: string; variantId: string; status: string }): string {
-  return `${line.warehouseId}|${line.variantId}|${line.status}`;
+function balanceKey(line: { warehouseId: string; variantId: string; status: string; batchId: string | null }): string {
+  return `${line.warehouseId}|${line.variantId}|${line.status}|${line.batchId ?? ""}`;
 }
 
 /** Same movement lines as an earlier posting under the same key? */
@@ -100,6 +116,7 @@ function samePosting(
     variantId: string;
     warehouseId: string;
     status: StockStatus;
+    batchId: string | null;
     quantity: number;
     unitCost: { toFixed(digits: number): string } | null;
   }>,
@@ -113,6 +130,7 @@ function samePosting(
       row.variantId === line.variantId &&
       row.warehouseId === line.warehouseId &&
       row.status === line.status &&
+      row.batchId === line.batchId &&
       row.quantity === line.quantity &&
       (row.unitCost === null ? null : row.unitCost.toFixed(UNIT_COST_SCALE)) === line.unitCost
     );
@@ -136,6 +154,7 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
         variantId: row.variantId,
         warehouseId: row.warehouseId,
         status: row.status,
+        batchId: row.batchId,
         quantity: row.quantity,
         balanceAfter: row.balanceAfter,
       })),
@@ -147,14 +166,15 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
   const [warehouses, variants] = await Promise.all([
     tx.warehouse.findMany({
       where: { id: { in: warehouseIds } },
-      select: { id: true, country: { select: { currencyCode: true } } },
+      select: { id: true, legalEntityId: true, timezone: true, country: { select: { currencyCode: true } } },
     }),
     tx.productVariant.findMany({
       where: { id: { in: variantIds } },
-      select: { id: true, sku: true, trackInventory: true },
+      select: { id: true, sku: true, trackInventory: true, trackBatches: true },
     }),
   ]);
   const currencyByWarehouse = new Map(warehouses.map((row) => [row.id, row.country.currencyCode]));
+  const warehouseById = new Map(warehouses.map((row) => [row.id, row]));
   const variantById = new Map(variants.map((row) => [row.id, row]));
   for (const line of lines) {
     if (!currencyByWarehouse.has(line.warehouseId)) throw new NotFoundError("warehouse");
@@ -163,7 +183,14 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
     if (!variant.trackInventory) {
       throw new InvalidStateError("errors.invalidState.inventoryNotTracked", { sku: variant.sku });
     }
+    if (variant.trackBatches && line.batchId === null) {
+      throw new InvalidStateError("errors.invalidState.batchRequired", { sku: variant.sku });
+    }
+    if (!variant.trackBatches && line.batchId !== null) {
+      throw new InvalidStateError("errors.invalidState.batchNotAllowed", { sku: variant.sku });
+    }
   }
+  await lockAndCheckBatches(tx, lines, warehouseById, variantById);
 
   // Lock balance rows in one global order so concurrent postings cannot deadlock.
   const ordered = [...lines].sort((a, b) => balanceKey(a).localeCompare(balanceKey(b)) || a.lineNo - b.lineNo);
@@ -171,7 +198,9 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
   for (const line of ordered) {
     if (line.quantity > 0) {
       await tx.stockBalance.createMany({
-        data: [{ variantId: line.variantId, warehouseId: line.warehouseId, status: line.status }],
+        data: [
+          { variantId: line.variantId, warehouseId: line.warehouseId, status: line.status, batchId: line.batchId },
+        ],
         skipDuplicates: true,
       });
       const rows = await tx.$queryRaw<Array<{ on_hand: number }>>`
@@ -180,6 +209,7 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
          WHERE "variant_id" = ${line.variantId}::uuid
            AND "warehouse_id" = ${line.warehouseId}::uuid
            AND "status" = ${line.status}::"StockStatus"
+           AND "batch_id" IS NOT DISTINCT FROM ${line.batchId}::uuid
         RETURNING "on_hand"`;
       balanceAfter.set(line.lineNo, rows[0]!.on_hand);
     } else {
@@ -192,6 +222,7 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
          WHERE "variant_id" = ${line.variantId}::uuid
            AND "warehouse_id" = ${line.warehouseId}::uuid
            AND "status" = ${line.status}::"StockStatus"
+           AND "batch_id" IS NOT DISTINCT FROM ${line.batchId}::uuid
            AND "on_hand" - "reserved" >= ${-line.quantity}
         RETURNING "on_hand"`;
       if (rows.length === 0) {
@@ -210,6 +241,7 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
       variantId: line.variantId,
       warehouseId: line.warehouseId,
       status: line.status,
+      batchId: line.batchId,
       quantity: line.quantity,
       balanceAfter: balanceAfter.get(line.lineNo)!,
       unitCost: line.unitCost,
@@ -229,9 +261,73 @@ export async function postStockMovements(tx: Tx, ctx: ServiceContext, posting: S
       variantId: true,
       warehouseId: true,
       status: true,
+      batchId: true,
       quantity: true,
       balanceAfter: true,
     },
   });
   return { replayed: false, movements: created.sort((a, b) => a.lineNo - b.lineNo) };
+}
+
+type LockedBatch = {
+  id: string;
+  variant_id: string;
+  legal_entity_id: string;
+  lot_number: string | null;
+  inspection_status: BatchInspectionStatus;
+  expiry_basis: ExpiryBasis;
+  expires_on: string | null;
+  verification_result: BatchVerificationResult;
+};
+
+/**
+ * Lock the posting's batches (FOR SHARE, in id order) and check each line
+ * against its batch: same variant, same company as the warehouse, and — for
+ * stock added to SELLABLE — eligible for sale on the warehouse's local date.
+ */
+async function lockAndCheckBatches(
+  tx: Tx,
+  lines: NormalizedLine[],
+  warehouseById: Map<string, { legalEntityId: string; timezone: string }>,
+  variantById: Map<string, { sku: string }>,
+): Promise<void> {
+  const batchIds = [...new Set(lines.map((line) => line.batchId).filter((id): id is string => id !== null))].sort();
+  if (batchIds.length === 0) return;
+  const rows = await tx.$queryRaw<LockedBatch[]>`
+    SELECT "id", "variant_id", "legal_entity_id", "lot_number", "inspection_status", "expiry_basis",
+           to_char("expires_on", 'YYYY-MM-DD') AS "expires_on", "verification_result"
+      FROM "stock_batches"
+     WHERE "id" = ANY(${batchIds}::uuid[])
+     ORDER BY "id"
+       FOR SHARE`;
+  const batchById = new Map(rows.map((row) => [row.id, row]));
+  const now = new Date();
+  for (const line of lines) {
+    if (line.batchId === null) continue;
+    const batch = batchById.get(line.batchId);
+    const sku = variantById.get(line.variantId)!.sku;
+    if (!batch || batch.variant_id !== line.variantId) throw new NotFoundError("stock_batch");
+    const warehouse = warehouseById.get(line.warehouseId)!;
+    if (batch.legal_entity_id !== warehouse.legalEntityId) {
+      throw new InvalidStateError("errors.invalidState.batchOtherCompany", { sku });
+    }
+    if (line.status === "SELLABLE" && line.quantity > 0) {
+      const eligibility = batchEligibility(
+        {
+          inspectionStatus: batch.inspection_status,
+          expiryBasis: batch.expiry_basis,
+          expiresOn: batch.expires_on,
+          verificationResult: batch.verification_result,
+        },
+        localDateIn(warehouse.timezone, now),
+      );
+      if (!eligibility.eligible) {
+        throw new InvalidStateError("errors.invalidState.batchNotEligible", {
+          sku,
+          lot: batch.lot_number ?? "LEGACY",
+          reason: eligibility.reason,
+        });
+      }
+    }
+  }
 }

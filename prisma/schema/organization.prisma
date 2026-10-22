@@ -58,6 +58,7 @@ model Country {
   roleScopes       UserRole[]
   approvalRequests ApprovalRequest[]
   suppliers        Supplier[]
+  stockBatches     StockBatch[]
 
   /// Target of product_prices(country_code, currency_code): a price is always
   /// in its market's currency.
@@ -95,6 +96,7 @@ model LegalEntity {
   roleScopes       UserRole[]
   approvalRequests ApprovalRequest[]
   suppliers        Supplier[]
+  stockBatches     StockBatch[]
 
   @@unique([id, countryCode])
   @@index([countryCode])

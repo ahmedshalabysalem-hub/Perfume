@@ -15,6 +15,7 @@ import { getAdminPageActor } from "@/server/auth/page-guard";
 import { getRequestMeta } from "@/server/context";
 import { getVariantStock, listStockWarehouses } from "@/server/modules/inventory/stock.service";
 import { isUuid } from "@/server/validation";
+import { LotLabel } from "../../batches/batch-badges";
 import { StockStatusBadge, VariantName } from "../../stock-status-badge";
 
 export async function generateMetadata({
@@ -55,6 +56,7 @@ export default async function VariantStockPage({
   const t = await getTranslations("inventory");
   const common = await getTranslations("common");
   const typeLabels = await getTranslations("movementType");
+  const eligibilityLabels = await getTranslations("batches.ineligible");
   const format = await getFormatter();
   const { variant, query } = stock;
   const pathname = `/admin/inventory/stock/${variant.id}`;
@@ -94,10 +96,12 @@ export default async function VariantStockPage({
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("columns.warehouse")}</TableHead>
+                  {variant.trackBatches ? <TableHead>{t("columns.lot")}</TableHead> : null}
                   <TableHead>{t("columns.status")}</TableHead>
                   <TableHead className="text-end">{t("columns.onHand")}</TableHead>
                   <TableHead className="text-end">{t("columns.reserved")}</TableHead>
                   <TableHead className="text-end">{t("columns.available")}</TableHead>
+                  <TableHead className="text-end">{t("columns.availableForSale")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -109,12 +113,34 @@ export default async function VariantStockPage({
                         {localized(locale, balance.warehouse.nameAr, balance.warehouse.nameEn)}
                       </span>
                     </TableCell>
+                    {variant.trackBatches ? (
+                      <TableCell className="text-sm">
+                        {balance.batch ? (
+                          <Link
+                            href={`/admin/inventory/batches/${balance.batch.id}`}
+                            className="underline-offset-4 hover:underline"
+                          >
+                            <LotLabel lotNumber={balance.batch.lotNumber} isLegacy={balance.batch.isLegacy} />
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    ) : null}
                     <TableCell>
                       <StockStatusBadge status={balance.status} />
                     </TableCell>
                     <TableCell className="text-end tabular-nums">{balance.onHand}</TableCell>
                     <TableCell className="text-end text-muted-foreground tabular-nums">{balance.reserved}</TableCell>
-                    <TableCell className="text-end font-medium tabular-nums">{balance.available}</TableCell>
+                    <TableCell className="text-end tabular-nums">{balance.available}</TableCell>
+                    <TableCell className="text-end font-medium tabular-nums" data-testid="available-for-sale">
+                      {balance.availableForSale}
+                      {balance.ineligibleReason ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {eligibilityLabels(balance.ineligibleReason)}
+                        </span>
+                      ) : null}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

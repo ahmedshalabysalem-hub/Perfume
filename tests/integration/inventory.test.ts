@@ -26,6 +26,8 @@ beforeEach(async () => {
         barcode: "PF0000001",
         barcodeType: "CODE_128",
         barcodeSource: "INTERNAL",
+        // The ledger rules here are batch-agnostic; batches have their own suite.
+        trackBatches: false,
       },
     })
   ).id;
@@ -66,9 +68,7 @@ function post(ctx: ServiceContext, posting: StockPosting) {
 }
 
 async function balance(warehouseId = f.warehouseId, status: "SELLABLE" | "QUARANTINED" = "SELLABLE") {
-  return db.stockBalance.findUnique({
-    where: { variantId_warehouseId_status: { variantId, warehouseId, status } },
-  });
+  return db.stockBalance.findFirst({ where: { variantId, warehouseId, status, batchId: null } });
 }
 
 const receive = (key: string, quantity: number, warehouseId = f.warehouseId): StockPosting => ({

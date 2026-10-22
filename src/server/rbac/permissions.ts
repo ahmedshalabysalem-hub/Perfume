@@ -170,6 +170,14 @@ const definitions = [
     available: false,
   },
   { key: "inventory.count", module: "inventory", en: "Perform stock counts", ar: "إجراء الجرد", available: false },
+  {
+    key: "inventory.batches.manage",
+    module: "inventory",
+    en: "Verify, release, quarantine and reject batches and correct batch details",
+    ar: "التحقق من التشغيلات وإجازتها وحجرها ورفضها وتصحيح بياناتها",
+    sensitive: true,
+    available: true,
+  },
 
   // Procurement (Phase 2)
   {

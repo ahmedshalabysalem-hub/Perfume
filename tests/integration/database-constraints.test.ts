@@ -18,7 +18,8 @@ beforeEach(async () => {
   const product = await db.product.create({
     data: { slug: "royal-oud", brandId: brand.id, nameEn: "Royal Oud", nameAr: "عود ملكي", searchText: "royal oud" },
   });
-  variantId = (await db.productVariant.create({ data: { productId: product.id, sku: "ROI-100" } })).id;
+  variantId = (await db.productVariant.create({ data: { productId: product.id, sku: "ROI-100", trackBatches: false } }))
+    .id;
   requesterId = f.cashier.actor.kind === "user" ? f.cashier.actor.userId : "";
   approverId = f.saManager.actor.kind === "user" ? f.saManager.actor.userId : "";
 });
