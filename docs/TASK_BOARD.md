@@ -101,7 +101,7 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   Additions to this spec: batches owned per company (legal entity) with database isolation; inspection
   states `PENDING_INSPECTION`/`RELEASED`/`QUARANTINED`/`REJECTED`; permission `inventory.batches.manage`
   (Super Admin, Inventory Manager only); expiry precision `DAY`/`MONTH`; LEGACY batches with unknown
-  lot and dates for pre-existing stock, sellable only after a recorded verification (DR-010); explicit
+  lot and dates for pre-existing stock, sellable only after a recorded verification and a separate explicit release (DR-010); explicit
   expiry basis `RECORDED`/`UNKNOWN`/`NOT_TRACKED`; movement types `INSPECTION` and `BATCH_ASSIGNMENT`; one shared
   eligibility function; tracking flags frozen once stock exists. INV-004, ORD-001 and POS-001 must
   sell or allocate only through that function and test the DR-010 cases (verified legacy with unknown

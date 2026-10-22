@@ -93,22 +93,31 @@ notifications or configurable alert rules in INV-002 (INV-005).
 
 ### DR-010 — Sale eligibility of LEGACY stock and unknown expiry
 
-**Decided** (refines DR-008; the earlier proposal that LEGACY batches start released is withdrawn):
+**Decided 2026-10-22** (refines DR-008 and withdraws the proposal that LEGACY batches start released;
+Ahmed clarified the same day):
 
-- Legacy stock is not written off or marked expired because batch or expiry data was never recorded,
-  but it may be sold only after an authorised employee verifies that it is physically fit for sale
-  and checks the manufacturer labelling; the verification status, employee, time and notes are
-  recorded. If fitness cannot be established, the stock stays unavailable for sale.
-- Stock known to be expired is never sold or allocated, LEGACY included, from the day after its
-  effective expiry date in the warehouse's local date, and no sales channel (POS, storefront, order
-  APIs, allocation) may bypass this.
-- A missing expiry date means neither expired nor safe: expiry is tracked as unknown until verified,
-  and an empty database field is not taken to mean unknown (the state is explicit).
-- No lot numbers or dates are fabricated; migration preserves transactions and quantities without
-  duplication; verifications and status changes are audited; authorised staff can complete legacy
-  details later.
-- Verification and release are restricted to authorised roles, need a recorded reason and are enforced
-  by the backend.
+1. **Preserve existing stock.** The migration to LEGACY never writes off stock, invents expiry dates, or
+   marks stock expired because expiry information is missing. Existing quantities and historical ledger
+   records are preserved, without duplication.
+2. **Initial LEGACY state.** A LEGACY batch starts pending inspection, unverified and not sellable. Its
+   expiry state distinguishes unknown expiry from expiry tracking not applying. Missing data never means
+   tracking does not apply.
+3. **Verification.** An authorised inventory user records both the physical-condition check and the
+   label check, with actor, time and notes. A lot number or expiry date is not required when neither can
+   be established.
+4. **Unknown expiry.** If both checks pass and no expiry date can be established, the authorised user
+   may record that outcome and release the batch with expiry marked unknown. The missing date is never
+   proof that the item is safe or expired.
+5. **Known expiry.** An expiry date established from the label is recorded accurately. Release is
+   refused if the batch is already expired under DR-003. A batch known to be expired is never sold or
+   allocated through any channel.
+6. **Unfit products.** If either check finds a safety, condition or compliance concern, the batch stays
+   unavailable for sale and is moved to quarantine or rejected, as appropriate.
+7. **No automatic release.** Verification and release are explicit, authorised, reasoned and audited.
+   Verification alone never makes a batch sellable.
+8. **Shared eligibility function.** The rule is enforced through the inventory ledger and one shared
+   eligibility function. Future order, reservation, storefront, POS and other stock-consuming paths must
+   use it and test the relevant cases.
 
 ## FIN — inventory costing (ADR-018, Proposed)
 
