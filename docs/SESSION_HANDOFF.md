@@ -35,12 +35,11 @@ migration changed.
   (fix with the next inventory schema change, INV-002). The migration comment stays as is (immutable).
 - `updateVariant` lets catalogue editors flip `trackInventory/trackBatches/trackExpiry` on a variant
   that already holds stock; INV-002 closes this (ADR-023).
-- ADR-023 still Proposed; mark Accepted when Ahmed approves the final design.
 
 ## Next exact task
 
-**INV-002 implementation, after Ahmed approves the final ADR-023 design (DR-001…DR-008 decided).**
-Open point to confirm with him: LEGACY batches start RELEASED so existing sellable stock stays sellable. First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
+**INV-002 implementation** — design approved 2026-10-22 (ADR-023 Accepted; LEGACY batches start
+RELEASED). First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
 for drift on the `NULLS NOT DISTINCT` unique index; fallback two partial unique indexes), then the
 ledger changes. Commit order and test plan: INV-002 board entry and ADR-023. Then INV-003 or PUR-002.
 

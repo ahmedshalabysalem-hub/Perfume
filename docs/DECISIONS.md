@@ -28,7 +28,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 | ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 | ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
-| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Proposed | 2026-10-22 |
+| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Accepted | 2026-10-22 |
 
 ---
 
@@ -291,15 +291,16 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** `docs/TASK_TEMPLATE.md` carries a Review field; the completion report uses the board
   statuses.
 
-### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock (Proposed)
+### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock
 
-- **Status:** Proposed. Business answers DR-001…DR-008 were decided by Ahmed on 2026-10-22
-  (`docs/DECISION_REQUESTS.md`); the final design below waits for his approval before implementation.
+- **Status:** Accepted 2026-10-22 by Ahmed, with business answers DR-001…DR-008
+  (`docs/DECISION_REQUESTS.md`) and LEGACY batches starting RELEASED so existing sellable stock stays
+  sellable.
 - **Context:** ADR-020 reserved the batch dimension. The brief requires lot traceability, expiry dates
   where applicable, inspection/quarantine status, and that quarantined or rejected batches are never
   sold. On the base (`812fffc`) nothing reads `track_batches`/`track_expiry`, and `updateVariant` can
   change them while a variant holds stock.
-- **Decision (proposed):**
+- **Decision:**
   - **Batch record.** `stock_batches`: one lot of one variant owned by one legal entity (DR-001), with
     optional supplier of the same entity and receipt reference, manufacturing date, expiry date with
     its precision (`DAY` or `MONTH`; a month-precision date is the month's last day, DR-007), inspection

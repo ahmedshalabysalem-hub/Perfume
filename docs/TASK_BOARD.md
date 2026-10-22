@@ -94,8 +94,8 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
-- **Design (2026-10-22):** ADR-023 **Proposed**; business answers DR-001…DR-008 decided by Ahmed
-  (`docs/DECISION_REQUESTS.md`). Implementation starts only after Ahmed approves the final design.
+- **Design (2026-10-22):** ADR-023 **Accepted** (approved by Ahmed); business answers DR-001…DR-008
+  in `docs/DECISION_REQUESTS.md`.
   Additions to this spec: batches owned per company (legal entity) with database isolation; inspection
   states `PENDING_INSPECTION`/`RELEASED`/`QUARANTINED`/`REJECTED`; permission `inventory.batches.manage`
   (Super Admin, Inventory Manager only); expiry precision `DAY`/`MONTH`; LEGACY batches with unknown

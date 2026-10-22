@@ -4,8 +4,7 @@ _Last updated: 2026-10-22 — session 4 (INV-002 design review)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done except OPS-001 (Docker run).
 **Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
-Business decisions DR-001…DR-008 answered by Ahmed (`docs/DECISION_REQUESTS.md`); final design
-(ADR-023, Proposed) waits for his approval; no implementation before that.
+Design approved 2026-10-22 (ADR-023 Accepted, DR-001…DR-008 decided); implementation next.
 
 ## Completed
 
@@ -37,8 +36,6 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Blockers and open decisions
 
-- **Before INV-002 implementation:** Ahmed's approval of the final ADR-023 design (DR-001…DR-008
-  decided 2026-10-22).
 - **Technical:** OPS-001 needs one `docker compose up -d` run on a machine with Docker (none here).
 - **Design, before PUR-002:** how a purchase price (NUMERIC(14,2), ADR-021) and landed cost become a
   ledger unit cost (NUMERIC(19,4), ADR-020) — precision, rounding, currency conversion.
@@ -63,4 +60,4 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ADR-019 approvals · ADR-020 stock ledger · ADR-021 suppliers · ADR-022 task workflow (roles in one
 session, effort and review by risk) · ADR-018 weighted average cost (**Proposed**) · ADR-023 batches
-(**Proposed**, INV-002).
+(INV-002).
