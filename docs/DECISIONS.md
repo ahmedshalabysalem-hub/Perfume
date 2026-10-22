@@ -24,6 +24,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-016 | Forms: shared Zod schemas, translatable message descriptors          | Accepted | 2026-10-21 |
 | ADR-017 | File-based project governance and session handoff                    | Accepted | 2026-10-21 |
 | ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
+| ADR-019 | Generic maker-checker approvals inside the subject's transaction     | Accepted | 2026-10-22 |
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 
 ---
@@ -176,6 +177,30 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible.
+
+### ADR-019 — Generic maker-checker approvals inside the subject's transaction
+
+- **Context:** Stock adjustments (INV-003), purchase orders (PUR-002), refunds (RET-001) and later
+  financial postings need approval by someone other than the requester, within the approver's scope,
+  with an audit trail. Each module owns its subject's rules; the approval mechanics should be shared.
+- **Decision:** One `approval_requests` table (subject type + id, resolved scope, summary, redacted
+  snapshot, requester, decision) and an append-only `approval_actions` history. Policies are code
+  (`src/server/modules/approvals/subjects.ts`): subject type → request permission and approve permission.
+  `submitApprovalRequest(tx, …)`, `decideApprovalRequest(tx, …)` and `cancelApprovalRequest(tx, …)` run
+  inside the owning module's transaction, so the subject's change, the approval and the audit entries
+  commit together; on APPROVED the module applies the effect in that same transaction. Single-step: one
+  approval decides a request.
+- **Rules:** the requester can never decide their own request (service check and CHECK constraint);
+  approvers need the approve permission at a scope covering the request; the scope is resolved from its
+  most specific element; one PENDING request per subject (partial unique index); a decided request is
+  final and its requested content immutable (trigger); rejections need a reason; decisions use a
+  conditional update so concurrent deciders cannot both win; only staff users submit and decide; the
+  requester or a system actor cancels.
+- **Alternatives:** Approval columns on each subject table — duplicated rules and no shared inbox; a
+  workflow engine — far more than single-step maker-checker needs.
+- **Consequences:** Multi-step approvals, amount thresholds and delegation would extend the policy and add
+  steps to `approval_actions` (new ADR). A generic approvals inbox needs per-subject handlers to apply
+  effects; until then each module exposes its own approve/reject actions over this service.
 
 ### ADR-020 — Stock ledger: per-status balances, conditional updates, posting keys
 

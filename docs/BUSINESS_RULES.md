@@ -147,6 +147,19 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 | Active staff               | Staff users with status ACTIVE (shown with `users.view`)                                   |
 | Recent activity            | Latest audit entries (shown with GLOBAL `audit.view`)                                      |
 
+## Approvals (APR-001, ADR-019)
+
+- A request names its subject (type and id), a summary, a reason and the scope where the subject lives.
+  At most one request per subject is pending at a time.
+- Submitting requires the subject's request permission at that scope; approving or rejecting requires
+  its approve permission at that scope (`docs/RBAC.md` §Approvals).
+- **The requester can never approve or reject their own request**, even when they hold the approve
+  permission. A rejection must give a reason.
+- A decision is final. The requester may withdraw (cancel) a pending request; the owning module may
+  cancel it as the system when the subject is voided.
+- Submission, decision and cancellation are audited and recorded in the request's history, in the same
+  transaction as the subject's change.
+
 ## Inventory (INV-001, ADR-020)
 
 - Stock is kept per variant, warehouse and status: sellable, quarantined, damaged, returned. Quantities

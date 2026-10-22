@@ -112,6 +112,11 @@
       "inventoryNotTracked": "Inventory is not tracked for {sku}.",
       "openingBalanceExists": "{sku} already has stock history for this warehouse and status. Use a stock adjustment instead."
     },
+    "approval": {
+      "alreadyPending": "This record already has a pending approval request.",
+      "selfDecision": "You cannot approve or reject a request you submitted yourself.",
+      "notPending": "This approval request has already been decided or withdrawn."
+    },
     "pageNotFound": "Page not found",
     "pageNotFoundHint": "The page you are looking for does not exist or has moved.",
     "unexpected": "Unexpected error",

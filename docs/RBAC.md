@@ -123,6 +123,22 @@ references; they cannot create products, edit shared master data or read the aud
 Super Admin holds all of them. Each module task revisits its permissions (approval separation of
 duties, scopes) before marking them available.
 
+## Approvals and separation of duties (APR-001, ADR-019)
+
+Approval policies live in `src/server/modules/approvals/subjects.ts`: `inventory.adjustment`
+(`inventory.adjust.request` → `inventory.adjust.approve`), `purchases.order` (`purchases.create` →
+`purchases.approve`), `payments.refund` (`payments.refund.request` → `payments.refund.approve`).
+
+- Submitting needs the request permission at a scope covering the subject; deciding needs the approve
+  permission at a covering scope. The scope is resolved from its most specific element (a warehouse
+  request is also matched by approvers at its legal entity or country).
+- The requester can never approve or reject their own request, whatever roles they hold (service check
+  plus the CHECK `approval_requests_requester_cannot_decide`). Roles that hold both permissions (Inventory
+  Manager, Super Admin) can therefore only decide other people's requests.
+- Only staff users submit and decide; only the requester (or a system actor voiding the subject) cancels.
+- A request is visible to its requester and to holders of its approve permission in scope; others get
+  "not found".
+
 ## Changing permissions or roles
 
 1. Edit `src/server/rbac/permissions.ts` / `roles.ts` (keys are stable; never reuse a key).

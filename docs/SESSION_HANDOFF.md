@@ -1,8 +1,47 @@
 # Session handoff
 
-_Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-04855f0a-4t6vb0`)_
+_Session 2 — 2026-10-22 — parallel threads, each on its own branch from `ccr-04855f0a-4t6vb0`:
+APR-001 on `claude/project-thread-wabex7` (PR #2), INV-001 on `claude/project-thread-qunsge` (PR #1)._
 
-## Completed in this session
+ADR numbering after reconciliation: ADR-019 approvals (APR-001), ADR-020 stock ledger (INV-001).
+Recommended merge order: PR #2, then PR #1 (the INV-001 branch merges the base after #2 lands).
+
+## APR-001 — approval workflow framework
+
+### Completed in this session
+
+- **APR-001 Approval workflow framework** (commit `436a974`, ADR-019): migration
+  `20261022071950_approvals` (`approval_requests`, `approval_actions`, 10 CHECKs, partial unique index,
+  5 triggers), service `src/server/modules/approvals/approvals.service.ts` (submit, decide, cancel, list,
+  get, `canDecideApproval`), policies `src/server/modules/approvals/subjects.ts`
+  (`inventory.adjustment`, `purchases.order`, `payments.refund`), Zod schemas
+  `src/lib/schemas/approvals.ts`, error messages (ar/en).
+
+### Files created or changed
+
+`prisma/schema/{governance,identity,organization}.prisma`, `prisma/migrations/20261022071950_approvals/`,
+`src/server/modules/approvals/*`, `src/lib/schemas/approvals.ts`, `messages/{ar,en}.json`,
+`tests/unit/approvals.test.ts`, `tests/integration/approvals.test.ts`, `tests/integration/fixtures.ts`
+(approval tables in the reset, WAREHOUSE-scoped staff helper exported), docs (DECISIONS, DATABASE, RBAC,
+BUSINESS_RULES, TEST_PLAN, PRD, TASK_BOARD, PROJECT_STATUS, this file).
+
+### Checks actually run
+
+- `npm run verify` — passed: lint, typecheck, 131 tests (12 files), build.
+- `npx prettier --check .` — clean. `prisma migrate diff --from-config-datasource --to-schema` — no drift.
+- E2E not run (no routes or UI changed). Branch not pushed yet: waiting for Ahmed's go-ahead, so CI has
+  not run on it.
+
+### Unresolved
+
+- Confirm CI green on PR #2.
+- No approval screens: INV-003 / PUR-002 add their own approve/reject actions over the service; a
+  generic inbox would need per-subject effect handlers (ADR-019 consequences).
+- Carried over: OPS-001 Docker run; TEST_PLAN known gaps; ADR-018 accountant confirmation.
+
+## INV-001 — stock ledger and balances
+
+### Completed in this session
 
 - **INV-001 stock ledger and balances** (status Review until the PR is merged with CI green):
   - ADR-020 in `docs/DECISIONS.md` — per-status balances, one balance per movement row, integer units,
@@ -17,7 +56,7 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-0
   - `inventory.view` and `inventory.adjust.approve` now available (run `npm run db:sync-rbac` after
     deploying; the seed also does it).
 
-## Files created or changed
+### Files created or changed
 
 `prisma/schema/inventory.prisma` (new), `prisma/schema/{catalog,organization}.prisma` (relations),
 `prisma/migrations/20261022071737_inventory_stock_ledger/`, `src/lib/schemas/inventory.ts`,
@@ -27,7 +66,7 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-0
 `tests/unit/inventory-schemas.test.ts`, `tests/e2e/{inventory.spec.ts,global-setup.ts}`, docs
 (DECISIONS, DATABASE, RBAC, API_SPEC, BUSINESS_RULES, TEST_PLAN, TASK_BOARD, PROJECT_STATUS, this file).
 
-## Checks actually run
+### Checks actually run
 
 - Fresh container setup: `npm ci`, local PostgreSQL roles/databases per README, `db:deploy`,
   `db:sync-rbac`, `db:seed`.
@@ -36,7 +75,7 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-0
 - `npm run build` — passed. `npx playwright test` against that build — 18/18 passed.
 - CI has not run on this branch yet.
 
-## Unresolved
+### Unresolved
 
 - OPS-001 still needs `docker compose up -d` on a machine with Docker.
 - ADR-018 (costing) still needs an accountant's confirmation before FIN-001.
@@ -46,9 +85,9 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-qunsge` (from `ccr-0
 
 ## Next exact task
 
-1. Merge the INV-001 PR after CI passes; move INV-001 to Done on the board with the CI run.
-2. **APR-001 — Approval workflow framework**: write its full spec in `docs/TASK_BOARD.md` (backlog
-   outline exists), then implement. It unblocks INV-003 and PUR-002.
+1. Merge PR #2 (APR-001), then PR #1 (INV-001), each with CI green; move both to Done with the CI runs.
+2. **INV-003 — adjustments, counts and transfers** (consumes the ledger and the approval service) or
+   **INV-002 — batches**; expand the chosen outline into a full spec first.
 
 ## Context that would otherwise be lost
 

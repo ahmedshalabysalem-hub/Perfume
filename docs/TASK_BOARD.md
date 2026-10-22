@@ -10,8 +10,7 @@ Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
 | OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
-| INV-001   | Stock ledger and balances                                    | 2     | Review  | P1               | PR on `claude/project-thread-qunsge`      |
-| APR-001   | Approval workflow framework                                  | 2     | Backlog | P1               | —                                         |
+| INV-001   | Stock ledger and balances                                    | 2     | Review  | P1               | PR #1 (merge after PR #2)                 |
 | PUR-001   | Suppliers and supplier products                              | 2     | Backlog | P1               | —                                         |
 | INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
@@ -81,6 +80,7 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | CI-001    | GitHub Actions CI pipeline                                                                                                    | `25b1b15`                       | CI run 1 green                                                                                |
 | DOC-002   | PRD, architecture and business-rules documents                                                                                | session 1 docs commit           | statements checked against services, schema and tests                                         |
 | DOC-003   | Database, ERD, RBAC, API spec and test plan documents                                                                         | session 1 docs commit           | counts verified: 27 tables, 29 CHECKs, 3 triggers, 48 permissions, 12 roles                   |
+| APR-001   | Approval workflow framework: requests, append-only history, separation of duties, scoped approvers                            | `436a974`                       | `approvals.test.ts` unit (4) and integration (19); `npm run verify` 131 tests (session 2)     |
 
 ---
 
@@ -156,9 +156,6 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
 - **OPS-001** — Done except the Docker run: run `docker compose up -d`, then the README quick start, and
   record the result.
-- **APR-001 Approvals** — generic approval requests/actions (requester, approver with permission and
-  scope, decision, reason), separation of duties (requester cannot approve), audit; used by INV-003,
-  PUR-002, RET-001, FIN-001.
 - **PUR-001 Suppliers** — profiles, contacts, country, tax number, payment terms, supplier product
   codes and last costs; active/inactive; `suppliers.manage`; audit.
 - **INV-002 Batches** — lot number, manufacturing and expiry dates, supplier and receipt reference,

@@ -6,6 +6,8 @@ import { syncRbac } from "@/server/rbac/sync";
 
 const TABLES = [
   "audit_logs",
+  "approval_actions",
+  "approval_requests",
   "stock_movements",
   "stock_balances",
   "product_compliance",

@@ -4,8 +4,9 @@ _Last updated: 2026-10-22 — end of session 2_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 complete except OPS-001 (docker-compose
 needs one run on a machine with Docker).
-**Current:** INV-001 stock ledger implemented, in Review (PR from `claude/project-thread-qunsge`).
-**Next task:** APR-001 approval workflow (needs its spec first), then INV-002/INV-003/INV-004.
+**In review:** APR-001 approval framework (PR #2) and INV-001 stock ledger (PR #1); merge order and ADR
+numbering in `docs/SESSION_HANDOFF.md`.
+**Next task:** INV-002 batches or INV-003 adjustments (both unblocked once #1 and #2 are merged).
 
 ## Completed milestones
 
@@ -20,12 +21,17 @@ needs one run on a machine with Docker).
 - **M2.1 Stock ledger (INV-001, in review)** — append-only movement ledger and per-status balances
   (ADR-020), concurrency-safe posting service with idempotency keys, opening balances, stock overview
   and per-variant movement history in Arabic and English.
+- **APR-001 Approvals** (session 2) — shared maker-checker workflow: requests with resolved scope and
+  append-only history, requester can never decide their own request (service + CHECK), scoped
+  approvers, one pending request per subject, final and race-safe decisions (ADR-019). No screens yet:
+  each consuming module (INV-003, PUR-002, RET-001) adds its own.
 
 ## Verification evidence
 
-- Session 2, local, branch `claude/project-thread-qunsge`: lint, typecheck, `npx prettier --check .`,
-  138 Vitest tests (53 unit, 85 integration), build and **18/18 Playwright** tests — all passed. CI has
-  not yet run on this branch.
+- Session 2, APR-001 commit `436a974`: `npm run verify` (lint, typecheck, 131 tests, build) passed;
+  `prettier --check .` clean; `prisma migrate diff` shows no drift.
+- Session 2, INV-001 branch `claude/project-thread-qunsge`: lint, typecheck, `npx prettier --check .`,
+  138 Vitest tests (53 unit, 85 integration), build and **18/18 Playwright** tests — all passed.
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
@@ -47,13 +53,13 @@ needs one run on a machine with Docker).
 
 ## Recent decisions
 
-ADR-020 stock ledger (per-status balances, conditional updates, posting keys) ·
-ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
+ADR-019 generic maker-checker approvals · ADR-020 stock ledger (per-status balances, conditional
+updates, posting keys) · ADR-016 password forms POST + hydration gate · ADR-017 file-based governance ·
+ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).
 
 ## Next recommended action
 
-Merge the INV-001 PR once CI is green. Then specify and build APR-001 (approval workflow), which
-unblocks INV-003 adjustments/counts/transfers and PUR-002 purchase orders; INV-002 batches and PUR-001
-suppliers can proceed in parallel.
+Merge APR-001 (PR #2), then INV-001 (PR #1), once CI is green on each. That unblocks INV-003
+adjustments/counts/transfers (needs both) and, with PUR-001 and INV-002, PUR-002 purchase orders.
