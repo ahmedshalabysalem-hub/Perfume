@@ -9,7 +9,7 @@ sequencing decisions and verification gates.
 | Phase | Goal                                          | Status                                            |
 | ----- | --------------------------------------------- | ------------------------------------------------- |
 | 0     | Inspect, plan, bootstrap                      | Done                                              |
-| 1     | Working foundation + catalogue vertical slice | Done except OPS-001 (Docker run)                  |
+| 1     | Working foundation + catalogue vertical slice | Done                                              |
 | 2     | Inventory and suppliers                       | In progress — APR-001, INV-001, PUR-001 done      |
 | 3     | Storefront and orders                         | Browsing done early (STORE-001); rest not started |
 | 4     | Payments, shipping, returns, POS foundations  | Not started                                       |
@@ -60,8 +60,8 @@ BOOT-001, DB-001. Stack chosen and documented (`docs/DECISIONS.md`), tooling, mi
 
 - **M1.1 Foundation — Done:** AUTH-001, AUTH-002, AUD-001, I18N-001, ORG-001, ADM-001, ACC-001.
 - **M1.2 Catalogue slice — Done:** CAT-001, STORE-001, QA-001.
-- **M1.3 Closure:** GOV-001 ✔, COMP-001 ✔, DOC-001 ✔, CI-001 ✔, DOC-002 ✔, DOC-003 ✔, OPS-001 (needs a
-  Docker run).
+- **M1.3 Closure:** GOV-001 ✔, COMP-001 ✔, DOC-001 ✔, CI-001 ✔, DOC-002 ✔, DOC-003 ✔, OPS-001 ✔ (Docker run
+  2026-10-22).
 
 | Acceptance criterion (brief §10)                              | State                                                          |
 | ------------------------------------------------------------- | -------------------------------------------------------------- |

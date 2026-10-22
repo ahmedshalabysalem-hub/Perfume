@@ -3,6 +3,20 @@
 _Session 4 — 2026-10-22 — branch `claude/project-thread-1a8ij7` from base `ccr-04855f0a-4t6vb0` at
 `812fffc` (PR #4 merged)._
 
+## Parallel thread — session 4: OPS-001, ADR-018 request, test gaps (branch `claude/project-thread-osb7xg`, base `812fffc`)
+
+- **OPS-001 Done.** Docker and Compose are installed in this sandbox, but the daemon is not running at
+  start: run `dockerd` in the background first. Then `docker compose up -d --wait`, README quick start,
+  full Vitest and Playwright suites on the Docker database — all passed (evidence in
+  `docs/PROJECT_STATUS.md`). New CI job "Docker Compose database" repeats the start, init and migrations.
+- **ADR-018:** decision request DR-009 written (`docs/DECISION_REQUESTS.md`); Ahmed has to send it to the
+  accountant. Still Proposed; blocks FIN-001/FIN-003/RPT-001, not INV-002/INV-003.
+- **QA-002 Done:** gap assessment in `docs/TEST_PLAN.md`; new `tests/integration/database-constraints.test.ts`
+  (12). Next for this line of work: QA-003 (High gaps G1–G4); G3 and G4 belong with INV-002.
+- Files: `.github/workflows/ci.yml`, `docker-compose.yml`, `README.md`, `CLAUDE.md`, `docs/{DECISION_REQUESTS,
+DECISIONS,TEST_PLAN,TASK_BOARD,PROJECT_STATUS,IMPLEMENTATION_PLAN,SESSION_HANDOFF}.md`, the new test.
+  No application code, schema or migration changed.
+
 ## Last completed work
 
 - **Session 4 — INV-002 design review (documentation only).** Verified the ledger, schema and catalogue

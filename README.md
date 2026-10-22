@@ -50,8 +50,8 @@ npm run dev                                # http://localhost:3000 → /ar or /e
 
 Staff sign-in: `http://localhost:3000/en/login` (or `/ar/login`).
 
-> `docker-compose.yml` has not yet been run in the project's build environment (no Docker there); the
-> local-PostgreSQL path is the verified one. Please report problems with the compose file.
+> Both database paths are verified: `docker-compose.yml` was run on 2026-10-22 (OPS-001) and CI starts it
+> on every push (job "Docker Compose database"). The init script only runs on an empty data volume.
 
 ### Demo accounts (development seed)
 

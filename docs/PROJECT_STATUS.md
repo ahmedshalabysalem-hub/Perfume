@@ -2,7 +2,7 @@
 
 _Last updated: 2026-10-22 — session 4 (INV-002 design review)_
 
-**Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done except OPS-001 (Docker run).
+**Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
 **Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
 Design approved 2026-10-22, then amended for DR-010 (LEGACY stock sellable only after verification);
 ADR-023 Proposed again until Ahmed approves the amendment. No implementation yet.
@@ -37,18 +37,23 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Blockers and open decisions
 
-- **Technical:** OPS-001 needs one `docker compose up -d` run on a machine with Docker (none here).
 - **Design, before PUR-002:** how a purchase price (NUMERIC(14,2), ADR-021) and landed cost become a
   ledger unit cost (NUMERIC(19,4), ADR-020) — precision, rounding, currency conversion.
-- **Business:** accountant confirmation of ADR-018 (weighted average cost) before FIN-001; payment and
+- **Business:** accountant confirmation of ADR-018 (weighted average cost) before FIN-001 — request
+  DR-009 in `docs/DECISION_REQUESTS.md`, Open, not yet sent; payment and
   shipping provider selection (PAY-002 Blocked); ZATCA/ETA onboarding; legal-entity data; final brand
   name; foreign purchasing currencies (suppliers priced only in SAR/EGP today).
 - **Compliance:** summaries in `docs/COUNTRY_COMPLIANCE.md` still need advisor review. Nothing is
   implemented for e-invoicing, payments or shipping integrations.
-- **Test gaps:** sign-in rate limiting, image upload, label page, accessibility (`docs/TEST_PLAN.md`).
+- **Test gaps:** no Critical; High G1–G4 (sign-in rate limiting, image upload, opposite-order
+  concurrent postings, migrations on populated data) tracked as QA-003 in `docs/TEST_PLAN.md`.
 
 ## Verification evidence
 
+- Session 4 (OPS-001, QA-002), base `812fffc`: Docker 29.9.1 + Compose 5.6 in the sandbox;
+  `docker compose up` healthy (PostgreSQL 16.15 alpine), init created `perfume_test`/`perfume_e2e`,
+  4 migrations, no drift, seed, `/api/health` 200 (503 with the database stopped), data kept across a
+  restart; 193 Vitest tests and 20/20 Playwright tests on the Docker database; lint, typecheck, Prettier.
 - Base `e792497` (all three PRs merged): CI run
   [39748414159](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39748414159) green.
 - Session 3, on `e792497` plus documentation changes: `npm run lint`, `npm run typecheck`, `npm test`

@@ -1,5 +1,5 @@
 # Local development database. Credentials are development-only and match .env.example — never reuse
-# them anywhere else. Status: written but not yet run in the build environment (no Docker there).
+# them anywhere else. Validated 2026-10-22 (OPS-001) and started by the CI job "Docker Compose database".
 services:
   postgres:
     image: postgres:16-alpine
