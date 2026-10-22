@@ -1,5 +1,5 @@
 // ─── Procurement ─────────────────────────────────────────────────────────────
-// Suppliers sell stock to one of our legal entities (ADR-019). A supplier
+// Suppliers sell stock to one of our legal entities (ADR-021). A supplier
 // belongs to exactly one buying legal entity and inherits its country; the
 // composite foreign key keeps the two consistent. Suppliers and supplier
 // products are deactivated, never deleted. Contacts are personal data and may

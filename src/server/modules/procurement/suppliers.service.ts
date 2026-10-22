@@ -22,7 +22,7 @@ import { scopeFilterIsEmpty, type ResourceScope } from "@/server/rbac/scope";
 import { parseInput } from "@/server/validation";
 
 /**
- * Suppliers belong to a buying legal entity (ADR-019). Reads need
+ * Suppliers belong to a buying legal entity (ADR-021). Reads need
  * `suppliers.view` and writes `suppliers.manage`, both at a scope covering the
  * supplier's legal entity or country.
  */
@@ -271,7 +271,7 @@ export async function setSupplierActive(ctx: ServiceContext, id: string, input: 
 
 /**
  * Contacts are personal data: audit entries keep the name, job title and
- * which fields changed, never the e-mail address or phone number (ADR-019).
+ * which fields changed, never the e-mail address or phone number (ADR-021).
  */
 function contactAuditSnapshot(contact: { name: string; jobTitle: string | null; isPrimary: boolean }) {
   return { name: contact.name, jobTitle: contact.jobTitle, isPrimary: contact.isPrimary };

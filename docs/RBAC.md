@@ -44,7 +44,7 @@ Services call `assertCan(actor, permission, target)` (or `can` / `scopeFilterFor
 | Create or edit staff, reset passwords, change status | `users.manage` — **global**                                                                                                      |
 | Assign / revoke a role                               | `users.manage` covering the assignment's scope (GLOBAL assignments need GLOBAL), plus every permission of the role at that scope |
 | Audit log (and dashboard recent activity)            | `audit.view` — **global** (the log is not partitioned by scope)                                                                  |
-| View suppliers, contacts, supplier products, history | `suppliers.view` — the supplier's **legal entity / country** (lists filtered by scope; ADR-019)                                  |
+| View suppliers, contacts, supplier products, history | `suppliers.view` — the supplier's **legal entity / country** (lists filtered by scope; ADR-021)                                  |
 | Create/update suppliers, contacts, supplier products | `suppliers.manage` — the supplier's **legal entity / country**; STORE and WAREHOUSE assignments never cover suppliers            |
 
 Pages additionally call `getAdminPageActor(permission)` and render a no-access state, but the

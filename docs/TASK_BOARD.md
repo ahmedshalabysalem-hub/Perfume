@@ -80,7 +80,7 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | CI-001    | GitHub Actions CI pipeline                                                                                                    | `25b1b15`                       | CI run 1 green                                                                                |
 | DOC-002   | PRD, architecture and business-rules documents                                                                                | session 1 docs commit           | statements checked against services, schema and tests                                         |
 | DOC-003   | Database, ERD, RBAC, API spec and test plan documents                                                                         | session 1 docs commit           | counts verified: 27 tables, 29 CHECKs, 3 triggers, 48 permissions, 12 roles                   |
-| PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-019)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)   |
+| PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-021)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)   |
 
 ---
 
@@ -147,7 +147,7 @@ scopes, permission checks), e2e (opening balance → stock visible → history e
 ### PUR-001 — Suppliers and supplier products
 
 - **Status:** Done (`603582f`) · **Priority:** P1 · **Effort:** high (schema, authorization)
-- **Depends on:** ORG-001, CAT-001. Design: ADR-019.
+- **Depends on:** ORG-001, CAT-001. Design: ADR-021.
 
 **Objective** — Procurement staff can maintain supplier profiles (tax and commercial registration,
 payment terms, purchasing currency, contacts) and the supplier's own codes and last costs for our

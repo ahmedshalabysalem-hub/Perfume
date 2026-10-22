@@ -5,7 +5,7 @@ _Session 2 — 2026-10-22 — branch `claude/project-thread-6ppqhp`_
 ## Completed in this session
 
 - **PUR-001 — Suppliers and supplier products** (commit `603582f`). The board outline was expanded into
-  a full specification first (`docs/TASK_BOARD.md`), design recorded as ADR-019.
+  a full specification first (`docs/TASK_BOARD.md`), design recorded as ADR-021.
   - Migration `20261022072014_suppliers`: `suppliers`, `supplier_contacts`, `supplier_products`, six
     CHECKs, unique keys (code; tax number per buying entity; variant and supplier code per supplier).
   - `src/server/modules/procurement/suppliers.service.ts`: list/get/history, create/update/(de)activate,

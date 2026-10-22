@@ -61,7 +61,7 @@ ADR-008 in `docs/DECISIONS.md`.
 | `product_images`           | Storage key (unique), MIME type, size, dimensions, alt text (en/ar), optional variant, order                                                                                                                                            |
 | `product_compliance`       | Regulatory references per product and country: authority, reference type/number, status, issue and expiry dates, notes                                                                                                                  |
 
-### Procurement (`prisma/schema/procurement.prisma`, ADR-019)
+### Procurement (`prisma/schema/procurement.prisma`, ADR-021)
 
 | Table               | Purpose and key rules                                                                                                                                                                                                                    |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

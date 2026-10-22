@@ -24,7 +24,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-016 | Forms: shared Zod schemas, translatable message descriptors          | Accepted | 2026-10-21 |
 | ADR-017 | File-based project governance and session handoff                    | Accepted | 2026-10-21 |
 | ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
-| ADR-019 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
+| ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 
 ---
 
@@ -177,7 +177,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible.
 
-### ADR-019 — Suppliers belong to a buying legal entity; last costs carry their currency
+### ADR-021 — Suppliers belong to a buying legal entity; last costs carry their currency
 
 - **Context:** PUR-001 adds supplier profiles. Purchase orders, supplier invoices, payables and tax
   treatment (PUR-002, PUR-003, FIN-001) are per legal entity, and procurement staff are assigned at

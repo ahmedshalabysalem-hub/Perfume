@@ -53,7 +53,7 @@ type SupplierRuleInput = {
 
 /**
  * Cross-field rules shared by create and update: the tax number format follows
- * the supplier's country (ADR-019) and NET terms need 1–365 days. Days entered
+ * the supplier's country (ADR-021) and NET terms need 1–365 days. Days entered
  * for other terms are dropped rather than rejected, since the form hides them.
  */
 function refineSupplier<T extends SupplierRuleInput>(value: T, context: z.RefinementCtx): void {

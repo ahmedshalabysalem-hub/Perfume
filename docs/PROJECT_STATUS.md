@@ -16,7 +16,7 @@ _Last updated: 2026-10-22 — end of session 2_
   publish workflow; read-only storefront per market with search, filters, product pages, sitemap.
 - **PUR-001 Suppliers (Phase 2)** — supplier profiles per buying legal entity, tax-number checks by the
   supplier's country, payment terms, contacts, supplier product codes with dated last costs, new
-  `suppliers.view` permission, Procurement → Suppliers pages in both languages (ADR-019).
+  `suppliers.view` permission, Procurement → Suppliers pages in both languages (ADR-021).
 - **M1.3 Closure** — governance files, compliance register, README, CI pipeline, full documentation set,
   original brief preserved in `docs/reference/ORIGINAL_BRIEF.md`.
 
@@ -48,7 +48,7 @@ _Last updated: 2026-10-22 — end of session 2_
 
 ## Recent decisions
 
-ADR-019 suppliers belong to a buying legal entity; last costs keep their currency · ADR-016 password
+ADR-021 suppliers belong to a buying legal entity; last costs keep their currency · ADR-016 password
 forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).

@@ -147,7 +147,7 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 | Active staff               | Staff users with status ACTIVE (shown with `users.view`)                                   |
 | Recent activity            | Latest audit entries (shown with GLOBAL `audit.view`)                                      |
 
-## Suppliers (PUR-001, ADR-019)
+## Suppliers (PUR-001, ADR-021)
 
 - A supplier belongs to one buying legal entity (and its country), fixed after creation; a supplier
   selling to both markets has one record per entity.
