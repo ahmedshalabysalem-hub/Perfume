@@ -341,7 +341,10 @@ export async function postOpeningBalance(ctx: ServiceContext, input: unknown): P
 
     const { movements } = await postStockMovements(tx, ctx, {
       type: "OPENING_BALANCE",
-      idempotencyKey: `opening-balance:${found.id}:${warehouse.id}:${data.status}${batch ? `:${batch.id}` : ""}`,
+      // A batch implies its variant, and keeps the key within the ledger's 120 characters.
+      idempotencyKey: batch
+        ? `opening-balance:${batch.id}:${warehouse.id}:${data.status}`
+        : `opening-balance:${found.id}:${warehouse.id}:${data.status}`,
       reason: data.reason,
       lines: [
         {
