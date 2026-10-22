@@ -4,8 +4,8 @@ _Last updated: 2026-10-22 — session 4 (INV-002 design review)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
 **Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
-Design approved 2026-10-22, then amended for DR-010 (LEGACY stock sellable only after verification);
-ADR-023 Proposed again until Ahmed approves the amendment. No implementation yet.
+Design v4 approved 2026-10-22 (ADR-023 Accepted, DR-001…DR-008 and DR-010); implementation in
+progress on PR #5.
 
 ## Completed
 
@@ -28,7 +28,7 @@ ADR-023 Proposed again until Ahmed approves the amendment. No implementation yet
 
 ## In progress
 
-INV-002 design review only (documentation). No code task is In Progress or in Review.
+INV-002 implementation (PR #5, branch `claude/project-thread-1a8ij7`).
 
 ## Pending (Phase 2, in order)
 

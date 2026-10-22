@@ -28,7 +28,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 | ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 | ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
-| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Proposed | 2026-10-22 |
+| ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Accepted | 2026-10-22 |
 
 ---
 
@@ -292,11 +292,10 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** `docs/TASK_TEMPLATE.md` carries a Review field; the completion report uses the board
   statuses.
 
-### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock (Proposed)
+### ADR-023 — Batches as a ledger dimension; inspection gates sellable stock
 
-- **Status:** Proposed. Ahmed approved the design on 2026-10-22, then decided DR-010 (LEGACY stock is
-  sellable only after a recorded verification and a separate explicit release, clarified the same day);
-  the amended design waits for his approval.
+- **Status:** Accepted 2026-10-22 by Ahmed (design v4: DR-001…DR-008 and DR-010, verification and
+  release as separate explicit actions, enforced in the database and the application).
 - **Context:** ADR-020 reserved the batch dimension. The brief requires lot traceability, expiry dates
   where applicable, inspection/quarantine status, and that quarantined or rejected batches are never
   sold. On the base (`812fffc`) nothing reads `track_batches`/`track_expiry`, and `updateVariant` can
