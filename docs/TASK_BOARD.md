@@ -3,16 +3,17 @@
 Statuses: **Backlog** → **Ready** (spec complete, dependencies met) → **In Progress** → **Review** →
 **Done**; **Blocked** when an external input is missing. Priority: **P0** blocks release · **P1** current
 or next phase · **P2** the phase after · **P3** later. New specifications use `docs/TASK_TEMPLATE.md`.
-Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
+Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **Next task: INV-002** (full
+specification under Ready specifications).
 
 ## Open tasks
 
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
 | OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
-| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
+| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Ready   | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
-| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001                          |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002                 |
 | INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
 | INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
 | CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
@@ -81,10 +82,84 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | APR-001   | Approval workflow framework: requests, append-only history, separation of duties, scoped approvers                            | `436a974`                       | `approvals.test.ts` unit (4) and integration (19); `npm run verify` 131 tests (session 2)                 |
 | INV-001   | Stock ledger, balances and opening balances (ADR-020)                                                                         | `e61e099`, merge `f064554`      | `inventory.test.ts` (27), `inventory-schemas.test.ts` (3), e2e `inventory.spec.ts` (2); CI green on PR #1 |
 | PUR-001   | Suppliers, contacts, supplier products and last costs (ADR-021)                                                               | `603582f`                       | `procurement.test.ts` (14), `procurement-schema.test.ts` (5), e2e `procurement.spec.ts` (2)               |
+| GOV-002   | Workflow audit: roles, effort and review policy, INV-002 spec, status reconciled (ADR-022)                                    | session 3 docs commit           | lint, typecheck, 181 Vitest tests, Prettier, reference check                                              |
 
 ---
 
 ## Ready specifications
+
+### INV-002 — Batches/lots, inspection and quarantine, expiry
+
+- **Status:** Ready · **Priority:** P1 · **Effort:** highest (ledger schema change, inventory concurrency,
+  migration of existing balances)
+- **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
+  and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
+
+**Objective** — Stock of batch-tracked variants is held and moved per batch (lot) with its expiry date and
+inspection state; only released, unexpired stock can be sellable; batches are listed in expiry order
+(FEFO) for later picking.
+
+**Context and relevant files** — Brief Module 2 (batch/lot tracking) and §7; `docs/BUSINESS_RULES.md`
+§Inventory and the catalogue inventory flags (`trackBatches` defaults to true, `trackExpiry` requires it,
+`prisma/schema/catalog.prisma`); ADR-018, ADR-020; `prisma/schema/inventory.prisma`;
+`src/server/modules/inventory/{ledger,stock.service}.ts`; stock pages under
+`src/app/[locale]/admin/inventory`; suppliers for the optional supplier reference
+(`prisma/schema/procurement.prisma`).
+
+**Scope**
+
+1. ADR first: batch identity (lot number unique per variant), where the batch key lives (balance and
+   movement rows, `NULL` only for variants without batch tracking), how existing balances of
+   batch-tracked variants are carried over (data-preserving migration; no movement is rewritten),
+   inspection states and which permission changes them (existing `inventory.*` permission or a new one),
+   expiry handling (expired stock never sellable; whether that is a status move or a query rule).
+2. Migration: `stock_batches` (variant, lot number, manufacturing and expiry dates, optional supplier and
+   receipt reference, inspection status PENDING/RELEASED/QUARANTINED/REJECTED, audit columns) with CHECKs
+   (expiry after manufacturing; expiry required when the variant tracks expiry, enforced in the service
+   if not expressible as a CHECK); batch key added to `stock_balances` and `stock_movements`.
+3. `postStockMovements` accepts a batch per line, requires it for batch-tracked variants and refuses it
+   for others; SELLABLE lines only for RELEASED, unexpired batches; same locking and idempotency rules.
+4. Service operations: create batch, change inspection status (release, quarantine, reject) posting the
+   matching status movements in the same transaction, list batches per variant/warehouse in FEFO order
+   (pure, unit-tested ordering helper for later picking).
+5. Opening balances capture lot number and expiry for batch-tracked variants.
+6. Back office: batches per variant (lot, expiry, inspection state, quantities by status), filter for
+   expiring and quarantined stock; Arabic and English; scoped like the stock pages.
+
+**Out of scope** — Receipts creating batches from purchase orders (PUR-002), adjustments, counts and
+transfers (INV-003), reservations and FEFO picking in orders/POS (INV-004, ORD-001, POS-001), expiry and
+low-stock alerts (INV-005), valuation per batch (ADR-018 keeps weighted average), regulatory batch
+recalls.
+
+**Acceptance criteria**
+
+1. A batch-tracked variant cannot receive or lose stock without a batch; a non-tracked variant cannot
+   carry one (service and database).
+2. PENDING, QUARANTINED, REJECTED or expired batches never produce sellable available stock (integration
+   tests per state).
+3. Releasing or quarantining a batch moves its quantity between statuses through ledger movements in one
+   transaction; Σ movements = balance per key still holds.
+4. The INV-001 guarantees still hold per batch: concurrent removals never oversell, idempotent retries,
+   append-only ledger, no negative balances (existing tests extended to batches).
+5. Existing balances and movements survive the migration unchanged in quantity (migration tested on a
+   database seeded with INV-001 data).
+6. Batch changes require the chosen permission at the warehouse's scope, need a reason for quarantine and
+   rejection, and are audited.
+7. FEFO ordering: earliest expiry first, batches without expiry last, ties by received date (unit tests).
+8. Batch pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
+
+**Security and data integrity** — server-side authorization on every read and write; migration reviewed
+for data loss and lock duration; CHECKs and triggers documented in `docs/DATABASE.md`; no client-supplied
+quantities other than the posted lines; dates validated as calendar dates in the warehouse's time zone.
+
+**Required tests** — unit (FEFO ordering, schemas), integration (batch required/refused, inspection
+transitions, sellability by state and expiry, concurrency per batch, migration carry-over, scopes,
+audit), e2e (create batch on opening balance → quarantine → release → visible as sellable).
+
+**Review** — separate review pass against the criteria; read the migration SQL and the posting changes
+line by line.
+
+## Completed specifications (reference)
 
 ### INV-001 — Stock ledger and balances
 
@@ -207,15 +282,13 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
 - **OPS-001** — Done except the Docker run: run `docker compose up -d`, then the README quick start, and
   record the result.
-- **INV-002 Batches** — lot number, manufacturing and expiry dates, supplier and receipt reference,
-  inspection status (pending, released, quarantined, rejected); only released stock is sellable; FEFO.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
   **Open decision, record an ADR before building:** supplier last costs are NUMERIC(14,2) (ADR-021) but
   ledger unit costs are NUMERIC(19,4) (ADR-020). How a purchase price, landed cost and currency become a
   ledger unit cost (precision, rounding, conversion) is not decided; no rule may be assumed.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
-  corrections; two-step transfers (in transit).
+  corrections; two-step transfers (in transit). After INV-002 so all three work per batch.
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
 - **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
   receiving and counting screens.

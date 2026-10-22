@@ -7,7 +7,7 @@ Copy this block into `docs/TASK_BOARD.md` (or a task file for large tasks) befor
 
 - **Status:** Backlog | Ready | In Progress | Blocked | Review | Done
 - **Priority:** P0 (blocks release) | P1 (current phase) | P2 (next phase) | P3 (later)
-- **Effort level:** normal | high | highest — see CLAUDE.md
+- **Effort level:** normal | high | highest — recommendation, see CLAUDE.md §Roles, effort and review
 - **Depends on:** <task IDs, decisions or external inputs>
 
 **Objective** — One measurable outcome.
@@ -28,6 +28,9 @@ transactions and concurrency, money precision, personal data, migration safety.
 
 **Required tests** — Unit / integration / e2e cases to add or update; checks to run.
 
+**Review** — Self-review of the diff (normal) or a separate review pass against the acceptance
+criteria (high/highest); what the reviewer must look at in particular.
+
 **Completion report** — Filled in when the task ends (see below).
 ```
 
@@ -35,10 +38,11 @@ transactions and concurrency, money precision, personal data, migration safety.
 
 ```markdown
 Task: <ID> — <Title>
-Status: Done | Partial | Blocked | Failed
+Status: Done | Review | In Progress | Blocked (board statuses; a partial or failed task is not Done)
 Implemented: <concise list of actual changes>
 Files changed: <important paths>
 Verification: <commands actually run and their results>
+Review: <who/what reviewed it and against which criteria>
 Known issues: <remaining problems, external dependencies>
 Next task: <ID> — <objective>
 ```

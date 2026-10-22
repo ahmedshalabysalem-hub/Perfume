@@ -27,6 +27,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-019 | Generic maker-checker approvals inside the subject's transaction     | Accepted | 2026-10-22 |
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 | ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
+| ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
 
 ---
 
@@ -271,3 +272,20 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   reference data before suppliers can be priced in them (not in PUR-001).
   The supplier last cost is NUMERIC(14,2) while stock movement unit costs are NUMERIC(19,4) (ADR-020);
   PUR-002 must decide how a purchase price converts into a ledger unit cost.
+
+### ADR-022 — Task workflow: roles in one session, effort and review by risk
+
+- **Context:** The workflow audit of 2026-10-22 found the effort policy reduced to one line, no written
+  split between planning, implementation and review, and status files drifting when three threads
+  worked in parallel (ADR renumbering, stale "in review" claims).
+- **Decision:** Director, Implementer and Reviewer/QA are responsibilities described in `CLAUDE.md`, not
+  mandatory separate agents; one session normally covers all three. Review depth follows the task's
+  effort level (self-review for normal; a separate pass against the acceptance criteria for high and
+  highest). Effort levels (normal, high, highest) are recommendations recorded per task; the model and
+  effort setting are chosen by the person in the app and nothing switches them automatically, so the
+  docs name no model and sessions never claim to have changed the setting. Parallel threads keep their
+  own handoff sections and reconcile ADR numbers and shared status files at merge.
+- **Alternatives:** Three agents per task (token cost, coordination overhead for tightly coupled work);
+  maximum effort for every task (slower and costlier with no gain on routine work).
+- **Consequences:** `docs/TASK_TEMPLATE.md` carries a Review field; the completion report uses the board
+  statuses.

@@ -59,7 +59,8 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 - Size in ml and weight in grams must be positive when given. Display label defaults to the size
   ("100 ml"); testers are flagged.
 - Inventory flags: tracking batches requires tracking inventory; tracking expiry requires tracking
-  batches (database CHECKs). They take effect with INV-001/INV-002 (**planned**).
+  batches (database CHECKs). Inventory tracking is enforced by the ledger (INV-001); batch and expiry
+  tracking take effect with INV-002 (**planned**).
 - **Sellable** in a market = product PUBLISHED, variant ACTIVE, market active, price active in that market.
 
 ### Barcodes (ADR-011)
