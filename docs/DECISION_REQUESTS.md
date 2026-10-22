@@ -7,7 +7,7 @@ history; git keeps the history.
 
 | ID     | Topic                              | Blocks           | Status |
 | ------ | ---------------------------------- | ---------------- | ------ |
-| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open               |
+| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open   |
 
 DR-001…DR-008 (INV-002) are in PR #5; when merging, keep that header and table and add the DR-009 row.
 
