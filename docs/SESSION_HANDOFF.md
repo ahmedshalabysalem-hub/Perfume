@@ -9,10 +9,10 @@ _Session 3 — 2026-10-22 — branch `claude/project-thread-jyt23p` from base `c
   start: run `dockerd` in the background first. Then `docker compose up -d --wait`, README quick start,
   full Vitest and Playwright suites on the Docker database — all passed (evidence in
   `docs/PROJECT_STATUS.md`). New CI job "Docker Compose database" repeats the start, init and migrations.
-- **ADR-018 / ADR-024:** Ahmed delegated the accounting choices on 2026-10-22. ADR-018 (moving weighted
-  average per legal entity), ADR-024 (costs stored at 4 decimals, half-up only for display and journal
-  lines, rounding account) and the DR-009 development defaults are **Dev only**: build and test against
-  them; production waits for written accountant confirmation (go-live gate in REL-001). PUR-002 no
+- **ADR-018 / ADR-024:** Accepted, approved by Ahmed as owner on 2026-10-22: ADR-018 moving weighted
+  average per legal entity, ADR-024 costs stored at 4 decimals with half-up only for display and journal
+  lines and a rounding account, plus the DR-009 defaults. Accounting approvals (decisions, write-offs,
+  opening valuation) come from the accountant or the owner, chosen per request. PUR-002 no
   longer needs its own precision ADR.
 - **QA-002 Done:** gap assessment in `docs/TEST_PLAN.md`; new `tests/integration/database-constraints.test.ts`
   (12). Next for this line of work: QA-003 (High gaps G1–G4); G3 and G4 belong with INV-002.
