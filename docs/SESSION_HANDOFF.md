@@ -9,8 +9,9 @@ _Session 4 — 2026-10-22 — branch `claude/project-thread-1a8ij7` from base `c
   flags on the base; drafted ADR-023 (**Proposed**): batches as a ledger dimension, inspection gating
   sellable stock, expiry as a query rule, legacy carry-over through compensating movements. Created
   `docs/DECISION_REQUESTS.md` (DR-001…DR-008) and added it to the `CLAUDE.md` documentation map.
-  INV-002 board entry gained the design note and acceptance criteria 9–12. The full proposal was given
-  to Ahmed in the project thread; implementation waits for his approval.
+  Ahmed answered DR-001…DR-008 the same day (recorded as Decided); ADR-023 and the INV-002 board
+  entry (acceptance criteria 9–14) were revised to match. Implementation waits for his approval of
+  the final design.
 - **Session 3 — workflow audit (ADR-022, PR #4).** Roles, effort and review policy in `CLAUDE.md`; INV-002
   specified; status files reconciled.
 - **Session 2 — merged PRs #2 → #1 → #3:** APR-001 (ADR-019), INV-001 (ADR-020), PUR-001 (ADR-021).
@@ -34,12 +35,12 @@ migration changed.
   (fix with the next inventory schema change, INV-002). The migration comment stays as is (immutable).
 - `updateVariant` lets catalogue editors flip `trackInventory/trackBatches/trackExpiry` on a variant
   that already holds stock; INV-002 closes this (ADR-023).
-- DR-001…DR-008 open (`docs/DECISION_REQUESTS.md`).
+- ADR-023 still Proposed; mark Accepted when Ahmed approves the final design.
 
 ## Next exact task
 
-**INV-002 implementation, after Ahmed approves ADR-023 and answers or accepts the defaults of
-DR-001…DR-008.** First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
+**INV-002 implementation, after Ahmed approves the final ADR-023 design (DR-001…DR-008 decided).**
+Open point to confirm with him: LEGACY batches start RELEASED so existing sellable stock stays sellable. First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
 for drift on the `NULLS NOT DISTINCT` unique index; fallback two partial unique indexes), then the
 ledger changes. Commit order and test plan: INV-002 board entry and ADR-023. Then INV-003 or PUR-002.
 

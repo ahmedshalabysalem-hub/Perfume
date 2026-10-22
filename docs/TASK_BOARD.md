@@ -94,11 +94,13 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
-- **Design (2026-10-22):** ADR-023 **Proposed**, awaiting Ahmed's approval; open business choices
-  DR-001…DR-008 in `docs/DECISION_REQUESTS.md`. Implementation starts only after approval. The design
-  adds to this spec: lots owned per legal entity, permission `inventory.batches.manage`, movement types
-  `INSPECTION` and `BATCH_ASSIGNMENT`, one shared sellable-availability function, and a lock on the
-  variant tracking flags once stock exists (`updateVariant` allows flipping them today).
+- **Design (2026-10-22):** ADR-023 **Proposed**; business answers DR-001…DR-008 decided by Ahmed
+  (`docs/DECISION_REQUESTS.md`). Implementation starts only after Ahmed approves the final design.
+  Additions to this spec: batches owned per company (legal entity) with database isolation; inspection
+  states `PENDING_INSPECTION`/`RELEASED`/`QUARANTINED`/`REJECTED`; permission `inventory.batches.manage`
+  (Super Admin, Inventory Manager only); expiry precision `DAY`/`MONTH`; LEGACY batches with unknown
+  lot and dates for pre-existing stock; movement types `INSPECTION` and `BATCH_ASSIGNMENT`; one shared
+  availability function; tracking flags frozen once stock exists.
 
 **Objective** — Stock of batch-tracked variants is held and moved per batch (lot) with its expiry date and
 inspection state; only released, unexpired stock can be sellable; batches are listed in expiry order
@@ -153,9 +155,17 @@ recalls.
 7. FEFO ordering: earliest expiry first, batches without expiry last, ties by received date (unit tests).
 8. Batch pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
 9. A variant's tracking flags cannot change once it has ledger history (service and database).
-10. Inspection changes are idempotent per batch version; a stale version is a conflict.
-11. A batch cannot be used for another variant or in a warehouse of another legal entity (database).
-12. Expiry is judged on the warehouse's local date (tested across a midnight boundary).
+10. Inspection changes are idempotent per batch version; a stale version is a conflict; only
+    `inventory.batches.manage` holders (not Business Manager) decide, with a mandatory reason.
+11. A batch cannot be used for another variant, in another company's warehouse or with another
+    company's supplier (database).
+12. Expiry is judged on the warehouse's local date (tested across midnight); month-precision expiry is
+    stored as the month's last day and flagged; no expiry is inferred.
+13. Lot numbers are immutable once stock exists, except on LEGACY batches, which can never take an
+    existing lot.
+14. The carry-over is idempotent, reconciles quantities before and after, changes no movement and
+    fabricates no lot or date; "expiring within N days" excludes expired batches, which have their own
+    filter.
 
 **Security and data integrity** — server-side authorization on every read and write; migration reviewed
 for data loss and lock duration; CHECKs and triggers documented in `docs/DATABASE.md`; no client-supplied
