@@ -202,3 +202,5 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** Contacts are personal data (PDPL, Egyptian Law 151/2020); they can be removed and
   the audit entry keeps only the contact's name. Imported currencies (USD, EUR) need currency
   reference data before suppliers can be priced in them (not in PUR-001).
+  The supplier last cost is NUMERIC(14,2) while stock movement unit costs are NUMERIC(19,4) (ADR-020);
+  PUR-002 must decide how a purchase price converts into a ledger unit cost.

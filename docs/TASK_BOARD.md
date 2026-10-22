@@ -209,6 +209,9 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   inspection status (pending, released, quarantined, rejected); only released stock is sellable; FEFO.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
+  **Open decision, record an ADR before building:** supplier last costs are NUMERIC(14,2) (ADR-021) but
+  ledger unit costs are NUMERIC(19,4) (ADR-020). How a purchase price, landed cost and currency become a
+  ledger unit cost (precision, rounding, conversion) is not decided; no rule may be assumed.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
   corrections; two-step transfers (in transit).
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
