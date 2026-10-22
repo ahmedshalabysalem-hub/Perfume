@@ -16,7 +16,8 @@ import type { z } from "@/lib/validation/zod";
 
 type Values = z.input<typeof signInSchema>;
 
-export function LoginForm({ next }: { next: string }) {
+/** `next` is the validated target the visitor asked for, or null to let the page pick the saved language. */
+export function LoginForm({ next }: { next: string | null }) {
   const t = useTranslations("auth");
   const errors = useTranslations("errors");
   const router = useRouter();
@@ -38,7 +39,9 @@ export function LoginForm({ next }: { next: string }) {
         form.setValue("password", "");
         return;
       }
-      router.replace(next);
+      if (next) router.replace(next);
+      // Re-rendering the login page as a signed-in user redirects to the back
+      // office in the language saved on the account.
       router.refresh();
     } catch {
       setFormError(errors("network"));

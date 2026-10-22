@@ -21,6 +21,10 @@ export default async function RolesPage({ params }: PageProps<"/[locale]/admin/a
   const { roles, permissions } = await listRolesWithPermissions({ actor, meta: await getRequestMeta() });
   const t = await getTranslations("roles");
   const scopes = await getTranslations("scopes");
+  const moduleNames = (await getTranslations("permissionModules")) as unknown as {
+    (key: string): string;
+    has: (key: string) => boolean;
+  };
   const modules = [...new Set(permissions.map((permission) => permission.module))];
 
   return (
@@ -59,7 +63,7 @@ export default async function RolesPage({ params }: PageProps<"/[locale]/admin/a
                         return (
                           <div key={module}>
                             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                              {module}
+                              {moduleNames.has(module) ? moduleNames(module) : module}
                             </p>
                             <ul className="mt-1 grid gap-1">
                               {inModule.map((permission) => (

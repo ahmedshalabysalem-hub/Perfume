@@ -49,7 +49,7 @@ export default async function StoreLayout({ children, params }: LayoutProps<"/[l
               </Link>
             ))}
           </nav>
-          <div className="ms-auto flex items-center gap-1">
+          <div className="ms-auto flex min-w-0 flex-wrap items-center justify-end gap-1">
             {market ? (
               <MarketSwitcher
                 current={market.code}

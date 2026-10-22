@@ -26,6 +26,11 @@ stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `do
   inspection and verification, expiry with DAY/MONTH precision, LEGACY carry-over, one shared sale
   eligibility rule in the ledger, services and database; balance keys immutable; independent review
   passed.
+- **I18N-002 Localization gaps** (parallel thread, 2026-10-22) — the language choice lasts a year
+  (cookie) and is saved on the signed-in user's account (`users.preferred_locale`, no schema change);
+  the switcher names both languages and warns before discarding unsaved form input; audit actions and
+  permission modules are translated; batch dates use Latin digits (ADR-009); no sideways scroll on
+  phones. Language never changes market, currency or prices (e2e `i18n.spec.ts`).
 - **OPS-001, QA-002** (PR #6) — Docker Compose validated and in CI; test-gap assessment.
 - **ADR-018 and ADR-024 Accepted** (PRs #7–#9) — by Ahmed as owner; accounting approvals come from
   the accountant or the owner, chosen per request.

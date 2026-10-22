@@ -114,6 +114,12 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Decision:** next-intl with locale prefixes always (`/ar/…`, `/en/…`), Arabic as default and fallback,
   locale negotiated from `Accept-Language`, typed messages with a parity test, logical CSS properties for
   RTL. Numbers and prices use Latin digits in both languages (consistent with SKUs and receipts).
+- **Amendment (I18N-002, 2026-10-22, approved by the Project Director):** the `NEXT_LOCALE` cookie lasts
+  a year; switching language while signed in also saves `users.preferred_locale` (audited as
+  `users.preferences.update`). After sign-in without a `next` target, a device that has never chosen a
+  language opens the back office in the account's language; a choice made on the device wins. Language
+  is independent of market, currency, legal entity, warehouse and time zone. Inline `Intl` options in
+  components must repeat `numberingSystem: "latn"` (they do not inherit the global formats).
 
 ### ADR-010 — Status lifecycles instead of deletes
 

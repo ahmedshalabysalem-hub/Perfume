@@ -111,6 +111,17 @@ receipt posting and cost (financial consistency and inventory concurrency).
   counts, transfers) after INV-006. It needs a spec too.
 - **Parallel option:** QA-003 (G1, G2) is independent, normal effort, and can run in its own thread.
 
+## I18N-002 (parallel thread, localization gaps)
+
+Branch `claude/project-thread-fokfn9`, UI and messages only; no schema change and no inventory or
+accounting logic touched. What it adds is in `docs/PROJECT_STATUS.md` and the ADR-009 amendment.
+Rules for later work: give every new audit action a label in `messages/*.json` → `auditActions` (a
+unit test enforces it); add `numberingSystem: "latn"` to inline `Intl` options; wrap identifiers in
+`ltr-value` or `dir="ltr"`; e2e tests that switch language while signed in must switch back, because
+the choice is saved on the account. Known limits, not changed here: native date inputs show the
+browser's own placeholder (`mm/dd/yyyy`); stored audit summaries stay in the language they were
+written in (English); timestamps display in `APP_TIME_ZONE` (Riyadh) for Egyptian records too.
+
 ## Context that would otherwise be lost
 
 - **Session start:** read `CLAUDE.md`, then this file, then the task's board entry. Reply to Ahmed in

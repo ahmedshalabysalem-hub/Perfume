@@ -63,6 +63,11 @@ export const updateStaffUserSchema = z.object({
   name: requiredText(120),
 });
 
+/** UI language saved on the signed-in user's account (ADR-009 locales). */
+export const preferredLocaleSchema = z.object({
+  locale: z.enum(["ar", "en"]),
+});
+
 export const resetPasswordSchema = z.object({
   temporaryPassword: z.string().min(1).max(PASSWORD_MAX),
 });

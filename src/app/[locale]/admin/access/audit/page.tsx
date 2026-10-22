@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
+import { AuditAction } from "@/components/admin/audit-action";
 import { Pagination, TableCard } from "@/components/admin/list-controls";
 import { EmptyState, NoAccess, PageHeader } from "@/components/admin/page-parts";
 import { buttonVariants } from "@/components/ui/button";
@@ -103,7 +104,7 @@ export default async function AuditPage({ params, searchParams }: PageProps<"/[l
                     )}
                   </TableCell>
                   <TableCell>
-                    <code className="ltr-value rounded bg-muted px-1.5 py-0.5 text-xs">{entry.action}</code>
+                    <AuditAction action={entry.action} className="text-sm" />
                     <span className="ltr-value mt-1 block text-xs text-muted-foreground">
                       {entry.entityType}
                       {entry.entityId ? ` · ${entry.entityId.slice(0, 8)}…` : ""}

@@ -56,8 +56,8 @@ password; tests run with one worker.
 | Server-side authorization prevents unauthorized CRUD     | `access-and-organization.test.ts`, `catalog.test.ts` forbidden cases; `access-control.spec.ts` |
 | Create/edit/view/search/deactivate products and variants | `catalog.test.ts`; `catalog.spec.ts`                                                           |
 | SKU and barcode uniqueness                               | `catalog.test.ts` (including concurrent duplicate SKU); `catalog.spec.ts`                      |
-| Prices per market and currency                           | `catalog.test.ts` market prices; `storefront.spec.ts`                                          |
-| RTL/LTR                                                  | `storefront.spec.ts`                                                                           |
+| Prices per market and currency                           | `catalog.test.ts` market prices; `storefront.spec.ts`; `i18n.spec.ts` (language ≠ currency)    |
+| RTL/LTR                                                  | `storefront.spec.ts`, `i18n.spec.ts` (every page in both languages at 390px)                   |
 | Understandable validation                                | `catalog.spec.ts`, `storefront.spec.ts`                                                        |
 | Migrations on a clean database, build                    | CI run 1                                                                                       |
 | Batches: eligibility, inspection, LEGACY, DB guards      | `tests/unit/batches.test.ts`, `tests/integration/batches.test.ts`, `inventory.spec.ts`         |

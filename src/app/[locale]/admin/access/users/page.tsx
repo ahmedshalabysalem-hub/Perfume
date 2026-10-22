@@ -102,7 +102,7 @@ export default async function UsersPage({ params, searchParams }: PageProps<"/[l
                     <StatusBadge status={user.status} />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {user.lastLoginAt ? format.relativeTime(user.lastLoginAt) : t("never")}
+                    {user.lastLoginAt ? format.relativeTime(user.lastLoginAt, { numberingSystem: "latn" }) : t("never")}
                   </TableCell>
                 </TableRow>
               ))}
