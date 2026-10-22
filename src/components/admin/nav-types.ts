@@ -12,6 +12,7 @@ export type NavIcon =
   | "legalEntities"
   | "stores"
   | "warehouses"
+  | "suppliers"
   | "users"
   | "roles"
   | "audit";
@@ -28,11 +29,12 @@ export type NavLabel =
   | "legalEntities"
   | "stores"
   | "warehouses"
+  | "suppliers"
   | "users"
   | "roles"
   | "audit";
 
 export type NavSection = {
-  section: "overview" | "catalog" | "organization" | "access";
+  section: "overview" | "catalog" | "procurement" | "organization" | "access";
   items: Array<{ href: string; label: NavLabel; icon: NavIcon }>;
 };

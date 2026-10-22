@@ -159,4 +159,22 @@ describe("role catalogue", () => {
     expect(superAdmin?.permissions.length).toBe(PERMISSION_KEYS.length);
     expect(customer?.permissions.length).toBe(0);
   });
+
+  it("lets procurement, managers and accountants read suppliers, and only procurement change them", () => {
+    const holders = (permission: string) =>
+      SYSTEM_ROLES.filter((role) => (role.permissions as readonly string[]).includes(permission))
+        .map((role) => role.key)
+        .sort();
+    expect(holders("suppliers.view")).toEqual([
+      "accountant",
+      "business_manager",
+      "inventory_manager",
+      "procurement_staff",
+      "super_admin",
+    ]);
+    expect(holders("suppliers.manage")).toEqual(["procurement_staff", "super_admin"]);
+    for (const key of ["suppliers.view", "suppliers.manage"]) {
+      expect(PERMISSIONS.find((permission) => permission.key === key)?.available).toBe(true);
+    }
+  });
 });

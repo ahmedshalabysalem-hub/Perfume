@@ -23,6 +23,7 @@ import {
   NOTES,
   PRODUCTS,
   STORES,
+  SUPPLIERS,
   WAREHOUSES,
 } from "./seed-data";
 
@@ -277,6 +278,35 @@ async function seedProducts(tx: Tx) {
   return created;
 }
 
+async function seedSuppliers(tx: Tx) {
+  let created = 0;
+  for (const supplier of SUPPLIERS) {
+    const existing = await tx.supplier.findUnique({ where: { code: supplier.code }, select: { id: true } });
+    if (existing) continue;
+    const entity = await tx.legalEntity.findUniqueOrThrow({ where: { code: supplier.legalEntityCode } });
+    const { legalEntityCode: _legalEntityCode, contacts, products, ...data } = supplier;
+    const row = await tx.supplier.create({
+      data: { ...data, legalEntityId: entity.id, countryCode: entity.countryCode, contacts: { create: contacts } },
+    });
+    for (const product of products) {
+      const variant = await tx.productVariant.findUnique({ where: { sku: product.sku }, select: { id: true } });
+      if (!variant) continue;
+      await tx.supplierProduct.create({
+        data: {
+          supplierId: row.id,
+          variantId: variant.id,
+          supplierSku: product.supplierSku,
+          lastCostAmount: product.lastCostAmount,
+          lastCostCurrency: supplier.currencyCode,
+          lastCostAt: new Date(),
+        },
+      });
+    }
+    created += 1;
+  }
+  return created;
+}
+
 async function main() {
   const { password, generated } = resolveSeedPassword();
   const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? "admin@perfume.local").toLowerCase();
@@ -301,15 +331,16 @@ async function main() {
       }
       await seedCatalogReference(tx);
       const productsCreated = await seedProducts(tx);
+      const suppliersCreated = await seedSuppliers(tx);
       await tx.auditLog.create({
         data: {
           actorType: "SYSTEM",
           action: "system.seed",
           entityType: "system",
-          summary: `Development seed: ${productsCreated} products created`,
+          summary: `Development seed: ${productsCreated} products, ${suppliersCreated} suppliers created`,
         },
       });
-      return { rbac, productsCreated, adminCreated: admin.createdCredential };
+      return { rbac, productsCreated, suppliersCreated, adminCreated: admin.createdCredential };
     },
     { timeout: 120_000 },
   );

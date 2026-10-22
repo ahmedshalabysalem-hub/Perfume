@@ -6,6 +6,9 @@ import { syncRbac } from "@/server/rbac/sync";
 
 const TABLES = [
   "audit_logs",
+  "supplier_products",
+  "supplier_contacts",
+  "suppliers",
   "product_compliance",
   "product_images",
   "product_prices",
@@ -64,10 +67,14 @@ export async function reloadActor(userId: string): Promise<UserActor | null> {
   return row ? buildActor(row) : null;
 }
 
-async function createStaff(
+export async function createStaff(
   email: string,
   roleKey: string,
-  scope: { type: "GLOBAL" } | { type: "COUNTRY"; countryCode: string } | { type: "STORE"; storeId: string },
+  scope:
+    | { type: "GLOBAL" }
+    | { type: "COUNTRY"; countryCode: string }
+    | { type: "LEGAL_ENTITY"; legalEntityId: string }
+    | { type: "STORE"; storeId: string },
   options: { type?: "STAFF" | "CUSTOMER" } = {},
 ): Promise<UserActor> {
   const user = await db.user.create({ data: { email, name: email.split("@")[0]!, type: options.type ?? "STAFF" } });
@@ -78,7 +85,9 @@ async function createStaff(
       ? "GLOBAL"
       : scope.type === "COUNTRY"
         ? `COUNTRY:${scope.countryCode}`
-        : `STORE:${scope.storeId}`;
+        : scope.type === "LEGAL_ENTITY"
+          ? `LEGAL_ENTITY:${scope.legalEntityId}`
+          : `STORE:${scope.storeId}`;
   await db.userRole.create({
     data: {
       userId: user.id,
@@ -86,6 +95,7 @@ async function createStaff(
       scopeType: scope.type,
       scopeKey,
       countryCode: scope.type === "COUNTRY" ? scope.countryCode : null,
+      legalEntityId: scope.type === "LEGAL_ENTITY" ? scope.legalEntityId : null,
       storeId: scope.type === "STORE" ? scope.storeId : null,
     },
   });

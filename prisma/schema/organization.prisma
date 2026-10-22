@@ -22,9 +22,11 @@ model Currency {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  countries Country[]
-  stores    Store[]
-  prices    ProductPrice[]
+  countries     Country[]
+  stores        Store[]
+  prices        ProductPrice[]
+  suppliers     Supplier[]
+  supplierCosts SupplierProduct[]
 
   @@map("currencies")
 }
@@ -53,6 +55,7 @@ model Country {
   prices        ProductPrice[]
   compliance    ProductCompliance[]
   roleScopes    UserRole[]
+  suppliers     Supplier[]
 
   /// Target of product_prices(country_code, currency_code): a price is always
   /// in its market's currency.
@@ -88,6 +91,7 @@ model LegalEntity {
   stores     Store[]
   warehouses Warehouse[]
   roleScopes UserRole[]
+  suppliers  Supplier[]
 
   @@unique([id, countryCode])
   @@index([countryCode])

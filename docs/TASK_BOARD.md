@@ -7,53 +7,53 @@ Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open tasks
 
-| ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
-| --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
-| OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review  | P1               | a machine with Docker                     |
-| INV-001   | Stock ledger and balances                                    | 2     | Ready   | P1               | Phase 1 closed                            |
-| APR-001   | Approval workflow framework                                  | 2     | Backlog | P1               | —                                         |
-| PUR-001   | Suppliers and supplier products                              | 2     | Backlog | P1               | —                                         |
-| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog | P1               | INV-001                                   |
-| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
-| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001                          |
-| INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
-| INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
-| CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
-| PRC-001   | Tax rates and price calculation                              | 3     | Backlog | P2               | CAT-001                                   |
-| SHIP-001  | Shipping zones, methods and fees                             | 3     | Backlog | P2               | ORG-001                                   |
-| ORD-001   | Cart, checkout and order creation with reservation           | 3     | Backlog | P2               | INV-004, CUST-001, PRC-001, SHIP-001      |
-| ORD-002   | Order lifecycle administration and notifications             | 3     | Backlog | P2               | ORD-001                                   |
-| STORE-002 | Seller identification and legal pages per market             | 3     | Backlog | P2               | ORG-001                                   |
-| PAY-001   | Payment adapters (manual/mock), COD, bank transfer, webhooks | 4     | Backlog | P3               | ORD-001                                   |
-| PAY-002   | Online payment provider integration per market               | 4     | Blocked | P3               | PAY-001; provider choice and credentials  |
-| SHIP-002  | Carrier abstraction, shipments and tracking                  | 4     | Backlog | P3               | ORD-002                                   |
-| RET-001   | Returns, dispositions and refunds                            | 4     | Backlog | P3               | PAY-001, SHIP-002                         |
-| POS-001   | POS foundations: lookup, scan, sale, tender, receipt         | 4     | Backlog | P3               | INV-004, PRC-001, PAY-001                 |
-| INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog | P3               | ORD-001, POS-001                          |
-| EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding |
-| EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog | P0 for EG sales  | INVC-001; live use needs ETA registration |
-| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog | P3               | ADR-018 confirmed, INVC-001, PUR-002      |
-| FIN-002   | Expense categories and expenses                              | 5     | Backlog | P3               | FIN-001                                   |
-| FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog | P3               | FIN-001                                   |
-| PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog | P3               | PUR-002, FIN-001                          |
-| CRM-001   | Segmentation and support notes                               | 6     | Backlog | P3               | CUST-001                                  |
-| LOY-001   | Loyalty ledger                                               | 6     | Backlog | P3               | ORD-001, RET-001                          |
-| MKT-001   | Coupons and promotions                                       | 6     | Backlog | P3               | PRC-001, ORD-001                          |
-| REV-001   | Product reviews and moderation                               | 6     | Backlog | P3               | CUST-001                                  |
-| POS-002   | Cashier sessions, drawer reconciliation, sales channels      | 6     | Backlog | P3               | POS-001                                   |
-| SETL-001  | COD and supplier settlement workflows                        | 6     | Backlog | P3               | PAY-001, PUR-003                          |
-| RPT-001   | Operational and financial dashboards and reports             | 7     | Backlog | P3               | FIN-003                                   |
-| AUD-002   | Audit retention settings and export                          | 7     | Backlog | P3               | AUD-001                                   |
-| INT-001   | Integration API, business events, webhooks (n8n)             | 7     | Backlog | P3               | ORD-001                                   |
-| AI-001    | AI-assisted features behind business rules                   | 7     | Backlog | P3               | INT-001                                   |
-| REL-001   | Release verification suite                                   | 8     | Backlog | P0               | release scope                             |
-| SEC-003   | Pre-release security review                                  | 8     | Backlog | P0               | release scope                             |
-| OPS-003   | Production hosting, backups, observability                   | 8     | Backlog | P0               | OPS-002                                   |
-| CAT-002   | Refuse GS1 demo-range barcodes in production                 | —     | Backlog | P2               | —                                         |
-| CAT-003   | Product import/export with validation                        | —     | Backlog | P2               | CAT-001                                   |
-| OPS-002   | S3-compatible storage adapter                                | —     | Backlog | P2               | —                                         |
-| SEC-002   | Multi-factor authentication for staff                        | —     | Backlog | P2               | —                                         |
-| SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog | P3               | upstream fix                              |
+| ID        | Title                                                        | Phase | Status      | Pri              | Depends on                                |
+| --------- | ------------------------------------------------------------ | ----- | ----------- | ---------------- | ----------------------------------------- |
+| OPS-001   | docker-compose for local PostgreSQL                          | 1     | Review      | P1               | a machine with Docker                     |
+| INV-001   | Stock ledger and balances                                    | 2     | Ready       | P1               | Phase 1 closed                            |
+| APR-001   | Approval workflow framework                                  | 2     | Backlog     | P1               | —                                         |
+| PUR-001   | Suppliers and supplier products                              | 2     | In Progress | P1               | —                                         |
+| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Backlog     | P1               | INV-001                                   |
+| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog     | P1               | INV-002, PUR-001, APR-001                 |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog     | P1               | INV-001, APR-001                          |
+| INV-004   | Stock reservations                                           | 2     | Backlog     | P1               | INV-001                                   |
+| INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog     | P1               | INV-002                                   |
+| CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog     | P2               | AUTH-001                                  |
+| PRC-001   | Tax rates and price calculation                              | 3     | Backlog     | P2               | CAT-001                                   |
+| SHIP-001  | Shipping zones, methods and fees                             | 3     | Backlog     | P2               | ORG-001                                   |
+| ORD-001   | Cart, checkout and order creation with reservation           | 3     | Backlog     | P2               | INV-004, CUST-001, PRC-001, SHIP-001      |
+| ORD-002   | Order lifecycle administration and notifications             | 3     | Backlog     | P2               | ORD-001                                   |
+| STORE-002 | Seller identification and legal pages per market             | 3     | Backlog     | P2               | ORG-001                                   |
+| PAY-001   | Payment adapters (manual/mock), COD, bank transfer, webhooks | 4     | Backlog     | P3               | ORD-001                                   |
+| PAY-002   | Online payment provider integration per market               | 4     | Blocked     | P3               | PAY-001; provider choice and credentials  |
+| SHIP-002  | Carrier abstraction, shipments and tracking                  | 4     | Backlog     | P3               | ORD-002                                   |
+| RET-001   | Returns, dispositions and refunds                            | 4     | Backlog     | P3               | PAY-001, SHIP-002                         |
+| POS-001   | POS foundations: lookup, scan, sale, tender, receipt         | 4     | Backlog     | P3               | INV-004, PRC-001, PAY-001                 |
+| INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog     | P3               | ORD-001, POS-001                          |
+| EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog     | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding |
+| EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog     | P0 for EG sales  | INVC-001; live use needs ETA registration |
+| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog     | P3               | ADR-018 confirmed, INVC-001, PUR-002      |
+| FIN-002   | Expense categories and expenses                              | 5     | Backlog     | P3               | FIN-001                                   |
+| FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog     | P3               | FIN-001                                   |
+| PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog     | P3               | PUR-002, FIN-001                          |
+| CRM-001   | Segmentation and support notes                               | 6     | Backlog     | P3               | CUST-001                                  |
+| LOY-001   | Loyalty ledger                                               | 6     | Backlog     | P3               | ORD-001, RET-001                          |
+| MKT-001   | Coupons and promotions                                       | 6     | Backlog     | P3               | PRC-001, ORD-001                          |
+| REV-001   | Product reviews and moderation                               | 6     | Backlog     | P3               | CUST-001                                  |
+| POS-002   | Cashier sessions, drawer reconciliation, sales channels      | 6     | Backlog     | P3               | POS-001                                   |
+| SETL-001  | COD and supplier settlement workflows                        | 6     | Backlog     | P3               | PAY-001, PUR-003                          |
+| RPT-001   | Operational and financial dashboards and reports             | 7     | Backlog     | P3               | FIN-003                                   |
+| AUD-002   | Audit retention settings and export                          | 7     | Backlog     | P3               | AUD-001                                   |
+| INT-001   | Integration API, business events, webhooks (n8n)             | 7     | Backlog     | P3               | ORD-001                                   |
+| AI-001    | AI-assisted features behind business rules                   | 7     | Backlog     | P3               | INT-001                                   |
+| REL-001   | Release verification suite                                   | 8     | Backlog     | P0               | release scope                             |
+| SEC-003   | Pre-release security review                                  | 8     | Backlog     | P0               | release scope                             |
+| OPS-003   | Production hosting, backups, observability                   | 8     | Backlog     | P0               | OPS-002                                   |
+| CAT-002   | Refuse GS1 demo-range barcodes in production                 | —     | Backlog     | P2               | —                                         |
+| CAT-003   | Product import/export with validation                        | —     | Backlog     | P2               | CAT-001                                   |
+| OPS-002   | S3-compatible storage adapter                                | —     | Backlog     | P2               | —                                         |
+| SEC-002   | Multi-factor authentication for staff                        | —     | Backlog     | P2               | —                                         |
+| SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog     | P3               | upstream fix                              |
 
 ## Done
 
@@ -143,6 +143,58 @@ quantities; costs as exact decimals; no client-supplied totals; migration review
 
 **Required tests** — unit (pure helpers), integration (rollback, concurrency, idempotency, trigger,
 scopes, permission checks), e2e (opening balance → stock visible → history entry).
+
+### PUR-001 — Suppliers and supplier products
+
+- **Status:** In Progress · **Priority:** P1 · **Effort:** high (schema, authorization)
+- **Depends on:** ORG-001, CAT-001. Design: ADR-019.
+
+**Objective** — Procurement staff can maintain supplier profiles (tax and commercial registration,
+payment terms, purchasing currency, contacts) and the supplier's own codes and last costs for our
+variants, within their scope, with every change audited.
+
+**Context and relevant files** — Brief Module 3; `docs/RBAC.md` (`suppliers.manage`, Procurement Staff);
+legal entities and `taxNumberLooksValid` (`src/lib/schemas/organization.ts`); variant lookup by SKU or
+barcode (`findVariantByCode`, `src/server/modules/catalog/products.service.ts`); compliance panel and
+organisation forms as UI patterns.
+
+**Scope**
+
+1. Migration: `suppliers`, `supplier_contacts`, `supplier_products` with CHECKs (code format, payment
+   terms vs days, positive cost, cost/currency/date consistency) and unique keys (code; tax number per
+   entity; variant and supplier code per supplier).
+2. Service `src/server/modules/procurement/suppliers.service.ts`: list (search, status, entity filter,
+   scoped), get, create, update, activate/deactivate; contacts add/update/remove with one primary;
+   supplier products add/update/activate/deactivate with variant lookup by SKU or barcode.
+3. Permission `suppliers.view` added; `suppliers.view` and `suppliers.manage` marked available; roles
+   synced.
+4. Back office: Procurement → Suppliers list and supplier page (profile, contacts, products,
+   history) in Arabic and English. Demo procurement user and one demo supplier in the seed.
+
+**Out of scope** — Purchase orders and automatic last-cost updates (PUR-002), supplier invoices,
+payments and balances (PUR-003), supplier performance reports (RPT-001), foreign purchasing
+currencies, supplier portal (not planned).
+
+**Acceptance criteria**
+
+1. Users without `suppliers.view` cannot list or open suppliers; users without `suppliers.manage`
+   cannot change them (service-level tests).
+2. COUNTRY- and LEGAL_ENTITY-scoped users see and manage only suppliers of their scope.
+3. Tax numbers are format-checked by the supplier's country and unique per buying entity.
+4. NET payment terms require 1–365 days; other terms store no days (service and CHECK).
+5. A variant appears at most once per supplier, a supplier code at most once per supplier; last cost
+   is exact to the currency's minor units, stored with its currency and date.
+6. Every create, update, (de)activation and contact removal writes an audit entry in the same
+   transaction; supplier history is visible on the supplier page.
+7. Pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
+
+**Security and data integrity** — server-side authorization on every read and write; no hard delete of
+suppliers or supplier products (status only); contacts removable (personal data) with name-only audit
+snapshot; decimal strings for money; migration adds new tables only.
+
+**Required tests** — unit (permission catalogue and roles), integration (authorization and scopes,
+validation, uniqueness, audit, primary contact, variant lookup, last cost), e2e (create supplier → add
+contact → link variant with cost → visible in list and history).
 
 ## Backlog outlines
 

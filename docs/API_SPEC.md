@@ -75,6 +75,17 @@ type ErrorCode =
 | `createStoreAction` / `updateStoreAction` / `setStoreActiveAction`                   | `organization.manage` (store's entity and country)     | `storeCreateSchema` / `storeUpdateSchema`             |
 | `createWarehouseAction` / `updateWarehouseAction` / `setWarehouseActiveAction`       | `organization.manage` (warehouse's entity and country) | `warehouseCreateSchema` / `warehouseUpdateSchema`     |
 
+### Procurement — `src/app/[locale]/admin/procurement/suppliers/actions.ts`
+
+| Action                                                                                        | Permission (target)                                   | Input schema                                                        |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| `createSupplierAction` / `updateSupplierAction` / `setSupplierActiveAction`                   | `suppliers.manage` (supplier's legal entity, country) | `supplierCreateSchema` / `supplierUpdateSchema`, `activationSchema` |
+| `addSupplierContactAction` / `updateSupplierContactAction` / `removeSupplierContactAction`    | `suppliers.manage` (supplier's legal entity, country) | `supplierContactSchema`                                             |
+| `addSupplierProductAction` / `updateSupplierProductAction` / `setSupplierProductActiveAction` | `suppliers.manage` (supplier's legal entity, country) | `supplierProductCreateSchema` / `supplierProductUpdateSchema`       |
+
+Reads (supplier list, page, history) are server-rendered and require `suppliers.view` at a covering
+scope.
+
 ### Access — `src/app/[locale]/admin/access/actions.ts`, `src/app/[locale]/(auth)/actions.ts`
 
 | Action                                            | Permission (target)                                  | Input schema            |

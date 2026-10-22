@@ -172,7 +172,20 @@ const definitions = [
   { key: "inventory.count", module: "inventory", en: "Perform stock counts", ar: "إجراء الجرد", available: false },
 
   // Procurement (Phase 2)
-  { key: "suppliers.manage", module: "procurement", en: "Manage suppliers", ar: "إدارة الموردين", available: false },
+  {
+    key: "suppliers.view",
+    module: "procurement",
+    en: "View suppliers, contacts and supplier products",
+    ar: "عرض الموردين وجهات الاتصال ومنتجات الموردين",
+    available: true,
+  },
+  {
+    key: "suppliers.manage",
+    module: "procurement",
+    en: "Manage suppliers, contacts and supplier products",
+    ar: "إدارة الموردين وجهات الاتصال ومنتجات الموردين",
+    available: true,
+  },
   {
     key: "purchases.view",
     module: "procurement",

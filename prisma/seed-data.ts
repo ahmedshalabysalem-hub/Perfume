@@ -437,9 +437,35 @@ export const DEMO_STAFF = [
     scope: { type: "COUNTRY" as const, countryCode: "SA" },
   },
   {
+    email: "procurement.sa@perfume.local",
+    name: "KSA Procurement (Demo)",
+    role: "procurement_staff",
+    scope: { type: "COUNTRY" as const, countryCode: "SA" },
+  },
+  {
     email: "cashier.riyadh@perfume.local",
     name: "Riyadh Cashier (Demo)",
     role: "cashier",
     scope: { type: "STORE" as const, storeCode: "SA-RUH-01" },
+  },
+];
+
+/** Fictional supplier; no tax number so no registration is ever implied. */
+export const SUPPLIERS = [
+  {
+    code: "DEMO-SUP-01",
+    legalEntityCode: "DEMO-SA",
+    nameEn: "Demo Oud Distribution Co.",
+    nameAr: "شركة توزيع العود التجريبية",
+    supplierCountryCode: "SA",
+    paymentTerms: "NET" as const,
+    paymentTermDays: 30,
+    currencyCode: "SAR",
+    city: "Jeddah",
+    contacts: [{ name: "Demo Purchasing Desk", jobTitle: "Sales", isPrimary: true }],
+    products: [
+      { sku: "QA-ROI-50", supplierSku: "DOD-ROI-050", lastCostAmount: "95.00" },
+      { sku: "QA-ROI-100", supplierSku: "DOD-ROI-100", lastCostAmount: "160.00" },
+    ],
   },
 ];

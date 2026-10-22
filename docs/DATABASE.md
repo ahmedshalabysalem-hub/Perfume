@@ -18,7 +18,7 @@ ADR-008 in `docs/DECISIONS.md`.
 - Integrity rules that protect money, identity or history are enforced in the database too (CHECKs,
   unique indexes, composite foreign keys, triggers) — not only in services.
 
-## Tables (27)
+## Tables (30)
 
 ### Organisation (`prisma/schema/organization.prisma`)
 
@@ -61,13 +61,21 @@ ADR-008 in `docs/DECISIONS.md`.
 | `product_images`           | Storage key (unique), MIME type, size, dimensions, alt text (en/ar), optional variant, order                                                                                                                                            |
 | `product_compliance`       | Regulatory references per product and country: authority, reference type/number, status, issue and expiry dates, notes                                                                                                                  |
 
+### Procurement (`prisma/schema/procurement.prisma`, ADR-019)
+
+| Table               | Purpose and key rules                                                                                                                                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `suppliers`         | Code (unique), names (en/ar), buying legal entity **in the same country** (FK `(legal_entity_id, country_code)`), supplier's own country, tax and CR numbers, payment terms and days, purchasing currency, contact fields, notes, active |
+| `supplier_contacts` | People at a supplier (name, job title, e-mail, phone, primary flag; one primary enforced by the service under a row lock). Personal data: removable, audited by name only                                                                |
+| `supplier_products` | Supplier's code and name for one of our variants; last cost with its own currency and date; active. Unique `(supplier_id, variant_id)` and `(supplier_id, supplier_sku)`                                                                 |
+
 ### Governance (`prisma/schema/governance.prisma`)
 
 | Table        | Purpose and key rules                                                                                                                                                                          |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `audit_logs` | Append-only: time, actor type and user, action, entity type and id, summary, redacted `before`/`after` JSON, reason, correlation id, IP, user agent; indexed by entity, actor, time and action |
 
-## CHECK constraints (29)
+## CHECK constraints (35)
 
 | Area               | Constraints                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,6 +88,7 @@ ADR-008 in `docs/DECISIONS.md`.
 | Variants           | `product_variants_sku_format`, `product_variants_barcode_consistency` (barcode, type, source all set or all null), `product_variants_gtin_format` (digit counts per GTIN type), `product_variants_internal_barcode_code128`, `product_variants_size_positive`, `product_variants_weight_positive`, `product_variants_batches_require_inventory`, `product_variants_expiry_requires_batches` |
 | Prices             | `product_prices_amount_positive`, `product_prices_compare_at_gt_amount`                                                                                                                                                                                                                                                                                                                     |
 | Images, compliance | `product_images_size_positive`, `product_compliance_date_order`                                                                                                                                                                                                                                                                                                                             |
+| Procurement        | `suppliers_code_format`, `suppliers_supplier_country_format`, `suppliers_payment_term_days` (NET ⇔ 1–365 days), `supplier_products_supplier_sku_format` (trimmed, upper-case), `supplier_products_last_cost_positive`, `supplier_products_last_cost_consistency` (amount, currency and date all set or all null)                                                                            |
 
 GTIN check digits are verified in the service (`src/lib/barcode.ts`); the database checks shape.
 
@@ -88,7 +97,9 @@ GTIN check digits are verified in the service (`src/lib/barcode.ts`); the databa
 SKU, barcode, slugs (brands, categories, notes, products), codes (families, concentrations, legal
 entities, stores, warehouses), `product_prices (variant_id, country_code)`, image storage key, user
 e-mail, session token, account `(provider_id, account_id)`, role key, rate-limit key,
-`user_roles (user_id, role_id, scope_key)`, and the composite candidate keys `countries (code,
+`user_roles (user_id, role_id, scope_key)`, supplier code, `suppliers (legal_entity_id,
+tax_registration_no)` (NULLs never collide), `supplier_products (supplier_id, variant_id)` and
+`(supplier_id, supplier_sku)`, and the composite candidate keys `countries (code,
 currency_code)` and `legal_entities (id, country_code)` used by composite foreign keys.
 
 Search: `products_search_text_trgm_idx` — GIN index with `gin_trgm_ops` on `products.search_text`
@@ -104,7 +115,7 @@ should additionally run the application with a database role lacking UPDATE/DELE
 
 ## Migrations
 
-- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`.
+- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`, `20261022072014_suppliers`.
 - Change workflow: edit `prisma/schema/*.prisma` → `npm run db:migrate -- --name <change>` → review the
   generated SQL (data loss, defaults on large tables, locking) → add hand-written CHECKs/triggers to the
   same migration → `npx prisma generate` → tests.
@@ -117,9 +128,9 @@ should additionally run the application with a database role lacking UPDATE/DELE
 ## Seed
 
 `prisma/seed.ts` with data in `prisma/seed-data.ts`; refuses `NODE_ENV=production`. Creates SAR/EGP,
-SA/EG, two demo legal entities, three stores, a warehouse, RBAC, a Super Admin and three demo staff,
+SA/EG, two demo legal entities, three stores, a warehouse, RBAC, a Super Admin and four demo staff (including KSA procurement),
 fragrance reference data, fictional brands and six products (five published) with GS1-952 demo GTINs
-or internal codes. Idempotent: re-running creates nothing new and keeps passwords.
+or internal codes, and one fictional supplier (no tax number) with two linked variants. Idempotent: re-running creates nothing new and keeps passwords.
 
 ## Test databases
 
@@ -131,8 +142,7 @@ or internal codes. Idempotent: re-running creates nothing new and keeps password
 ## Planned tables
 
 Following the brief's table groups as modules are built (not before): inventory (`stock_movements`,
-`stock_balances`, `batches`, reservations, counts, adjustments), procurement (`suppliers`,
-`supplier_products`, purchase orders and receipts, supplier invoices/returns/payments), sales
+`stock_balances`, `batches`, reservations, counts, adjustments), procurement (purchase orders and receipts, supplier invoices/returns/payments), sales
 (`customers`, addresses, carts, orders with status history, invoices, credit notes, returns),
 payments and shipping (providers, payments, transactions, refunds, reconciliations, shipments, COD
 settlements, POS terminals/sessions/transactions), finance (chart of accounts, periods, journals,

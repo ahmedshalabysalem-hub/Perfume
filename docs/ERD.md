@@ -1,6 +1,6 @@
 # Entity-relationship diagrams
 
-Implemented schema (27 tables) as of migration `20261021195313_init`. Columns are limited to keys and
+Implemented schema (30 tables) as of migration `20261022072014_suppliers`. Columns are limited to keys and
 the fields that define relationships; full definitions are in `prisma/schema/*.prisma` and
 `docs/DATABASE.md`.
 
@@ -184,7 +184,20 @@ erDiagram
 `product_prices (country_code, currency_code)` references `countries (code, currency_code)`, so a
 price is always in its market's currency; `(variant_id, country_code)` is unique.
 
-## Phase 2 — indicative only (designed in INV-001/INV-002/PUR-001/PUR-002)
+## Procurement (PUR-001)
+
+```mermaid
+erDiagram
+  LEGAL_ENTITIES ||--o{ SUPPLIERS : "buys from"
+  COUNTRIES ||--o{ SUPPLIERS : "country of buying entity"
+  CURRENCIES ||--o{ SUPPLIERS : "purchasing currency"
+  SUPPLIERS ||--o{ SUPPLIER_CONTACTS : "reached through"
+  SUPPLIERS ||--o{ SUPPLIER_PRODUCTS : "offers"
+  PRODUCT_VARIANTS ||--o{ SUPPLIER_PRODUCTS : "supplied as"
+  CURRENCIES |o--o{ SUPPLIER_PRODUCTS : "last cost currency"
+```
+
+## Phase 2 — indicative only (designed in INV-001/INV-002/PUR-002)
 
 Not implemented. The final design is recorded in `docs/DECISIONS.md` and this file when each task ends.
 
