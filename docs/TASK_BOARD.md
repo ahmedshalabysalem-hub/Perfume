@@ -94,6 +94,11 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
+- **Design (2026-10-22):** ADR-023 **Proposed**, awaiting Ahmed's approval; open business choices
+  DR-001…DR-008 in `docs/DECISION_REQUESTS.md`. Implementation starts only after approval. The design
+  adds to this spec: lots owned per legal entity, permission `inventory.batches.manage`, movement types
+  `INSPECTION` and `BATCH_ASSIGNMENT`, one shared sellable-availability function, and a lock on the
+  variant tracking flags once stock exists (`updateVariant` allows flipping them today).
 
 **Objective** — Stock of batch-tracked variants is held and moved per batch (lot) with its expiry date and
 inspection state; only released, unexpired stock can be sellable; batches are listed in expiry order
@@ -147,6 +152,10 @@ recalls.
    rejection, and are audited.
 7. FEFO ordering: earliest expiry first, batches without expiry last, ties by received date (unit tests).
 8. Batch pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
+9. A variant's tracking flags cannot change once it has ledger history (service and database).
+10. Inspection changes are idempotent per batch version; a stale version is a conflict.
+11. A batch cannot be used for another variant or in a warehouse of another legal entity (database).
+12. Expiry is judged on the warehouse's local date (tested across a midnight boundary).
 
 **Security and data integrity** — server-side authorization on every read and write; migration reviewed
 for data loss and lock duration; CHECKs and triggers documented in `docs/DATABASE.md`; no client-supplied

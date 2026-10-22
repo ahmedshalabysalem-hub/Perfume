@@ -1,36 +1,30 @@
 # Session handoff
 
-_Session 3 — 2026-10-22 — branch `claude/project-thread-jyt23p` from base `ccr-04855f0a-4t6vb0` at
-`e792497`._
+_Session 4 — 2026-10-22 — branch `claude/project-thread-1a8ij7` from base `ccr-04855f0a-4t6vb0` at
+`812fffc` (PR #4 merged)._
 
 ## Last completed work
 
-- **Session 3 — workflow audit (documentation only, ADR-022).** Checked the governance files against the
-  merged code. `CLAUDE.md` now documents the Director / Implementer / Reviewer responsibilities (one
-  session by default), risk-based review, the effort policy and its runtime limit (the person sets
-  model and effort in the app; nothing switches automatically). INV-002 expanded into a full Ready
-  spec; INV-003 now depends on INV-002. Stale claims fixed in the plan (Phase 1/2 status, DOC-002/003),
-  PRD (Module 2), business rules (inventory flags), test plan (concurrency gap), status and this file.
-- **Session 2 — merged PRs #2 → #1 → #3:** APR-001 approvals (ADR-019, `src/server/modules/approvals`),
-  INV-001 stock ledger (ADR-020, `src/server/modules/inventory`, pages `/admin/inventory/**`), PUR-001
-  suppliers (ADR-021, `src/server/modules/procurement`, pages `/admin/procurement/suppliers/**`).
-  Details per task: their board entries and `git log`.
+- **Session 4 — INV-002 design review (documentation only).** Verified the ledger, schema and catalogue
+  flags on the base; drafted ADR-023 (**Proposed**): batches as a ledger dimension, inspection gating
+  sellable stock, expiry as a query rule, legacy carry-over through compensating movements. Created
+  `docs/DECISION_REQUESTS.md` (DR-001…DR-008) and added it to the `CLAUDE.md` documentation map.
+  INV-002 board entry gained the design note and acceptance criteria 9–12. The full proposal was given
+  to Ahmed in the project thread; implementation waits for his approval.
+- **Session 3 — workflow audit (ADR-022, PR #4).** Roles, effort and review policy in `CLAUDE.md`; INV-002
+  specified; status files reconciled.
+- **Session 2 — merged PRs #2 → #1 → #3:** APR-001 (ADR-019), INV-001 (ADR-020), PUR-001 (ADR-021).
 
-## Files changed in session 3
+## Files changed in session 4
 
-`CLAUDE.md`, `docs/DECISIONS.md` (ADR-022), `docs/TASK_BOARD.md`, `docs/TASK_TEMPLATE.md`,
-`docs/IMPLEMENTATION_PLAN.md`, `docs/PROJECT_STATUS.md`, `docs/PRD.md`, `docs/BUSINESS_RULES.md`,
-`docs/TEST_PLAN.md`, this file. No application code, schema or migration changed.
+`CLAUDE.md` (documentation map), `docs/DECISIONS.md` (ADR-023 Proposed), `docs/DECISION_REQUESTS.md`
+(new), `docs/TASK_BOARD.md`, `docs/PROJECT_STATUS.md`, this file. No application code, schema or
+migration changed.
 
-## Checks actually run (session 3)
+## Checks actually run (session 4)
 
-- Fresh container: `npm ci`, local PostgreSQL role and databases per README, `db:deploy`, `db:seed`.
-- `npm run lint`, `npm run typecheck`, `npm test` (16 files, 181 tests) — all passed.
-  `npx prettier --check CLAUDE.md docs README.md` — clean.
-- Reference check over `CLAUDE.md`, `README.md` and `docs/*.md`: every referenced repository path exists
-  (generated `src/generated/prisma` excepted).
-- Not run: build and Playwright (no route, config or code change). CI on base `e792497` is green (run
-  39748414159).
+- `npx prettier --check` on the changed Markdown files. Lint, typecheck and tests not run: no code
+  changed (base CI after PR #4 is green per the coordinator).
 
 ## Unresolved
 
@@ -38,12 +32,16 @@ _Session 3 — 2026-10-22 — branch `claude/project-thread-jyt23p` from base `c
   currencies; advisor review of the compliance register; test gaps in `docs/TEST_PLAN.md`.
 - `prisma/schema/inventory.prisma` comment on `unitCost` cites "ADR-018/019"; it should read ADR-018/020
   (fix with the next inventory schema change, INV-002). The migration comment stays as is (immutable).
+- `updateVariant` lets catalogue editors flip `trackInventory/trackBatches/trackExpiry` on a variant
+  that already holds stock; INV-002 closes this (ADR-023).
+- DR-001…DR-008 open (`docs/DECISION_REQUESTS.md`).
 
 ## Next exact task
 
-**INV-002 — Batches/lots, inspection and quarantine, expiry** (spec in `docs/TASK_BOARD.md`, effort
-highest). First step: write the ADR (batch key, carry-over of existing balances, inspection permission,
-expiry rule), then the migration. Then INV-003 or PUR-002 (PUR-002 starts with its cost-precision ADR).
+**INV-002 implementation, after Ahmed approves ADR-023 and answers or accepts the defaults of
+DR-001…DR-008.** First step: migration `…_inventory_batches` per ADR-023 (check `prisma migrate diff`
+for drift on the `NULLS NOT DISTINCT` unique index; fallback two partial unique indexes), then the
+ledger changes. Commit order and test plan: INV-002 board entry and ADR-023. Then INV-003 or PUR-002.
 
 ## Context that would otherwise be lost
 

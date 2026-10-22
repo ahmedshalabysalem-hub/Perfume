@@ -1,10 +1,11 @@
 # Project status
 
-_Last updated: 2026-10-22 — session 3 (workflow audit)_
+_Last updated: 2026-10-22 — session 4 (INV-002 design review)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done except OPS-001 (Docker run).
-**Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, full spec in
-`docs/TASK_BOARD.md`, effort: highest).
+**Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
+Design proposed as ADR-023 and waiting for Ahmed's approval and answers to DR-001…DR-008
+(`docs/DECISION_REQUESTS.md`); no implementation before that.
 
 ## Completed
 
@@ -27,7 +28,7 @@ _Last updated: 2026-10-22 — session 3 (workflow audit)_
 
 ## In progress
 
-Nothing. No task is In Progress or in Review.
+INV-002 design review only (documentation). No code task is In Progress or in Review.
 
 ## Pending (Phase 2, in order)
 
@@ -36,6 +37,9 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Blockers and open decisions
 
+- **Business, before INV-002 implementation:** DR-001…DR-008 in `docs/DECISION_REQUESTS.md` (batch
+  owner, initial inspection and who decides, expiry cut-off, approval of release, corrections, alert
+  thresholds, lot format and month-only expiry, legacy stock).
 - **Technical:** OPS-001 needs one `docker compose up -d` run on a machine with Docker (none here).
 - **Design, before PUR-002:** how a purchase price (NUMERIC(14,2), ADR-021) and landed cost become a
   ledger unit cost (NUMERIC(19,4), ADR-020) — precision, rounding, currency conversion.
@@ -59,4 +63,5 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 ## Recent decisions
 
 ADR-019 approvals · ADR-020 stock ledger · ADR-021 suppliers · ADR-022 task workflow (roles in one
-session, effort and review by risk) · ADR-018 weighted average cost (**Proposed**).
+session, effort and review by risk) · ADR-018 weighted average cost (**Proposed**) · ADR-023 batches
+(**Proposed**, INV-002).
