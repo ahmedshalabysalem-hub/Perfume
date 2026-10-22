@@ -108,7 +108,8 @@ Commits are where the work landed; tests are the evidence that it still holds. C
   expiry, unverified legacy, known expired, future expiry).
 
 - **Delivered (PR #5):** migrations `20261022095900_stock_movement_types_for_batches` and
-  `20261022100000_inventory_batches` (1 table, 14 CHECKs, 4 triggers, carry-over function);
+  `20261022100000_inventory_batches` (1 table, 14 CHECKs, 4 triggers, carry-over function) and
+  `20261022110000_stock_balance_keys_fixed` (review fix: balance keys cannot be relabelled);
   `src/lib/inventory/batches.ts` (shared eligibility, FEFO, label dates);
   `src/server/modules/inventory/batches.service.ts`; ledger, opening balances and variant flag lock;
   pages `/admin/inventory/batches` and `/admin/inventory/batches/[id]`; tests `tests/unit/batches.test.ts`,
@@ -334,7 +335,10 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   Cost precision and rounding: ADR-024; landed-cost allocation, late costs and exchange rates: DR-009
   defaults.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
-  corrections; two-step transfers (in transit). After INV-002 so all three work per batch.
+  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Open item
+  from the INV-002 review: releasing a QUARANTINED batch restores all of its quarantined stock in a
+  warehouse (apart from LEGACY carry-over), including units quarantined for another reason (e.g.
+  damage); INV-003 must decide whether release returns only the batch's own INSPECTION net quantity.
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
 - **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
   receiving and counting screens.

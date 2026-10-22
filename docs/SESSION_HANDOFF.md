@@ -31,6 +31,9 @@ DECISIONS,TEST_PLAN,TASK_BOARD,PROJECT_STATUS,IMPLEMENTATION_PLAN,SESSION_HANDOF
   `batchEligibility` (`src/lib/inventory/batches.ts`) in the ledger gate and services
   (`sellableQuantity`, `isBatchEligible`), mirrored by `stock_batch_is_sellable` and the
   `stock_balances_sellable_guard` trigger. Base `2cf04f0` (PR #8) merged in; ADR-022 unchanged.
+  Independent review fixes: migration `20261022110000_stock_balance_keys_fixed` refuses relabelling a
+  balance's key by direct UPDATE (it bypassed the batch rules and the sellable guard); a stale second-tab
+  verify or status submit with different answers or reason is a conflict, not a replay.
 - **Session 4 — OPS-001, QA-002, ADR-018/ADR-024 for development** (parallel thread, merged).
 - **Sessions 2–3:** APR-001, INV-001, PUR-001 (ADR-019…021); workflow audit (ADR-022).
 
@@ -58,6 +61,8 @@ Lint, typecheck, Prettier, `npm test` (245 passed), G3 opposite-order test 20/20
   subtracting the carried-over quantity per warehouse. If INV-003 later disposes of some quarantined
   units of such a batch, that subtraction can hold back more than remains (it errs on the safe side);
   INV-003 should record disposals against it or move the rule to an explicit marker.
+- Releasing a QUARANTINED batch restores all its quarantined stock per warehouse (except LEGACY
+  carry-over), including units quarantined for another reason; recorded for INV-003 (review item).
 - No reservations exist yet: quarantine moves only unreserved SELLABLE stock; INV-004 must decide what
   happens to reserved units of a batch that is quarantined.
 - Foreign purchasing currencies; advisor review of the compliance register; QA-003 (G1, G2).

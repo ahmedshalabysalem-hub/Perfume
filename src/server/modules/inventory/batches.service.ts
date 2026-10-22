@@ -352,6 +352,31 @@ export type BatchActionResult = { version: number; replayed: boolean };
  * otherwise makes the batch sellable. A failed check moves the batch to
  * QUARANTINED or REJECTED in the same transaction.
  */
+/**
+ * Is the batch exactly what this verification would have written? Only then is
+ * a stale-version submit a replay; a different submit (a second tab with other
+ * answers) is a conflict.
+ */
+function sameVerification(
+  current: LockedBatch,
+  data: ReturnType<typeof batchVerificationSchema.parse>,
+  passed: boolean,
+): boolean {
+  const basis =
+    data.expiryOutcome === "DATE" ? "RECORDED" : data.expiryOutcome === "NOT_APPLICABLE" ? "NOT_TRACKED" : "UNKNOWN";
+  return (
+    current.verificationResult === (passed ? "PASSED" : "FAILED") &&
+    current.physicalCheckOk === data.physicalCheckOk &&
+    current.labelCheckOk === data.labelCheckOk &&
+    (current.verificationNotes ?? null) === (data.notes ?? null) &&
+    current.expiryBasis === basis &&
+    (data.expiryOutcome !== "DATE" ||
+      (current.expiresOn?.getTime() === toDate(data.expiresOn!.date)?.getTime() &&
+        current.expiryPrecision === data.expiresOn!.precision)) &&
+    (!data.lotNumber || current.lotNumber === data.lotNumber)
+  );
+}
+
 export async function verifyBatch(ctx: ServiceContext, input: unknown): Promise<BatchActionResult> {
   assertCan(ctx.actor, MANAGE);
   if (ctx.actor.kind !== "user") throw new InvalidStateError("errors.invalidState.batchVerifierRequired");
@@ -365,7 +390,7 @@ export async function verifyBatch(ctx: ServiceContext, input: unknown): Promise<
       ctx,
       data.batchId,
       data.version,
-      (current) => current.verifiedById === userId && current.verificationResult === (passed ? "PASSED" : "FAILED"),
+      (current) => current.verifiedById === userId && sameVerification(current, data, passed),
     );
     if (replay) return { version: batch.version, replayed: true };
     if (batch.inspectionStatus === "REJECTED") throw new InvalidStateError("errors.invalidState.batchRejected");
@@ -484,7 +509,10 @@ export async function changeBatchStatus(ctx: ServiceContext, input: unknown): Pr
       ctx,
       data.batchId,
       data.version,
-      (current) => current.inspectionStatus === data.status && current.statusChangedById === actorId,
+      (current) =>
+        current.inspectionStatus === data.status &&
+        current.statusChangedById === actorId &&
+        current.statusReason === data.reason.slice(0, 500),
     );
     if (replay) return { version: batch.version, replayed: true };
     if (!canTransition(batch.inspectionStatus, data.status)) {

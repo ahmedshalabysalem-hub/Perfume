@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { Prisma } from "@/generated/prisma/client";
 import { addDays, localDateIn } from "@/lib/inventory/batches";
 import { systemContext, type ServiceContext } from "@/server/context";
 import { db } from "@/server/db";
@@ -334,6 +335,36 @@ describe("sale eligibility (AC 2, 15, 19, 20)", () => {
       ),
     ).toContain("not eligible for sale");
   });
+
+  it("is enforced by the database when a direct update relabels a balance's key", async () => {
+    const pending = await newBatch({ inspectionStatus: "PENDING_INSPECTION" });
+    await post(adjust(line(pending.id, 10, { status: "QUARANTINED" })));
+    const egBatch = await db.stockBatch.create({
+      data: {
+        legalEntityId: egEntityId,
+        countryCode: "EG",
+        variantId,
+        lotNumber: "EG-LOT",
+        expiryBasis: "RECORDED",
+        expiresOn: new Date(`${addDays(today(), 365)}T00:00:00Z`),
+        expiryPrecision: "DAY",
+        inspectionStatus: "RELEASED",
+      },
+    });
+    const relabel = (set: Prisma.Sql) =>
+      dbErrorOf(
+        db.$executeRaw`UPDATE "stock_balances" SET ${set}
+          WHERE "batch_id" = ${pending.id}::uuid AND "status" = 'QUARANTINED'`,
+      );
+    expect(await relabel(Prisma.sql`"status" = 'SELLABLE'`)).toContain("cannot change");
+    expect(await relabel(Prisma.sql`"batch_id" = ${egBatch.id}::uuid`)).toContain("cannot change");
+    expect(await relabel(Prisma.sql`"batch_id" = NULL`)).toContain("cannot change");
+    expect(await relabel(Prisma.sql`"warehouse_id" = ${egWarehouseId}::uuid`)).toContain("cannot change");
+    expect(await onHand(pending.id, "QUARANTINED")).toBe(10);
+    expect(await onHand(pending.id, "SELLABLE")).toBe(0);
+    expect(await sellableQuantity(db, variantId, f.warehouseId)).toBe(0);
+    await expectLedgerConsistent();
+  });
 });
 
 describe("opening balances with batches (AC 5 of the spec scope, DR-002)", () => {
@@ -470,6 +501,10 @@ describe("inspection decisions (AC 3, 6, 10)", () => {
     const stale = await errorOf(changeBatchStatus(f.superAdmin, decision(batch.id, 1, "RELEASED")));
     expect(stale.messageKey).toBe("errors.conflict.batchVersion");
     expect((await errorOf(changeBatchStatus(invSa, decision(batch.id, 1, "QUARANTINED", "x")))).code).toBe("CONFLICT");
+    // The same decision with another reason (a second tab) is a conflict, not a replay.
+    expect((await errorOf(changeBatchStatus(invSa, decision(batch.id, 1, "RELEASED", "Other tab")))).code).toBe(
+      "CONFLICT",
+    );
   });
 
   it("serialises competing decisions on the same version", async () => {
@@ -579,6 +614,15 @@ describe("LEGACY stock (DR-008, DR-010; AC 16–18, 21–23)", () => {
     // Verification alone changes nothing about sale.
     const verified = await verifyBatch(invSa, verification(legacy.id, 1));
     expect(verified).toEqual({ version: 2, replayed: false });
+    // The same submit again is a replay; a second tab with other answers is a conflict.
+    expect(await verifyBatch(invSa, verification(legacy.id, 1))).toEqual({ version: 2, replayed: true });
+    for (const other of [
+      { notes: "Seal torn" },
+      { expiryOutcome: "DATE", expiresOn: addDays(today(), 90) },
+      { lotNumber: "L-OTHER" },
+    ]) {
+      expect((await errorOf(verifyBatch(invSa, verification(legacy.id, 1, other)))).code).toBe("CONFLICT");
+    }
     const afterVerify = await db.stockBatch.findUniqueOrThrow({ where: { id: legacy.id } });
     expect(afterVerify).toMatchObject({
       verificationResult: "PASSED",

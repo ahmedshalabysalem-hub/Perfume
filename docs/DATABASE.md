@@ -145,6 +145,9 @@ Batches (ADR-023): `stock_movements_batch_rules` and `stock_balances_batch_rules
 company is the warehouse's. `stock_balances_sellable_guard` refuses any increase of SELLABLE stock of a
 batch that `stock_batch_is_sellable(batch, warehouse)` rejects (RELEASED, not expired on the warehouse's
 local date, and verified if expiry is unknown) — the database form of `batchEligibility`.
+`stock_balances_key_fixed` refuses any UPDATE that changes a balance's variant, warehouse, status or
+batch: stock moves between keys only through movements, so neither the batch rules nor the sellable
+guard can be bypassed by relabelling a row.
 `stock_batches_guard` refuses deletes, NOT_TRACKED expiry for a variant that tracks expiry, a LEGACY
 insert that is not pending, unverified and without lot or dates, identity changes, a version that does
 not advance by one, any change to a REJECTED status, removing a lot, changing a non-LEGACY lot once
@@ -155,7 +158,7 @@ while a NOT_TRACKED batch exists. `stock_carry_over_to_legacy_batches()` is the 
 
 ## Migrations
 
-- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`, `20261022071737_inventory_stock_ledger`, `20261022071950_approvals`, `20261022072014_suppliers`, `20261022095900_stock_movement_types_for_batches` (enum values only, so they are committed before use), `20261022100000_inventory_batches`.
+- Location: `prisma/migrations/<timestamp>_<name>/migration.sql`; current: `20261021195313_init`, `20261022071737_inventory_stock_ledger`, `20261022071950_approvals`, `20261022072014_suppliers`, `20261022095900_stock_movement_types_for_batches` (enum values only, so they are committed before use), `20261022100000_inventory_batches`, `20261022110000_stock_balance_keys_fixed` (review fix: balance keys are immutable).
 - Change workflow: edit `prisma/schema/*.prisma` → `npm run db:migrate -- --name <change>` → review the
   generated SQL (data loss, defaults on large tables, locking) → add hand-written CHECKs/triggers to the
   same migration → `npx prisma generate` → tests.
