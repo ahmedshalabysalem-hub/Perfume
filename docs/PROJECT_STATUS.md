@@ -36,10 +36,9 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Blockers and open decisions
 
-- **Design, before PUR-002:** how a purchase price (NUMERIC(14,2), ADR-021) and landed cost become a
-  ledger unit cost (NUMERIC(19,4), ADR-020) — precision, rounding, currency conversion.
-- **Business:** accountant confirmation of ADR-018 (weighted average cost) before FIN-001 — request
-  DR-009 in `docs/DECISION_REQUESTS.md`, Open (only a simulated test answer, not approval); payment and
+- **Business:** ADR-018 costing and ADR-024 precision are accepted for development (Ahmed's delegation,
+  2026-10-22, not accountant approval); written accountant confirmation is a go-live gate (DR-009,
+  REL-001); payment and
   shipping provider selection (PAY-002 Blocked); ZATCA/ETA onboarding; legal-entity data; final brand
   name; foreign purchasing currencies (suppliers priced only in SAR/EGP today).
 - **Compliance:** summaries in `docs/COUNTRY_COMPLIANCE.md` still need advisor review. Nothing is
