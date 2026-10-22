@@ -30,7 +30,7 @@ specification under Ready specifications).
 | INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog     | P3               | ORD-001, POS-001                          |
 | EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog     | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding |
 | EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog     | P0 for EG sales  | INVC-001; live use needs ETA registration |
-| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog     | P3               | ADR-018 confirmed, INVC-001, PUR-002      |
+| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog     | P3               | ADR-018 (dev), INVC-001, PUR-002          |
 | FIN-002   | Expense categories and expenses                              | 5     | Backlog     | P3               | FIN-001                                   |
 | FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog     | P3               | FIN-001                                   |
 | PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog     | P3               | PUR-002, FIN-001                          |
@@ -323,9 +323,8 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   image upload, opposite-order concurrent postings, migrations on populated data). Each needs a spec.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
-  **Open decision, record an ADR before building:** supplier last costs are NUMERIC(14,2) (ADR-021) but
-  ledger unit costs are NUMERIC(19,4) (ADR-020). How a purchase price, landed cost and currency become a
-  ledger unit cost (precision, rounding, conversion) is not decided; no rule may be assumed.
+  Cost precision and rounding: ADR-024 (accepted for development); landed-cost allocation, late costs
+  and exchange rates: DR-009 development defaults. All behind the accountant go-live gate.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
   corrections; two-step transfers (in transit). After INV-002 so all three work per batch.
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
@@ -363,7 +362,8 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   export, versioned integration API with scoped API clients, idempotency and signed webhooks, AI
   features that propose rather than bypass.
 - **REL-001, SEC-003, OPS-003** — release verification suite, security review, hosting with backups and
-  restore drills, monitoring on `/api/health`.
+  restore drills, monitoring on `/api/health`. **Go-live gate:** written accountant confirmation of
+  ADR-018, ADR-024 and the DR-009 development defaults for each legal entity.
 - **CAT-002** — refuse `952…` GTINs in production (GS1: demo numbers must never identify real items).
 - **CAT-003** — CSV/XLSX import with row-level validation and dry run; export of the catalogue.
 - **OPS-002** — S3-compatible `FileStorage` adapter.

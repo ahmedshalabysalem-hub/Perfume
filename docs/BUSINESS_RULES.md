@@ -195,8 +195,8 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 ## Planned rules (later phases — not enforced yet)
 
 - **Inventory (INV-002…005):** adjustments need a reason and approval; batches with expiry are picked
-  first-expiry-first-out; quarantined or rejected batches are never sold; valuation per ADR-018 once
-  confirmed.
+  first-expiry-first-out; quarantined or rejected batches are never sold; valuation per ADR-018 (accepted
+  for development; accountant confirmation before go-live).
 - **Orders (ORD-001):** prices, taxes and product names are snapshotted on the order; stock is reserved
   at checkout and released on expiry or cancellation; order numbers are sequential per country.
 - **Payments (PAY-001/002):** an order is paid only on verified evidence (provider confirmation with a

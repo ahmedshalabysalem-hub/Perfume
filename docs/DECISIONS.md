@@ -2,7 +2,8 @@
 
 Settled decisions are not reopened without a concrete new fact (a failing requirement, a security issue,
 an upstream change). To change one, add a new entry that supersedes it. Status values: **Accepted**,
-**Proposed** (needs confirmation), **Superseded**.
+**Dev only** (accepted for development: in force for building and testing; production use waits for
+the go-live gate named in the entry), **Proposed** (needs confirmation), **Superseded**.
 
 | ID      | Decision                                                             | Status   | Date       |
 | ------- | -------------------------------------------------------------------- | -------- | ---------- |
@@ -23,12 +24,13 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-015 | Arabic-aware search with a normalised column and pg_trgm             | Accepted | 2026-10-21 |
 | ADR-016 | Forms: shared Zod schemas, translatable message descriptors          | Accepted | 2026-10-21 |
 | ADR-017 | File-based project governance and session handoff                    | Accepted | 2026-10-21 |
-| ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
+| ADR-018 | Inventory costing: moving weighted average cost                      | Dev only | 2026-10-22 |
 | ADR-019 | Generic maker-checker approvals inside the subject's transaction     | Accepted | 2026-10-22 |
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
 | ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 | ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
 | ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Accepted | 2026-10-22 |
+| ADR-024 | Cost precision: 4 decimals stored, half-up rounding for display      | Dev only | 2026-10-22 |
 
 ---
 
@@ -170,17 +172,29 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   source of truth between sessions. Task IDs use module prefixes (BOOT, DB, AUTH, CAT, INV, ORD, …).
 - **Consequences:** Every session ends by updating status, board and handoff with evidence.
 
-### ADR-018 — Inventory costing: weighted average cost (Proposed)
+### ADR-018 — Inventory costing: moving weighted average cost (Accepted for development)
 
 - **Context:** Inventory valuation, cost of goods sold and profitability reports (INV-001, FIN-001,
   RPT-001) depend on the costing method. Perfume stock is tracked by batch for expiry.
-- **Proposal:** Perpetual inventory valued at moving weighted average cost per variant and legal entity;
-  batches/lots drive expiry and FEFO picking, not valuation. Landed costs (freight, customs) are added to
-  receipt cost.
+- **Decision (2026-10-22, accepted for development):** Perpetual inventory at moving weighted average
+  cost, one average per variant and legal entity across that entity's warehouses; the Saudi and
+  Egyptian entities never share costs or balances. Each inbound movement recomputes the average as
+  (on-hand value + inbound value) / (on-hand quantity + inbound quantity); outbound movements are costed
+  at the current average and leave it unchanged. Batches drive expiry and FEFO picking, not valuation.
+  Receipt cost is the purchase price plus capitalised landed costs (freight, non-recoverable duties,
+  shipment insurance, clearance, other qualifying direct costs), excluding recoverable VAT. Expired,
+  damaged and lost stock is expensed at the current average through an approved, audited adjustment.
+  Precision and rounding: ADR-024. Development defaults for the remaining points: DR-009.
+- **Basis:** Ahmed delegated the accounting choices to the project on 2026-10-22 ("decide what is most
+  suitable and continue"); the content follows the simulated answers recorded under DR-009. **This is
+  not an accountant's approval.**
+- **Go-live gate:** before any production use (real journals, valuation or financial reports), the
+  accountant responsible for each legal entity confirms this ADR, ADR-024 and the DR-009 development
+  defaults in writing; the answer is recorded in DR-009. Tracked in REL-001.
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
-- **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
-  journals. INV-001 records unit cost per movement so either method remains possible. Request:
-  DR-009 in `docs/DECISION_REQUESTS.md` (Open, not yet sent).
+- **Consequences:** FIN-001, FIN-003 and RPT-001 may be built and tested against this rule; their other
+  dependencies are unchanged. INV-001 already records unit cost per movement, so a different method
+  after the accountant's review stays possible.
 
 ### ADR-019 — Generic maker-checker approvals inside the subject's transaction
 
@@ -365,3 +379,27 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Consequences:** INV-003, PUR-002, INV-004, ORD-001 and POS-001 post with a batch for tracked variants
   and read availability only through the shared function; PUR-002 receipts create batches as
   PENDING_INSPECTION in quarantine. Valuation stays per variant and company (ADR-018).
+
+### ADR-024 — Cost precision and rounding (Accepted for development)
+
+- **Context:** Supplier last costs are NUMERIC(14,2) (ADR-021) while ledger unit costs are NUMERIC(19,4)
+  (ADR-020). PUR-002 needs a rule for turning purchase prices and landed costs into ledger unit costs,
+  and FIN-001 needs one for journal amounts.
+- **Decision (2026-10-22, accepted for development):**
+  - Every cost amount is stored as NUMERIC(19,4): purchase-order and receipt line prices, landed-cost
+    amounts and their allocations, ledger unit costs. PUR-002 widens `supplier_products.last_cost_amount`
+    to NUMERIC(19,4) in a new migration (widening only; existing values are unchanged).
+  - Entered amounts with more than 4 decimals are rejected, not rounded (as everywhere else).
+  - Computed values are calculated exactly in decimal arithmetic; a computed unit cost or allocation is
+    rounded half-up to 4 decimals once, when stored.
+  - Amounts are rounded half-up to the currency's minor units (2 for SAR and EGP) only for display,
+    documents and journal lines; stored costs are never replaced by their rounded form.
+  - Any difference between a document's or entry's total and the sum of its rounded lines is posted to
+    a dedicated rounding account, never spread over items, so every journal entry balances.
+  - Exchange differences are not part of inventory cost (DR-009 development defaults).
+- **Basis and go-live gate:** as ADR-018 — Ahmed's delegation of 2026-10-22, not an accountant's
+  approval; the accountant must confirm before production use (REL-001).
+- **Alternatives:** keep 2 decimals for purchase prices (unit costs of bulk or landed-cost allocations
+  lose precision); banker's rounding (less familiar to the business; can be adopted after review).
+- **Consequences:** PUR-002 and FIN-001 tests cover rounding on purchases, returns, landed costs, the
+  average and journal balance.
