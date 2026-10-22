@@ -83,7 +83,7 @@ BOOT-001, DB-001. Stack chosen and documented (`docs/DECISIONS.md`), tooling, mi
 
 ## Phase 2 — Inventory and suppliers (in progress)
 
-Done: APR-001, INV-001, PUR-001, INV-002. Order of the rest: PUR-002 and INV-003 (DR-011 first) →
+Done: APR-001, INV-001, PUR-001, INV-002. Order of the rest: INV-006 (DR-011) → PUR-002 and INV-003 →
 INV-004, INV-005. PUR-002 follows ADR-024 for cost precision and rounding.
 
 Exit criteria: every quantity change is a ledger movement written in the same transaction as the

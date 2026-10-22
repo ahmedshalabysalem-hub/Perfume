@@ -35,8 +35,8 @@ Decisions made in sessions 2–4 (all Accepted, details in `docs/DECISIONS.md`):
 - **Approval rule (Ahmed, 2026-10-22):** accounting approvals (costing decisions, write-offs, opening
   valuation) come from the **accountant or the owner, chosen per request**. ADR-018 and ADR-024 were
   accepted by Ahmed as owner; there is no separate accountant go-live gate.
-- **Business answers:** DR-001…DR-010 are Decided (`docs/DECISION_REQUESTS.md`). **DR-011** (what a
-  release restores, open item 1 below) is recorded there as Open, with a recommended option.
+- **Business answers:** DR-001…DR-011 are all Decided (`docs/DECISION_REQUESTS.md`). DR-011 (Ahmed,
+  2026-10-22) chose Option A: a release restores only inspection-held stock; INV-006 implements it.
 
 ## INV-002 in one paragraph (what the next tasks build on)
 
@@ -54,17 +54,16 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
 
 ## Open items (carry these forward)
 
-1. **Release restores all quarantined stock — decide before INV-003 (and before PUR-002 puts damaged
-   units into QUARANTINED on a released batch).** Releasing a QUARANTINED batch moves all of its
+1. **Release restores all quarantined stock — decided (DR-011, Option A), implement as INV-006 before
+   INV-003 or PUR-002 put damaged units into QUARANTINED on a released batch.** Releasing a QUARANTINED batch moves all of its
    quarantined stock in each warehouse back to SELLABLE, except the LEGACY carry-over. That includes
-   units quarantined for another reason, such as damage. The alternative from the review is that
-   QUARANTINED → RELEASED moves back only the net quantity of the batch's own `INSPECTION` movements,
-   while PENDING_INSPECTION → RELEASED keeps today's behaviour. This is a business rule, recorded as
-   **DR-011 (Open)**; ask Ahmed (code: `moveForDecision` in `src/server/modules/inventory/batches.service.ts`).
+   units quarantined for another reason, such as damage. Ahmed chose: QUARANTINED → RELEASED moves back
+   only the net quantity of the batch's own `INSPECTION` movements, while PENDING_INSPECTION → RELEASED
+   keeps today's behaviour (code: `moveForDecision` in `src/server/modules/inventory/batches.service.ts`).
 2. **LEGACY quarantined units.** Release keeps a LEGACY batch's pre-INV-002 quarantined units out of
    sale by subtracting the carried-over quantity. If INV-003 disposes of some of those units, the
-   subtraction can hold back more than remains (safe side). INV-003 should record disposals against it or
-   replace it with an explicit marker; settle this together with item 1.
+   subtraction can hold back more than remains (safe side). INV-006 replaces it with the same
+   net-INSPECTION rule.
 3. **INV-004, reserved units.** There are no reservations yet, so quarantine moves only unreserved
    SELLABLE stock. INV-004 must decide what happens to reserved units of a batch that is quarantined.
 4. **Future sales paths.** INV-004, ORD-001 and POS-001 must sell or allocate only through the shared
@@ -85,15 +84,21 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
 
 ## Next exact task
 
-**PUR-002 — purchase orders, approvals and goods receipts.** Effort: high for the spec, highest for
+**INV-006 — a release restores only inspection-held stock (DR-011, Option A).** Effort: highest
+(inventory concurrency). Small and contained: `moveForDecision` in
+`src/server/modules/inventory/batches.service.ts`, plus the LEGACY carry-over subtraction (open items 1
+and 2). Board entry in `docs/TASK_BOARD.md`; write it up as a Ready spec with `docs/TASK_TEMPLATE.md`
+first. Tests: mixed inspection and damage quarantine in one warehouse, LEGACY, replay and the
+opposite-order lock test. It must merge before PUR-002 receipts or INV-003 adjustments put damaged stock
+into QUARANTINED.
+
+**Then PUR-002 — purchase orders, approvals and goods receipts.** Effort: high for the spec, highest for
 receipt posting and cost (financial consistency and inventory concurrency).
 
-- **Prerequisites (all met):**
-  - INV-002 (batches) is merged.
-  - PUR-001 suppliers and APR-001 approvals are done.
-  - ADR-018 and ADR-024 are Accepted.
-  - The DR-009 defaults cover landed-cost allocation, late costs and exchange rates.
-- **Step 1, Director:** expand the PUR-002 outline in `docs/TASK_BOARD.md` into a Ready spec with
+- **Prerequisites:** INV-002 merged; PUR-001 and APR-001 done; ADR-018 and ADR-024 Accepted; the DR-009
+  defaults cover landed-cost allocation, late costs and exchange rates. The spec can be written in
+  parallel with INV-006; implementation follows it.
+- **Director:** expand the PUR-002 outline in `docs/TASK_BOARD.md` into a Ready spec with
   `docs/TASK_TEMPLATE.md`. The spec must cover:
   - the PO lifecycle with approval (APR-001);
   - partial receipts that create batches as PENDING_INSPECTION in QUARANTINED (DR-002);
@@ -102,10 +107,8 @@ receipt posting and cost (financial consistency and inventory concurrency).
   - moving-average cost per legal entity at 4 decimals (ADR-018, ADR-024);
   - landed cost;
   - purchase cost history.
-- **Step 2:** while the spec is written, ask Ahmed to decide open item 1 (DR-011), because receipts and
-  INV-003 adjustments both put stock into QUARANTINED.
 - **Alternative:** if Ahmed prefers to finish the inventory line first, take **INV-003** (adjustments,
-  counts, transfers) instead. It needs a spec too, and DR-011 must be decided before it is implemented.
+  counts, transfers) after INV-006. It needs a spec too.
 - **Parallel option:** QA-003 (G1, G2) is independent, normal effort, and can run in its own thread.
 
 ## Context that would otherwise be lost

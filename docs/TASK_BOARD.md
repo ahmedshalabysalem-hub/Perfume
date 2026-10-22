@@ -4,14 +4,15 @@ Statuses: **Backlog** → **Ready** (spec complete, dependencies met) → **In P
 **Done**; **Blocked** when an external input is missing. Priority: **P0** blocks release · **P1** current
 or next phase · **P2** the phase after · **P3** later. New specifications use `docs/TASK_TEMPLATE.md`.
 Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **INV-002 is Done** (PR #5);
-next: PUR-002 spec (or INV-003), with DR-011 decided first — see `docs/SESSION_HANDOFF.md`.
+next: INV-006 (DR-011 decided: Option A), then PUR-002 spec (or INV-003) — see `docs/SESSION_HANDOFF.md`.
 
 ## Open tasks
 
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
-| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
-| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002                 |
+| INV-006   | Release restores only inspection-held stock (DR-011)         | 2     | Backlog | P1               | INV-002                                   |
+| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001, INV-006        |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002, INV-006        |
 | QA-003    | Close the High gaps of the 2026-10-22 test plan (G1, G2)     | 2     | Backlog | P1               | — (G3, G4 closed by INV-002)              |
 | INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
 | INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
@@ -332,17 +333,20 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
 
 - **QA-003** — the High items G1 and G2 of the test assessment in `docs/TEST_PLAN.md` (sign-in rate
   limiting, image upload); G3 and G4 were closed by INV-002. Each needs a spec.
+- **INV-006 Release restores only inspection-held stock (DR-011, Option A)** — QUARANTINED → RELEASED
+  moves back to SELLABLE only the net quantity of the batch's own `INSPECTION` movements per warehouse;
+  stock quarantined for other reasons (damage) stays held. PENDING_INSPECTION → RELEASED is unchanged.
+  Replace the LEGACY carry-over subtraction with the same rule (handoff open item 2). Code:
+  `moveForDecision` in `src/server/modules/inventory/batches.service.ts`. Effort: highest (inventory
+  concurrency); integration tests for mixed inspection and damage quarantine, LEGACY, and replay.
 - **PUR-002 Purchase orders** — lifecycle with approval, partial receipts with inspection and rejected
   quantities, batch allocation, landed cost; posts RECEIPT movements; purchase cost history.
   Cost precision and rounding: ADR-024; landed-cost allocation, late costs and exchange rates: DR-009
-  defaults. Receipts create batches PENDING_INSPECTION in QUARANTINED (DR-002). Decide DR-011 (below)
-  before damaged units go into QUARANTINED on a released batch.
+  defaults. Receipts create batches PENDING_INSPECTION in QUARANTINED (DR-002). INV-006 (DR-011) lands
+  first, before damaged units go into QUARANTINED on a released batch.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
-  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Open item
-  from the INV-002 review: releasing a QUARANTINED batch restores all of its quarantined stock in a
-  warehouse (apart from LEGACY carry-over), including units quarantined for another reason (e.g.
-  damage); INV-003 must decide whether release returns only the batch's own INSPECTION net quantity
-  (to be recorded as DR-011 and decided by Ahmed).
+  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Builds on
+  INV-006: release returns only the batch's own INSPECTION net quantity (DR-011).
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
 - **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
   receiving and counting screens.

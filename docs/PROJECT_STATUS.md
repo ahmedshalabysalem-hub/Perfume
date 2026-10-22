@@ -3,8 +3,8 @@
 _Last updated: 2026-10-22 — end of session 4 (complete handoff; INV-002 merged)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
-**Next task:** **PUR-002** (spec first), with DR-011 (what a release restores) put to Ahmed in
-parallel; INV-003 is the alternative. Details and prerequisites: `docs/SESSION_HANDOFF.md`. No open PRs.
+**Next task:** **INV-006** (DR-011 decided as Option A: a release restores only inspection-held
+stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `docs/SESSION_HANDOFF.md`. No open PRs.
 
 ## Completed
 
@@ -38,7 +38,7 @@ Nothing. All PRs (#1–#9) are merged.
 
 ## Pending (Phase 2, in order)
 
-PUR-002 purchase orders and INV-003 adjustments/counts/transfers (DR-011 first) → INV-004
+INV-006 (DR-011) → PUR-002 purchase orders and INV-003 adjustments/counts/transfers → INV-004
 reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Blockers and open decisions
@@ -51,8 +51,8 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
   implemented for e-invoicing, payments or shipping integrations.
 - **Test gaps:** no Critical; High G1–G2 (sign-in rate limiting, image upload) tracked as QA-003 in
   `docs/TEST_PLAN.md`; G3 and G4 closed by INV-002.
-- **Open item for INV-003/PUR-002 (DR-011, to ask Ahmed):** releasing a QUARANTINED batch restores all
-  of its quarantined stock, including units quarantined for another reason (damage).
+- **DR-011 decided (Option A, Ahmed, 2026-10-22), not yet implemented:** releasing a QUARANTINED batch
+  still restores all of its quarantined stock, including damaged units, until INV-006 lands.
 - **Repository:** the default branch is still named `ccr-04855f0a-4t6vb0`; renaming is the owner's call.
 
 ## Verification evidence
