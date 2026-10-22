@@ -257,9 +257,10 @@ model ProductVariant {
   createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  product Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
-  prices  ProductPrice[]
-  images  ProductImage[]
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  prices    ProductPrice[]
+  images    ProductImage[]
+  suppliers SupplierProduct[]
 
   stockBalances  StockBalance[]
   stockMovements StockMovement[]

@@ -2,11 +2,13 @@
 
 Decision: ADR-007. Code: `src/server/rbac/` (`permissions.ts`, `roles.ts`, `scope.ts`, `authorize.ts`,
 `actor.ts`, `sync.ts`). Tests: `tests/unit/rbac.test.ts`, `tests/integration/access-and-organization.test.ts`,
+`tests/integration/procurement.test.ts`,
 `tests/e2e/access-control.spec.ts`.
 
 ## Model
 
-- **Permissions** — a fixed catalogue in code (48 keys). 18 are active today (`inventory.view` and `inventory.adjust.approve` since INV-001); the rest are reserved for
+- **Permissions** — a fixed catalogue in code (49 keys). 20 are active today (`inventory.view` and
+  `inventory.adjust.approve` since INV-001; `suppliers.view` and `suppliers.manage` since PUR-001); the rest are reserved for
   later modules (`available: false`) so roles can be defined once.
 - **Roles** — 12 system roles in code, each with a permission set and the scope types it may be
   assigned at. `npm run db:sync-rbac` (also run by the seed) upserts both into the database.
@@ -43,6 +45,10 @@ Services call `assertCan(actor, permission, target)` (or `can` / `scopeFilterFor
 | Create or edit staff, reset passwords, change status | `users.manage` — **global**                                                                                                      |
 | Assign / revoke a role                               | `users.manage` covering the assignment's scope (GLOBAL assignments need GLOBAL), plus every permission of the role at that scope |
 | Audit log (and dashboard recent activity)            | `audit.view` — **global** (the log is not partitioned by scope)                                                                  |
+| View stock balances and movements                    | `inventory.view` — the warehouse (lists filtered by scope; ADR-020)                                                              |
+| Enter opening balances                               | `inventory.adjust.approve` — the warehouse                                                                                       |
+| View suppliers, contacts, supplier products, history | `suppliers.view` — the supplier's **legal entity / country** (lists filtered by scope; ADR-021)                                  |
+| Create/update suppliers, contacts, supplier products | `suppliers.manage` — the supplier's **legal entity / country**; STORE and WAREHOUSE assignments never cover suppliers            |
 
 Pages additionally call `getAdminPageActor(permission)` and render a no-access state, but the
 services above are the security boundary; hidden buttons are a convenience only.
@@ -63,7 +69,7 @@ services above are the security boundary; hidden buttons are a convenience only.
 
 | Role (key)                                    | Assignable scopes                        | Purpose                                            |
 | --------------------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| Super Admin (`super_admin`)                   | GLOBAL                                   | Everything (all 48 permissions)                    |
+| Super Admin (`super_admin`)                   | GLOBAL                                   | Everything (all 49 permissions)                    |
 | Business / Store Manager (`business_manager`) | GLOBAL, COUNTRY, LEGAL_ENTITY, STORE     | Runs a business unit: catalogue, prices, approvals |
 | Catalogue Manager (`catalog_manager`)         | GLOBAL, COUNTRY                          | Catalogue content and prices                       |
 | Sales Staff (`sales_staff`)                   | GLOBAL, COUNTRY, STORE                   | Orders and customers                               |
@@ -100,6 +106,10 @@ The Customer role has none.
 | `users.view`                 | ✓   | ✓   |     |     |     |     |     |     |     |     |     |
 | `users.manage`               | ✓   |     |     |     |     |     |     |     |     |     |     |
 | `audit.view`                 | ✓   | ✓   |     |     |     |     |     |     |     |     |     |
+| `inventory.view`             | ✓   | ✓   |     |     | ✓   | ✓   | ✓   |     |     |     |     |
+| `inventory.adjust.approve`   | ✓   | ✓   |     |     | ✓   |     |     |     |     |     |     |
+| `suppliers.view`             | ✓   | ✓   |     |     | ✓   |     | ✓   | ✓   |     |     |     |
+| `suppliers.manage`           | ✓   |     |     |     |     |     | ✓   |     |     |     |     |
 
 Because catalogue writes and the audit log are **global** targets, a Business or Catalogue Manager
 assigned at COUNTRY scope can view the catalogue and change only their country's prices and regulatory
@@ -107,18 +117,18 @@ references; they cannot create products, edit shared master data or read the aud
 
 ## Reserved permissions (planned modules)
 
-| Module       | Permissions (roles holding them today)                                                                                                                                                           |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Inventory    | `inventory.view` (BM, IM, WS, PS), `inventory.receive` (IM, WS), `inventory.adjust.request` (IM, WS), `inventory.adjust.approve` (BM, IM), `inventory.transfer` (IM), `inventory.count` (IM, WS) |
-| Procurement  | `suppliers.manage` (PS), `purchases.view` (BM, IM, PS), `purchases.create` (PS), `purchases.approve` (BM)                                                                                        |
-| Sales        | `orders.view` (BM, SS, AC, CS), `orders.create` (SS), `orders.update` (BM, SS), `orders.cancel` (BM)                                                                                             |
-| CRM          | `customers.view` (BM, SS, CS, CA), `customers.manage` (CS), `customers.export` (SA only)                                                                                                         |
-| Payments     | `payments.verify` (AC), `payments.refund.request` (CS), `payments.refund.approve` (BM)                                                                                                           |
-| POS          | `pos.sell` (CA), `pos.session.manage` (BM), `pos.discount.override` (BM)                                                                                                                         |
-| Accounting   | `accounting.view` (AC), `accounting.post` (AC), `expenses.manage` (AC)                                                                                                                           |
-| Reports      | `reports.view` (BM, IM, AC, MK), `reports.financial.view` (BM, AC)                                                                                                                               |
-| Marketing    | `marketing.manage` (MK), `loyalty.manage` (SA only), `reviews.moderate` (MK)                                                                                                                     |
-| Integrations | `integrations.manage` (SA only)                                                                                                                                                                  |
+| Module       | Permissions (roles holding them today)                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Inventory    | `inventory.receive` (IM, WS), `inventory.adjust.request` (IM, WS), `inventory.transfer` (IM), `inventory.count` (IM, WS) |
+| Procurement  | `purchases.view` (BM, IM, PS), `purchases.create` (PS), `purchases.approve` (BM)                                         |
+| Sales        | `orders.view` (BM, SS, AC, CS), `orders.create` (SS), `orders.update` (BM, SS), `orders.cancel` (BM)                     |
+| CRM          | `customers.view` (BM, SS, CS, CA), `customers.manage` (CS), `customers.export` (SA only)                                 |
+| Payments     | `payments.verify` (AC), `payments.refund.request` (CS), `payments.refund.approve` (BM)                                   |
+| POS          | `pos.sell` (CA), `pos.session.manage` (BM), `pos.discount.override` (BM)                                                 |
+| Accounting   | `accounting.view` (AC), `accounting.post` (AC), `expenses.manage` (AC)                                                   |
+| Reports      | `reports.view` (BM, IM, AC, MK), `reports.financial.view` (BM, AC)                                                       |
+| Marketing    | `marketing.manage` (MK), `loyalty.manage` (SA only), `reviews.moderate` (MK)                                             |
+| Integrations | `integrations.manage` (SA only)                                                                                          |
 
 Super Admin holds all of them. Each module task revisits its permissions (approval separation of
 duties, scopes) before marking them available.

@@ -13,6 +13,7 @@ export const USERS = {
   admin: "admin@perfume.local",
   catalog: "catalog@perfume.local",
   managerSa: "manager.sa@perfume.local",
+  procurementSa: "procurement.sa@perfume.local",
   cashier: "cashier.riyadh@perfume.local",
 } as const;
 

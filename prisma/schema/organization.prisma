@@ -26,6 +26,8 @@ model Currency {
   stores         Store[]
   prices         ProductPrice[]
   stockMovements StockMovement[]
+  suppliers      Supplier[]
+  supplierCosts  SupplierProduct[]
 
   @@map("currencies")
 }
@@ -55,6 +57,7 @@ model Country {
   compliance       ProductCompliance[]
   roleScopes       UserRole[]
   approvalRequests ApprovalRequest[]
+  suppliers        Supplier[]
 
   /// Target of product_prices(country_code, currency_code): a price is always
   /// in its market's currency.
@@ -91,6 +94,7 @@ model LegalEntity {
   warehouses       Warehouse[]
   roleScopes       UserRole[]
   approvalRequests ApprovalRequest[]
+  suppliers        Supplier[]
 
   @@unique([id, countryCode])
   @@index([countryCode])

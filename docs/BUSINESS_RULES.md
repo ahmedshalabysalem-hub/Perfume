@@ -175,6 +175,22 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
   for the warehouse, a reason and a unit cost (zero allowed), once per variant, warehouse and status,
   and only while that balance has no history. Each is audited.
 
+## Suppliers (PUR-001, ADR-021)
+
+- A supplier belongs to one buying legal entity (and its country), fixed after creation; a supplier
+  selling to both markets has one record per entity.
+- Tax numbers are format-checked by the **supplier's** country (KSA: 15 digits starting and ending
+  with 3; Egypt: 9 digits; elsewhere 4–40 letters/digits) and unique within a buying entity.
+- Payment terms: prepaid, on delivery, or net with 1–365 days.
+- Contacts: at most one primary (the first contact becomes primary); removable; the audit trail keeps
+  only the name, job title and which fields changed.
+- Supplier products link the supplier's code to one of our variants (found by SKU or barcode), once per
+  supplier and once per supplier code. The last unit cost is exact to two decimals, stored with its
+  currency and date; an unchanged amount is never relabelled when the supplier's currency changes.
+  Purchase orders (PUR-002) will update it.
+- Suppliers and supplier products are deactivated, never deleted; inactive suppliers cannot get new
+  product links.
+
 ## Planned rules (later phases — not enforced yet)
 
 - **Inventory (INV-002…005):** adjustments need a reason and approval; batches with expiry are picked

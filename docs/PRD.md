@@ -56,7 +56,7 @@ Status: **Done** (implemented and tested), **Partial**, **Planned**. Phase numbe
 | --- | -------------------------------------- | ----- | ----------------------------- | -------------------------------------- |
 | 1   | Product catalogue                      | 1     | Done (import/export planned)  | CAT-001, CAT-002, CAT-003              |
 | 2   | Inventory and warehouse management     | 2     | Partial (warehouses only)     | ORG-001, INV-001…005                   |
-| 3   | Suppliers and procurement              | 2     | Planned                       | PUR-001, PUR-002, PUR-003              |
+| 3   | Suppliers and procurement              | 2     | Partial (suppliers)           | PUR-001, PUR-002, PUR-003              |
 | 4   | Customers and CRM                      | 3, 6  | Planned                       | CUST-001, CRM-001                      |
 | 5   | Cart and checkout                      | 3     | Planned                       | ORD-001, PRC-001, SHIP-001             |
 | 6   | Order management                       | 3     | Planned                       | ORD-001, ORD-002                       |
@@ -92,7 +92,7 @@ Critical rules (ledger, same-transaction updates, no overselling, no negative st
 adjustments with reasons, no sale from quarantined/rejected batches, return dispositions, consistent
 reservations, idempotent retries, multi-warehouse): `docs/BUSINESS_RULES.md` §Planned rules.
 
-### Module 3 — Suppliers and procurement _(Planned)_
+### Module 3 — Suppliers and procurement _(Partial: supplier profiles, contacts and supplier products — PUR-001)_
 
 Supplier profiles and contacts, supplier product references/codes, purchase orders and items with
 configurable approval, partial and full receipts, inspections and rejected quantities, supplier

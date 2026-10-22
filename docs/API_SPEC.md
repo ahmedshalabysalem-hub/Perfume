@@ -85,6 +85,17 @@ Stock reads (`listStock`, `getVariantStock`) are called by the pages directly an
 warehouses covered by the actor's `inventory.view` assignments. Other modules change stock only through
 `postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-020).
 
+### Procurement — `src/app/[locale]/admin/procurement/suppliers/actions.ts`
+
+| Action                                                                                        | Permission (target)                                   | Input schema                                                        |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| `createSupplierAction` / `updateSupplierAction` / `setSupplierActiveAction`                   | `suppliers.manage` (supplier's legal entity, country) | `supplierCreateSchema` / `supplierUpdateSchema`, `activationSchema` |
+| `addSupplierContactAction` / `updateSupplierContactAction` / `removeSupplierContactAction`    | `suppliers.manage` (supplier's legal entity, country) | `supplierContactSchema`                                             |
+| `addSupplierProductAction` / `updateSupplierProductAction` / `setSupplierProductActiveAction` | `suppliers.manage` (supplier's legal entity, country) | `supplierProductCreateSchema` / `supplierProductUpdateSchema`       |
+
+Reads (supplier list, page, history) are server-rendered and require `suppliers.view` at a covering
+scope.
+
 ### Access — `src/app/[locale]/admin/access/actions.ts`, `src/app/[locale]/(auth)/actions.ts`
 
 | Action                                            | Permission (target)                                  | Input schema            |

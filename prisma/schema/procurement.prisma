@@ -1,0 +1,100 @@
+// ─── Procurement ─────────────────────────────────────────────────────────────
+// Suppliers sell stock to one of our legal entities (ADR-021). A supplier
+// belongs to exactly one buying legal entity and inherits its country; the
+// composite foreign key keeps the two consistent. Suppliers and supplier
+// products are deactivated, never deleted. Contacts are personal data and may
+// be removed.
+
+enum PaymentTerms {
+  PREPAID
+  ON_DELIVERY
+  NET
+}
+
+model Supplier {
+  id                       String       @id @default(uuid(7)) @db.Uuid
+  /// Upper-case internal reference, unique across the organisation.
+  code                     String       @unique @db.VarChar(32)
+  /// Buying legal entity; fixed after creation.
+  legalEntityId            String       @map("legal_entity_id") @db.Uuid
+  countryCode              String       @map("country_code") @db.Char(2)
+  nameEn                   String       @map("name_en") @db.VarChar(200)
+  nameAr                   String       @map("name_ar") @db.VarChar(200)
+  /// ISO 3166-1 alpha-2 country where the supplier is registered (any country).
+  supplierCountryCode      String       @map("supplier_country_code") @db.Char(2)
+  /// VAT / tax registration number issued by the supplier's tax authority.
+  taxRegistrationNo        String?      @map("tax_registration_no") @db.VarChar(40)
+  commercialRegistrationNo String?      @map("commercial_registration_no") @db.VarChar(40)
+  paymentTerms             PaymentTerms @default(NET) @map("payment_terms")
+  /// Days until payment is due; set only (and always) for NET terms.
+  paymentTermDays          Int?         @map("payment_term_days") @db.SmallInt
+  /// Currency the supplier quotes and invoices in.
+  currencyCode             String       @map("currency_code") @db.Char(3)
+  email                    String?      @db.VarChar(254)
+  phone                    String?      @db.VarChar(32)
+  websiteUrl               String?      @map("website_url") @db.VarChar(300)
+  addressLine1             String?      @map("address_line1") @db.VarChar(200)
+  city                     String?      @db.VarChar(100)
+  notes                    String?
+  isActive                 Boolean      @default(true) @map("is_active")
+  createdAt                DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  legalEntity LegalEntity       @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country     Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  currency    Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
+  contacts    SupplierContact[]
+  products    SupplierProduct[]
+
+  /// NULL tax numbers are distinct in PostgreSQL, so suppliers without one never collide.
+  @@unique([legalEntityId, taxRegistrationNo])
+  @@index([countryCode])
+  @@index([isActive])
+  @@map("suppliers")
+}
+
+model SupplierContact {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  supplierId String   @map("supplier_id") @db.Uuid
+  name       String   @db.VarChar(120)
+  jobTitle   String?  @map("job_title") @db.VarChar(120)
+  email      String?  @db.VarChar(254)
+  phone      String?  @db.VarChar(32)
+  /// At most one primary contact per supplier, enforced by the service under a
+  /// lock on the supplier row.
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  @@index([supplierId])
+  @@map("supplier_contacts")
+}
+
+/// The supplier's own code for one of our variants, and the last unit cost
+/// paid or quoted. The cost keeps its currency and date so that changing the
+/// supplier's currency never relabels recorded amounts.
+model SupplierProduct {
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  supplierId          String    @map("supplier_id") @db.Uuid
+  variantId           String    @map("variant_id") @db.Uuid
+  /// Supplier's product code, upper-cased and trimmed.
+  supplierSku         String    @map("supplier_sku") @db.VarChar(64)
+  supplierProductName String?   @map("supplier_product_name") @db.VarChar(200)
+  lastCostAmount      Decimal?  @map("last_cost_amount") @db.Decimal(14, 2)
+  lastCostCurrency    String?   @map("last_cost_currency") @db.Char(3)
+  lastCostAt          DateTime? @map("last_cost_at") @db.Timestamptz(3)
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  supplier Supplier       @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  variant  ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  currency Currency?      @relation(fields: [lastCostCurrency], references: [code], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([supplierId, variantId])
+  @@unique([supplierId, supplierSku])
+  @@index([variantId])
+  @@map("supplier_products")
+}

@@ -26,6 +26,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-018 | Inventory costing: weighted average cost                             | Proposed | 2026-10-21 |
 | ADR-019 | Generic maker-checker approvals inside the subject's transaction     | Accepted | 2026-10-22 |
 | ADR-020 | Stock ledger: per-status balances, conditional updates, posting keys | Accepted | 2026-10-22 |
+| ADR-021 | Suppliers belong to a buying legal entity; last costs carry currency | Accepted | 2026-10-22 |
 
 ---
 
@@ -242,3 +243,31 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Numbering note:** first drafted as ADR-019 on the INV-001 branch and renumbered because ADR-019 went to
   the approval framework (APR-001). The comment in migration `20261022071737_inventory_stock_ledger` still
   says ADR-019; it is left unchanged because migrations are immutable once shared.
+
+### ADR-021 — Suppliers belong to a buying legal entity; last costs carry their currency
+
+- **Context:** PUR-001 adds supplier profiles. Purchase orders, supplier invoices, payables and tax
+  treatment (PUR-002, PUR-003, FIN-001) are per legal entity, and procurement staff are assigned at
+  GLOBAL, COUNTRY or LEGAL_ENTITY scope.
+- **Decision:** A supplier record belongs to exactly one buying legal entity (composite FK
+  `(legal_entity_id, country_code)` like stores and warehouses), which is fixed after creation. The
+  supplier's own country (`supplier_country_code`, any ISO 3166-1 code) is separate and decides which
+  tax-number format check applies (KSA 15 digits `3…3`, Egypt 9 digits, otherwise 4–40 letters/digits,
+  the existing `taxNumberLooksValid` rule). A supplier that sells to both the Saudi and Egyptian
+  entities has one record per entity. Tax numbers are unique per buying entity. Payment terms are
+  `PREPAID`, `ON_DELIVERY` or `NET` with 1–365 days (database CHECK). Each supplier has a purchasing
+  currency from the currencies table. A supplier product stores the supplier's code for a variant
+  and an optional last cost as NUMERIC(14,2) **together with its currency code and date**, so a later
+  change of the supplier's currency never relabels recorded costs. Until PUR-002 exists, last cost is
+  entered by hand; PUR-002 receipts will update it. A new permission `suppliers.view` (Business Manager,
+  Inventory Manager, Procurement Staff, Accountant) gates reading; `suppliers.manage` gates writes.
+  Both are checked against `{countryCode, legalEntityId}`; STORE and WAREHOUSE assignments do not
+  cover suppliers.
+- **Alternatives:** Organisation-wide supplier master (one record across countries) — rejected because
+  payables, tax and scoping are per entity and a COUNTRY-scoped buyer could not be limited. Supplier
+  scoped by market country only — rejected because LEGAL_ENTITY-scoped staff could not be covered.
+- **Consequences:** Contacts are personal data (PDPL, Egyptian Law 151/2020); they can be removed and
+  the audit entry keeps only the contact's name. Imported currencies (USD, EUR) need currency
+  reference data before suppliers can be priced in them (not in PUR-001).
+  The supplier last cost is NUMERIC(14,2) while stock movement unit costs are NUMERIC(19,4) (ADR-020);
+  PUR-002 must decide how a purchase price converts into a ledger unit cost.
