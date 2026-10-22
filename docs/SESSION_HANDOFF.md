@@ -1,7 +1,7 @@
 # Session handoff
 
-_Session 3 — 2026-10-22 — branch `claude/project-thread-jyt23p` from base `ccr-04855f0a-4t6vb0` at
-`e792497`._
+_Session 4 — 2026-10-22 — branch `claude/project-thread-1a8ij7`, base `ccr-04855f0a-4t6vb0` at
+`2cf04f0` merged in._
 
 ## Parallel thread — session 4: OPS-001, ADR-018 request, test gaps (branch `claude/project-thread-osb7xg`, base `812fffc`)
 
@@ -22,51 +22,67 @@ DECISIONS,TEST_PLAN,TASK_BOARD,PROJECT_STATUS,IMPLEMENTATION_PLAN,SESSION_HANDOF
 
 ## Last completed work
 
-- **Session 3 — workflow audit (documentation only, ADR-022).** Checked the governance files against the
-  merged code. `CLAUDE.md` now documents the Director / Implementer / Reviewer responsibilities (one
-  session by default), risk-based review, the effort policy and its runtime limit (the person sets
-  model and effort in the app; nothing switches automatically). INV-002 expanded into a full Ready
-  spec; INV-003 now depends on INV-002. Stale claims fixed in the plan (Phase 1/2 status, DOC-002/003),
-  PRD (Module 2), business rules (inventory flags), test plan (concurrency gap), status and this file.
-- **Session 2 — merged PRs #2 → #1 → #3:** APR-001 approvals (ADR-019, `src/server/modules/approvals`),
-  INV-001 stock ledger (ADR-020, `src/server/modules/inventory`, pages `/admin/inventory/**`), PUR-001
-  suppliers (ADR-021, `src/server/modules/procurement`, pages `/admin/procurement/suppliers/**`).
-  Details per task: their board entries and `git log`.
+- **Session 4 — INV-002 implemented (PR #5, Review).** ADR-023 Accepted (design v4; DR-001…DR-008,
+  DR-010). Batches per company; inspection PENDING/RELEASED/QUARANTINED/REJECTED; expiry basis
+  RECORDED/UNKNOWN/NOT_TRACKED with DAY/MONTH precision; verification (both checks, notes, actor, time)
+  that never releases; release, quarantine and reject as separate reasoned decisions; LEGACY carry-over
+  of pre-INV-002 stock (pending, unverified, unknown expiry, nothing invented); permission
+  `inventory.batches.manage` (Super Admin, Inventory Manager). Sale eligibility is one rule:
+  `batchEligibility` (`src/lib/inventory/batches.ts`) in the ledger gate and services
+  (`sellableQuantity`, `isBatchEligible`), mirrored by `stock_batch_is_sellable` and the
+  `stock_balances_sellable_guard` trigger. Base `2cf04f0` (PR #8) merged in; ADR-022 unchanged.
+  Independent review fixes: migration `20261022110000_stock_balance_keys_fixed` refuses relabelling a
+  balance's key by direct UPDATE (it bypassed the batch rules and the sellable guard); a stale second-tab
+  verify or status submit with different answers or reason is a conflict, not a replay.
+- **Session 4 — OPS-001, QA-002, ADR-018/ADR-024 for development** (parallel thread, merged).
+- **Sessions 2–3:** APR-001, INV-001, PUR-001 (ADR-019…021); workflow audit (ADR-022).
 
-## Files changed in session 3
+## Files changed in session 4 (INV-002)
 
-`CLAUDE.md`, `docs/DECISIONS.md` (ADR-022), `docs/TASK_BOARD.md`, `docs/TASK_TEMPLATE.md`,
-`docs/IMPLEMENTATION_PLAN.md`, `docs/PROJECT_STATUS.md`, `docs/PRD.md`, `docs/BUSINESS_RULES.md`,
-`docs/TEST_PLAN.md`, this file. No application code, schema or migration changed.
+Schema (`prisma/schema/{inventory,catalog,identity,organization,procurement}.prisma`); the two
+migrations; `src/lib/inventory/batches.ts`, `src/lib/schemas/inventory.ts`;
+`src/server/modules/inventory/{ledger,stock.service,batches.service}.ts`,
+`src/server/modules/catalog/variants.service.ts`, `src/server/rbac/{permissions,roles}.ts`,
+`src/server/admin-nav.ts`; pages under `src/app/[locale]/admin/inventory/` (batches list and detail,
+stock list and variant page, opening-balance form, actions); `messages/{en,ar}.json`; tests (unit,
+integration, migration, e2e, fixtures, SQL fixture `tests/integration/sql/inv-001-ledger-data.sql`);
+docs (DECISIONS, DECISION_REQUESTS, DATABASE, RBAC, API_SPEC, BUSINESS_RULES, TEST_PLAN, TASK_BOARD,
+PROJECT_STATUS, this file).
 
-## Checks actually run (session 3)
+## Checks actually run (session 4, INV-002)
 
-- Fresh container: `npm ci`, local PostgreSQL role and databases per README, `db:deploy`, `db:seed`.
-- `npm run lint`, `npm run typecheck`, `npm test` (16 files, 181 tests) — all passed.
-  `npx prettier --check CLAUDE.md docs README.md` — clean.
-- Reference check over `CLAUDE.md`, `README.md` and `docs/*.md`: every referenced repository path exists
-  (generated `src/generated/prisma` excepted).
-- Not run: build and Playwright (no route, config or code change). CI on base `e792497` is green (run
-  39748414159).
+Lint, typecheck, Prettier, `npm test` (245 passed), G3 opposite-order test 20/20 runs, build,
+`npm run test:e2e` (22 passed). Migration applied to a populated development database and re-run
+(returns 0); no drift.
 
 ## Unresolved
 
-- OPS-001 Docker run; ADR-018 accountant confirmation; PUR-002 cost-precision ADR; foreign purchasing
-  currencies; advisor review of the compliance register; test gaps in `docs/TEST_PLAN.md`.
-- `prisma/schema/inventory.prisma` comment on `unitCost` cites "ADR-018/019"; it should read ADR-018/020
-  (fix with the next inventory schema change, INV-002). The migration comment stays as is (immutable).
+- Release of a LEGACY batch keeps the units that were quarantined before INV-002 out of sale, by
+  subtracting the carried-over quantity per warehouse. If INV-003 later disposes of some quarantined
+  units of such a batch, that subtraction can hold back more than remains (it errs on the safe side);
+  INV-003 should record disposals against it or move the rule to an explicit marker.
+- Releasing a QUARANTINED batch restores all its quarantined stock per warehouse (except LEGACY
+  carry-over), including units quarantined for another reason; recorded for INV-003 (review item).
+- No reservations exist yet: quarantine moves only unreserved SELLABLE stock; INV-004 must decide what
+  happens to reserved units of a batch that is quarantined.
+- Foreign purchasing currencies; advisor review of the compliance register; QA-003 (G1, G2).
 
 ## Next exact task
 
-**INV-002 — Batches/lots, inspection and quarantine, expiry** (spec in `docs/TASK_BOARD.md`, effort
-highest). First step: write the ADR (batch key, carry-over of existing balances, inspection permission,
-expiry rule), then the migration. Then INV-003 or PUR-002 (PUR-002 starts with its cost-precision ADR).
+Merge PR #5 once CI is green and the review is approved (the coordinator approves). Then INV-003
+(adjustments, counts, transfers — post with a batch for tracked variants, refuse SELLABLE lines through
+the ledger gate) or PUR-002 (receipts create batches PENDING_INSPECTION in quarantine).
 
 ## Context that would otherwise be lost
 
 - Callers change stock only via `postStockMovements(tx, ctx, posting)` inside their own transaction
   (READ COMMITTED); authorisation is the caller's job. Use stable idempotency keys (e.g.
-  `order:<id>:ship`); opening balances use `opening-balance:<variant>:<warehouse>:<status>`.
+  `order:<id>:ship`); opening balances use `opening-balance:<variant>:<warehouse>:<status>`, or
+  `opening-balance:<batch>:<warehouse>:<status>` with a batch (keys are at most 120 characters).
+  Batch decisions use `batch:<id>:status:v<version>` and `batch:<id>:verify:v<version>`.
+- Lock order: batch rows (FOR SHARE in the ledger, FOR UPDATE in decisions) before balances.
+- Tests that need pre-INV-002 stock pause the batch triggers inside one transaction and call
+  `stock_carry_over_to_legacy_batches()` (see `legacyStock` in `tests/integration/batches.test.ts`).
 - Test fixtures and the e2e reset set `app.stock_ledger_purge = 'on'` to truncate the ledger; any new
   reset script must do the same.
 - Approval effects are applied by the consuming module inside the same transaction (ADR-019); there is

@@ -10,6 +10,7 @@ const TABLES = [
   "approval_requests",
   "stock_movements",
   "stock_balances",
+  "stock_batches",
   "supplier_products",
   "supplier_contacts",
   "suppliers",

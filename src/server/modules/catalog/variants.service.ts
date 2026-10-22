@@ -76,12 +76,34 @@ export async function createVariant(ctx: ServiceContext, productId: string, inpu
   }
 }
 
+/**
+ * Stock already recorded fixes how it is tracked (ADR-023): inventory and
+ * batch tracking cannot change once the variant has movements, and expiry
+ * tracking cannot be switched on while a batch says expiry does not apply.
+ * Database triggers enforce the same rules for races.
+ */
+async function assertTrackingChangeAllowed(
+  client: DbClient,
+  existing: { id: string; sku: string; trackInventory: boolean; trackBatches: boolean; trackExpiry: boolean },
+  data: VariantData,
+): Promise<void> {
+  if (data.trackInventory !== existing.trackInventory || data.trackBatches !== existing.trackBatches) {
+    const movements = await client.stockMovement.count({ where: { variantId: existing.id } });
+    if (movements > 0) throw new InvalidStateError("errors.invalidState.trackingLocked", { sku: existing.sku });
+  }
+  if (data.trackExpiry && !existing.trackExpiry) {
+    const notTracked = await client.stockBatch.count({ where: { variantId: existing.id, expiryBasis: "NOT_TRACKED" } });
+    if (notTracked > 0) throw new InvalidStateError("errors.invalidState.expiryTrackingBlocked", { sku: existing.sku });
+  }
+}
+
 export async function updateVariant(ctx: ServiceContext, variantId: string, input: unknown): Promise<void> {
   assertCan(ctx.actor, "products.update", "global");
   const data = parseInput(variantSchema, input);
   const existing = await db.productVariant.findUnique({ where: { id: variantId } });
   if (!existing) throw new NotFoundError("product_variant");
   await assertCodesAvailable(db, data, variantId);
+  await assertTrackingChangeAllowed(db, existing, data);
   try {
     await db.$transaction(async (tx) => {
       const updated = await tx.productVariant.update({ where: { id: variantId }, data });

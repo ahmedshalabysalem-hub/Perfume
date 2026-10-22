@@ -48,6 +48,9 @@ model User {
   approvalsRequested ApprovalRequest[] @relation("ApprovalRequester")
   approvalsDecided   ApprovalRequest[] @relation("ApprovalDecider")
   approvalActions    ApprovalAction[]  @relation("ApprovalActor")
+  batchesCreated     StockBatch[]      @relation("StockBatchCreator")
+  batchStatusChanges StockBatch[]      @relation("StockBatchStatusChanger")
+  batchVerifications StockBatch[]      @relation("StockBatchVerifier")
 
   @@index([type, status])
   @@map("users")

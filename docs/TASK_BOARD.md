@@ -3,17 +3,17 @@
 Statuses: **Backlog** → **Ready** (spec complete, dependencies met) → **In Progress** → **Review** →
 **Done**; **Blocked** when an external input is missing. Priority: **P0** blocks release · **P1** current
 or next phase · **P2** the phase after · **P3** later. New specifications use `docs/TASK_TEMPLATE.md`.
-Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **Next task: INV-002** (full
-specification under Ready specifications).
+Change a status only with evidence. Phases: `docs/IMPLEMENTATION_PLAN.md`. **INV-002 is in Review** (PR #5);
+next: INV-003 or PUR-002.
 
 ## Open tasks
 
 | ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
 | --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
-| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Ready   | P1               | INV-001                                   |
+| INV-002   | Batches/lots, inspection and quarantine, expiry (FEFO)       | 2     | Review  | P1               | INV-001                                   |
 | PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001                 |
 | INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002                 |
-| QA-003    | Close the High gaps of the 2026-10-22 test plan              | 2     | Backlog | P1               | INV-002 for G3 and G4                     |
+| QA-003    | Close the High gaps of the 2026-10-22 test plan (G1, G2)     | 2     | Backlog | P1               | — (G3, G4 closed by INV-002)              |
 | INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
 | INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
 | CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
@@ -92,10 +92,29 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 
 ### INV-002 — Batches/lots, inspection and quarantine, expiry
 
-- **Status:** Ready · **Priority:** P1 · **Effort:** highest (ledger schema change, inventory concurrency,
+- **Status:** Review (PR #5) · **Priority:** P1 · **Effort:** highest (ledger schema change, inventory concurrency,
   migration of existing balances)
 - **Depends on:** INV-001 (done). ADR-020 reserves the batch dimension for this task. Next before INV-003
   and PUR-002 so adjustments, counts, transfers and receipts are built on batch-aware balances once.
+- **Design (2026-10-22):** ADR-023 **Accepted** (design v4, approved by Ahmed); business answers
+  DR-001…DR-008 and DR-010 in `docs/DECISION_REQUESTS.md`.
+  Additions to this spec: batches owned per company (legal entity) with database isolation; inspection
+  states `PENDING_INSPECTION`/`RELEASED`/`QUARANTINED`/`REJECTED`; permission `inventory.batches.manage`
+  (Super Admin, Inventory Manager only); expiry precision `DAY`/`MONTH`; LEGACY batches with unknown
+  lot and dates for pre-existing stock, sellable only after a recorded verification and a separate explicit release (DR-010); explicit
+  expiry basis `RECORDED`/`UNKNOWN`/`NOT_TRACKED`; movement types `INSPECTION` and `BATCH_ASSIGNMENT`; one shared
+  eligibility function; tracking flags frozen once stock exists. INV-004, ORD-001 and POS-001 must
+  sell or allocate only through that function and test the DR-010 cases (verified legacy with unknown
+  expiry, unverified legacy, known expired, future expiry).
+
+- **Delivered (PR #5):** migrations `20261022095900_stock_movement_types_for_batches` and
+  `20261022100000_inventory_batches` (1 table, 14 CHECKs, 4 triggers, carry-over function) and
+  `20261022110000_stock_balance_keys_fixed` (review fix: balance keys cannot be relabelled);
+  `src/lib/inventory/batches.ts` (shared eligibility, FEFO, label dates);
+  `src/server/modules/inventory/batches.service.ts`; ledger, opening balances and variant flag lock;
+  pages `/admin/inventory/batches` and `/admin/inventory/batches/[id]`; tests `tests/unit/batches.test.ts`,
+  `tests/integration/batches.test.ts`, `tests/integration/inventory-batches-migration.test.ts`,
+  `tests/e2e/inventory.spec.ts` (test titles name the criteria they cover).
 
 **Objective** — Stock of batch-tracked variants is held and moved per batch (lot) with its expiry date and
 inspection state; only released, unexpired stock can be sellable; batches are listed in expiry order
@@ -149,14 +168,41 @@ recalls.
    rejection, and are audited.
 7. FEFO ordering: earliest expiry first, batches without expiry last, ties by received date (unit tests).
 8. Batch pages work in both languages and pass lint, typecheck, unit, integration and e2e suites.
+9. A variant's tracking flags cannot change once it has ledger history (service and database).
+10. Inspection changes are idempotent per batch version; a stale version is a conflict; only
+    `inventory.batches.manage` holders (not Business Manager) decide, with a mandatory reason.
+11. A batch cannot be used for another variant, in another company's warehouse or with another
+    company's supplier (database).
+12. Expiry is judged on the warehouse's local date (tested across midnight); month-precision expiry is
+    stored as the month's last day and flagged; no expiry is inferred.
+13. Lot numbers are immutable once stock exists, except on LEGACY batches, which can never take an
+    existing lot.
+14. The carry-over is idempotent, reconciles quantities before and after, changes no movement and
+    fabricates no lot or date; "expiring within N days" excludes expired batches, which have their own
+    filter.
+15. Sale eligibility lives in one shared function used by the ledger gate; INV-004, ORD-001, POS-001 and
+    any other stock-consuming path must use it.
+16. Verified (`PASSED`) and released LEGACY stock with unknown expiry is eligible.
+17. Unverified LEGACY stock is not eligible and its release is refused (service and CHECK).
+18. Verification alone never makes a batch eligible or changes its inspection status.
+19. Known-expired stock (LEGACY or not) is not eligible; release and inbound SELLABLE lines are refused.
+20. Released stock with a future expiry is eligible and stops being eligible the day after expiry
+    (warehouse local date).
+21. A failed check moves the batch to QUARANTINED or REJECTED in the same action; the stock is not
+    eligible.
+22. A LEGACY batch never gets `NOT_TRACKED` from an empty field; "not applicable" only where the
+    variant's catalogue setting disables expiry tracking.
+23. The migration preserves every quantity and the full history, creates no lot or date, is idempotent;
+    release never moves stock quarantined before INV-002.
 
 **Security and data integrity** — server-side authorization on every read and write; migration reviewed
 for data loss and lock duration; CHECKs and triggers documented in `docs/DATABASE.md`; no client-supplied
 quantities other than the posted lines; dates validated as calendar dates in the warehouse's time zone.
 
 **Required tests** — unit (FEFO ordering, schemas), integration (batch required/refused, inspection
-transitions, sellability by state and expiry, concurrency per batch, migration carry-over, scopes,
-audit), e2e (create batch on opening balance → quarantine → release → visible as sellable).
+transitions, sellability by state and expiry, concurrency per batch including two postings with
+lines in opposite order (lock order with the batch in the key), migration carry-over on populated
+INV-001 data run twice, scopes, audit), e2e (create batch on opening balance → quarantine → release → visible as sellable).
 
 **Review** — separate review pass against the criteria; read the migration SQL and the posting changes
 line by line.
@@ -289,7 +335,10 @@ Expand an outline with `docs/TASK_TEMPLATE.md` before moving it to Ready.
   Cost precision and rounding: ADR-024; landed-cost allocation, late costs and exchange rates: DR-009
   defaults.
 - **INV-003 Adjustments, counts, transfers** — approved adjustments with reasons; counts posting
-  corrections; two-step transfers (in transit). After INV-002 so all three work per batch.
+  corrections; two-step transfers (in transit). After INV-002 so all three work per batch. Open item
+  from the INV-002 review: releasing a QUARANTINED batch restores all of its quarantined stock in a
+  warehouse (apart from LEGACY carry-over), including units quarantined for another reason (e.g.
+  damage); INV-003 must decide whether release returns only the batch's own INSPECTION net quantity.
 - **INV-004 Reservations** — reserve on checkout/POS hold, expire and release, idempotent.
 - **INV-005 Alerts and scanning** — reorder thresholds, low-stock and expiry alerts, scanner-driven
   receiving and counting screens.

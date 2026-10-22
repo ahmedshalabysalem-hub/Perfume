@@ -98,7 +98,9 @@
       "stockPosting": "This stock posting was already recorded with different lines.",
       "taxNumber": "Another supplier of this legal entity already has this tax number.",
       "supplierVariant": "This variant is already linked to the supplier.",
-      "supplierSku": "This supplier code is already used for another product."
+      "supplierSku": "This supplier code is already used for another product.",
+      "batchVersion": "This batch was changed by someone else. Reload the page and try again.",
+      "lotNumber": "Another batch of this variant already has this lot number."
     },
     "invalidState": {
       "transition": "This status change is not allowed.",
@@ -113,7 +115,21 @@
       "currencyMismatch": "Prices must use the market currency ({currency}).",
       "insufficientStock": "Not enough available stock for {sku}.",
       "inventoryNotTracked": "Inventory is not tracked for {sku}.",
-      "openingBalanceExists": "{sku} already has stock history for this warehouse and status. Use a stock adjustment instead."
+      "openingBalanceExists": "{sku} already has stock history for this warehouse and status. Use a stock adjustment instead.",
+      "batchRequired": "Stock of {sku} must be recorded against a batch.",
+      "batchNotAllowed": "{sku} does not track batches.",
+      "batchOtherCompany": "This batch belongs to another company.",
+      "batchNotEligible": "Lot {lot} of {sku} cannot be sellable: {reason, select, EXPIRED {it has expired} EXPIRY_UNVERIFIED {its expiry is unknown and it is not verified} other {it is not released}}.",
+      "batchNeedsVerification": "Record a passing verification before releasing this batch.",
+      "batchExpired": "This batch has expired and cannot be released.",
+      "batchRejected": "This batch was rejected; no further decisions are possible.",
+      "batchVerifierRequired": "Only a signed-in staff member can record a verification.",
+      "releaseNeedsPermission": "Only a user who may release batches can enter a new lot as sellable. Enter it as quarantined instead.",
+      "trackingLocked": "Stock has been recorded for {sku}; its inventory and batch tracking can no longer change.",
+      "expiryTrackingBlocked": "A batch of {sku} is recorded as expiry not applicable; expiry tracking cannot be switched on.",
+      "expiryTracked": "{sku} tracks expiry, so \"not applicable\" is not allowed.",
+      "expiryAlreadyRecorded": "An expiry date is already recorded for this batch; it can be corrected but not removed.",
+      "lotNumberFixed": "The lot number of this batch cannot change."
     },
     "approval": {
       "alreadyPending": "This record already has a pending approval request.",
@@ -128,7 +144,12 @@
     "noAccessTitle": "No access",
     "noAccessHint": "Your account does not have access to this area. Contact an administrator if you believe this is a mistake.",
     "inventory": {
-      "variantNotFound": "No variant has this SKU or barcode."
+      "variantNotFound": "No variant has this SKU or barcode.",
+      "lotRequired": "This variant tracks batches: enter the lot number.",
+      "batchNotTracked": "This variant does not track batches: leave the batch fields empty.",
+      "expiryRequired": "This variant tracks expiry: enter the expiry date from the label.",
+      "batchDetailsDiffer": "This lot is already recorded with different details. Correct the batch instead.",
+      "supplierOtherCompany": "The supplier must belong to the batch's company."
     }
   },
   "validation": {
@@ -177,7 +198,12 @@
     "costPrecision": "Use at most {scale} decimal places.",
     "taxNumberFormat": "This tax number does not match the format for the supplier's country.",
     "paymentTermDays": "Enter the number of credit days (1–365).",
-    "variantNotFound": "No variant has this SKU or barcode."
+    "variantNotFound": "No variant has this SKU or barcode.",
+    "lotNumberFormat": "Use letters, digits, spaces, hyphens, slashes and periods (up to 64).",
+    "labelDate": "Enter a date as YYYY-MM-DD, or YYYY-MM for month and year only.",
+    "calendarDate": "Enter a full date as YYYY-MM-DD.",
+    "expiryOutcomeDate": "Leave the date empty unless the outcome is a label date.",
+    "expiryAfterManufacture": "The expiry date must be after the manufacturing date."
   },
   "auth": {
     "signInTitle": "Sign in to the back office",
@@ -220,7 +246,8 @@
     "inventory": "Inventory",
     "stock": "Stock levels",
     "procurement": "Procurement",
-    "suppliers": "Suppliers"
+    "suppliers": "Suppliers",
+    "batches": "Batches & expiry"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -712,7 +739,9 @@
   },
   "movementType": {
     "OPENING_BALANCE": "Opening balance",
-    "ADJUSTMENT": "Adjustment"
+    "ADJUSTMENT": "Adjustment",
+    "INSPECTION": "Inspection decision",
+    "BATCH_ASSIGNMENT": "Batch assignment"
   },
   "inventory": {
     "title": "Stock levels",
@@ -735,7 +764,9 @@
       "balanceAfter": "Balance after",
       "unitCost": "Unit cost",
       "actor": "By",
-      "reason": "Reason"
+      "reason": "Reason",
+      "lot": "Lot",
+      "availableForSale": "Available for sale"
     },
     "empty": "No stock recorded yet.",
     "emptyHint": "Enter opening balances to start tracking stock in a warehouse.",
@@ -752,7 +783,13 @@
       "unitCostAny": "Unit cost (warehouse currency)",
       "unitCostHint": "Cost per unit in the warehouse's local currency, up to 4 decimals.",
       "reason": "Reason",
-      "reasonPlaceholder": "e.g. Stock count on go-live day"
+      "reasonPlaceholder": "e.g. Stock count on go-live day",
+      "batch": "Batch",
+      "batchHint": "Required for variants that track batches; leave empty otherwise. A month-only expiry (YYYY-MM) is stored as the month's last day.",
+      "lotNumber": "Lot number",
+      "manufacturedOn": "Manufacturing date",
+      "expiresOn": "Expiry date",
+      "expiresOnHint": "As printed on the label: YYYY-MM-DD, or YYYY-MM when only the month is given."
     },
     "submit": "Post opening balance",
     "posted": "Opening balance posted.",
@@ -839,5 +876,111 @@
     "lastCostHint": "Optional. A new amount is recorded in the supplier's currency with today's date.",
     "productSaved": "Supplier product saved.",
     "deactivateProductConfirm": "This product will no longer be offered for purchase from this supplier. Its history is kept."
+  },
+  "batches": {
+    "title": "Batches & expiry",
+    "subtitle": "Lots per variant and company, first expiry first. A batch is sellable only when released, not expired and, if its expiry is unknown, verified.",
+    "searchPlaceholder": "Scan a barcode, or search by SKU or lot",
+    "empty": "No batches recorded yet.",
+    "emptyHint": "Batches are created with opening balances and goods receipts.",
+    "detailTitle": "Batch",
+    "detailHeading": "Batch of {sku}",
+    "legacy": "LEGACY",
+    "legacyAwaiting": "Stock carried over from before batches. It is not sellable until it is verified and then released.",
+    "eligible": "Sellable",
+    "complete": "Complete",
+    "incomplete": "Incomplete",
+    "filters": {
+      "warehouse": "Warehouse",
+      "status": "Inspection",
+      "expiry": "Expiry",
+      "expiring": "Expiring within {days} days",
+      "expired": "Expired",
+      "unknown": "Expiry unknown",
+      "details": "Details",
+      "incomplete": "Details incomplete"
+    },
+    "columns": {
+      "variant": "Variant",
+      "lot": "Lot",
+      "expiry": "Expiry",
+      "inspection": "Inspection",
+      "sale": "Sale",
+      "stock": "Stock"
+    },
+    "inspection": {
+      "PENDING_INSPECTION": "Pending inspection",
+      "RELEASED": "Released",
+      "QUARANTINED": "Quarantined",
+      "REJECTED": "Rejected"
+    },
+    "ineligible": {
+      "NOT_RELEASED": "Not released",
+      "EXPIRED": "Expired",
+      "EXPIRY_UNVERIFIED": "Awaiting verification"
+    },
+    "verification": {
+      "NONE": "Not verified",
+      "PASSED": "Passed",
+      "FAILED": "Failed"
+    },
+    "check": {
+      "PASS": "Pass",
+      "FAIL": "Fail"
+    },
+    "expiry": {
+      "unknown": "Unknown",
+      "notTracked": "Not tracked",
+      "expired": "expired"
+    },
+    "expiryOutcome": {
+      "DATE": "Date from the label",
+      "UNKNOWN": "No date can be established",
+      "NOT_APPLICABLE": "Not applicable (expiry not tracked)"
+    },
+    "decision": {
+      "RELEASED": "Release for sale",
+      "QUARANTINED": "Quarantine",
+      "REJECTED": "Reject (final)"
+    },
+    "sections": {
+      "batch": "Batch",
+      "status": "Inspection and sale",
+      "verify": "Record verification",
+      "decision": "Decision",
+      "details": "Correct details",
+      "history": "Decision history"
+    },
+    "fields": {
+      "company": "Company",
+      "lot": "Lot number",
+      "manufacturedOn": "Manufacturing date",
+      "expiresOn": "Expiry date",
+      "labelDateHint": "YYYY-MM-DD, or YYYY-MM when the label gives only the month.",
+      "supplier": "Supplier",
+      "detailsComplete": "Details",
+      "inspection": "Inspection",
+      "sale": "Sale",
+      "statusReason": "Last decision",
+      "verification": "Verification",
+      "physicalCheck": "Physical condition",
+      "labelCheck": "Label",
+      "expiryOutcome": "Expiry found",
+      "lotFound": "Lot number on the label (optional)",
+      "onFailure": "Because a check failed, move the batch to",
+      "notes": "Notes",
+      "reason": "Reason",
+      "decision": "Decision"
+    },
+    "verifyHint": "Verification records what was checked. It never releases the batch; release is a separate decision.",
+    "decisionHint": "Release moves quarantined stock back to sellable. Quarantine and rejection take sellable stock out of sale.",
+    "noDecision": "No further decision is possible.",
+    "lotFixed": "Fixed once stock is recorded; only LEGACY batches may get one.",
+    "noSupplier": "No supplier",
+    "verify": "Record verification",
+    "applyDecision": "Apply decision",
+    "verified": "Verification recorded.",
+    "statusChanged": "Decision recorded.",
+    "detailsSaved": "Batch details saved."
   }
 }

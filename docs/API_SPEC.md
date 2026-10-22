@@ -77,13 +77,19 @@ type ErrorCode =
 
 ### Inventory — `src/app/[locale]/admin/inventory/actions.ts`
 
-| Action                     | Service              | Permission (target)                                         | Input schema           |
-| -------------------------- | -------------------- | ----------------------------------------------------------- | ---------------------- |
-| `postOpeningBalanceAction` | `postOpeningBalance` | `inventory.adjust.approve` (warehouse's entity and country) | `openingBalanceSchema` |
+| Action                      | Service               | Permission (target)                                                                                                           | Input schema              |
+| --------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `postOpeningBalanceAction`  | `postOpeningBalance`  | `inventory.adjust.approve` (warehouse's entity and country); `inventory.batches.manage` too for a new lot entered as SELLABLE | `openingBalanceSchema`    |
+| `verifyBatchAction`         | `verifyBatch`         | `inventory.batches.manage` (every warehouse holding the batch)                                                                | `batchVerificationSchema` |
+| `changeBatchStatusAction`   | `changeBatchStatus`   | `inventory.batches.manage` (every warehouse holding the batch)                                                                | `batchStatusChangeSchema` |
+| `correctBatchDetailsAction` | `correctBatchDetails` | `inventory.batches.manage` (every warehouse holding the batch)                                                                | `batchDetailsSchema`      |
 
-Stock reads (`listStock`, `getVariantStock`) are called by the pages directly and filtered to the
+Stock and batch reads (`listStock`, `getVariantStock`, `listBatches`, `getBatch`) are called by the pages directly and filtered to the
 warehouses covered by the actor's `inventory.view` assignments. Other modules change stock only through
-`postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-020).
+`postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-020), with a batch per
+line for batch-tracked variants. Anything that sells, reserves or fulfils stock reads availability only
+through `sellableQuantity` / `isBatchEligible` (`batches.service.ts`), which apply `batchEligibility`
+(`src/lib/inventory/batches.ts`; ADR-023, DR-010).
 
 ### Procurement — `src/app/[locale]/admin/procurement/suppliers/actions.ts`
 

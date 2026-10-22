@@ -28,6 +28,9 @@ export function OpeningBalanceForm({ warehouses }: { warehouses: OpeningBalanceW
       quantity: "",
       unitCost: "",
       reason: "",
+      lotNumber: "",
+      manufacturedOn: "",
+      expiresOn: "",
     },
   });
   const submit = useActionSubmit(form.setError);
@@ -38,7 +41,15 @@ export function OpeningBalanceForm({ warehouses }: { warehouses: OpeningBalanceW
     const result = await submit(() => postOpeningBalanceAction(values), t("posted"));
     if (result === null) return;
     // Keep warehouse, status and reason for the next line of a go-live count.
-    form.reset({ ...values, variantCode: "", quantity: "", unitCost: "" });
+    form.reset({
+      ...values,
+      variantCode: "",
+      quantity: "",
+      unitCost: "",
+      lotNumber: "",
+      manufacturedOn: "",
+      expiresOn: "",
+    });
     form.setFocus("variantCode");
   });
 
@@ -81,6 +92,28 @@ export function OpeningBalanceForm({ warehouses }: { warehouses: OpeningBalanceW
           dir="ltr"
         />
       </div>
+      <fieldset className="grid gap-4 rounded-lg border p-3">
+        <legend className="px-1 text-sm font-medium">{t("fields.batch")}</legend>
+        <p className="text-xs text-muted-foreground">{t("fields.batchHint")}</p>
+        <TextInput form={form} name="lotNumber" label={t("fields.lotNumber")} dir="ltr" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextInput
+            form={form}
+            name="manufacturedOn"
+            label={t("fields.manufacturedOn")}
+            dir="ltr"
+            placeholder="YYYY-MM-DD"
+          />
+          <TextInput
+            form={form}
+            name="expiresOn"
+            label={t("fields.expiresOn")}
+            description={t("fields.expiresOnHint")}
+            dir="ltr"
+            placeholder="YYYY-MM-DD / YYYY-MM"
+          />
+        </div>
+      </fieldset>
       <TextAreaInput
         form={form}
         name="reason"

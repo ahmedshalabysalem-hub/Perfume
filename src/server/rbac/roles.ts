@@ -113,6 +113,7 @@ export const SYSTEM_ROLES: readonly SystemRoleDefinition[] = [
       "inventory.adjust.approve",
       "inventory.transfer",
       "inventory.count",
+      "inventory.batches.manage",
       "suppliers.view",
       "purchases.view",
       "reports.view",
