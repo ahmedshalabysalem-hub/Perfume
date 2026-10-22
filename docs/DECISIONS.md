@@ -179,7 +179,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 - **Alternatives:** FIFO by batch (more precise per lot, more complex corrections); standard cost.
 - **Needs:** Confirmation by the business's accountant for both KSA and Egypt before FIN-001 posts
   journals. INV-001 records unit cost per movement so either method remains possible. Request:
-  DR-001 in `docs/DECISION_REQUESTS.md` (Open, not yet sent).
+  DR-009 in `docs/DECISION_REQUESTS.md` (Open, not yet sent).
 
 ### ADR-019 — Generic maker-checker approvals inside the subject's transaction
 

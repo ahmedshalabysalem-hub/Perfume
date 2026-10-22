@@ -1,17 +1,22 @@
 # Decision requests
 
-Open questions that need someone outside engineering (accountant, advisor, the business) before the
-dependent work can be built. A request stays **Open** until a written answer is recorded here; silence is
-not approval. The answer is then recorded in the ADR named by the request (`docs/DECISIONS.md`).
+Business choices the code must not invent. Each request names the task it blocks, the options, and the
+default a session would propose. Ahmed (or whoever he names) decides; the answer moves into the task's
+ADR in `docs/DECISIONS.md` and the request is marked **Decided** with the date. Replace answered entries'
+"Status" line rather than appending history; git keeps the history.
 
-| ID     | Topic                              | Asked of              | Status              | Blocks                    |
-| ------ | ---------------------------------- | --------------------- | ------------------- | ------------------------- |
-| DR-001 | Inventory costing method (ADR-018) | Business's accountant | Open — not yet sent | FIN-001, FIN-003, RPT-001 |
+| ID     | Topic                              | Blocks           | Status |
+| ------ | ---------------------------------- | ---------------- | ------ |
+| DR-009 | Inventory costing method (ADR-018) | FIN-001, FIN-003 | Open   |
 
-## DR-001 — Inventory costing method and landed cost (ADR-018)
+DR-001…DR-008 (INV-002) are proposed in draft PR #5; merge both lists when either lands.
 
-- **Raised:** 2026-10-22. **Owner:** Ahmed (Project Director), who sends it to the accountant; no
-  accountant channel is set up for the project. **Status:** Open — not yet sent.
+## FIN — inventory costing (ADR-018, Proposed)
+
+### DR-009 — Inventory costing method and landed cost
+
+- **Asked of:** the business's accountant, through Ahmed (no accountant channel is set up). Raised
+  2026-10-22. **Status:** Open — not yet sent; silence is not approval.
 - **Question:** Which method values inventory and cost of goods sold for the Saudi and the Egyptian legal
   entities, and which purchase-related costs are added to inventory cost?
 - **Current proposal (ADR-018, Proposed):** perpetual inventory at moving weighted average cost per
