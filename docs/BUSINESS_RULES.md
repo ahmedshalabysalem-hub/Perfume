@@ -59,8 +59,9 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 - Size in ml and weight in grams must be positive when given. Display label defaults to the size
   ("100 ml"); testers are flagged.
 - Inventory flags: tracking batches requires tracking inventory; tracking expiry requires tracking
-  batches (database CHECKs). Inventory tracking is enforced by the ledger (INV-001); batch and expiry
-  tracking take effect with INV-002 (**planned**).
+  batches (database CHECKs). Inventory tracking is enforced by the ledger (INV-001), batch and expiry
+  tracking by INV-002. All three are frozen once the variant has stock history; expiry tracking cannot be
+  switched on while a batch records expiry as not applicable.
 - **Sellable** in a market = product PUBLISHED, variant ACTIVE, market active, price active in that market.
 
 ### Barcodes (ADR-011)
@@ -176,6 +177,30 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
   for the warehouse, a reason and a unit cost (zero allowed), once per variant, warehouse and status,
   and only while that balance has no history. Each is audited.
 
+## Batches, inspection and expiry (INV-002, ADR-023)
+
+- Stock of a variant that tracks batches is always held against a batch (lot) of the warehouse's company;
+  other variants never carry one. Lot numbers: letters, digits, spaces, hyphens, slashes and periods, up
+  to 64, unique per company and variant, fixed once stock exists (except on LEGACY batches).
+- Expiry is recorded exactly as on the label; a month-only date is the month's last day, flagged as
+  month precision. No date is ever inferred. A variant that tracks expiry needs a date on new lots.
+- Sale eligibility, one rule everywhere: the batch is RELEASED, not expired on the warehouse's local date
+  (expired from the day after the expiry date), and, if its expiry is unknown, verified. Only eligible
+  stock can enter or be counted as available for sale; expired stock is never moved or deleted
+  automatically.
+- Inspection: new purchase lots start pending inspection (PUR-002); an opening balance entered as
+  sellable creates a released lot only for a user who may release batches. Release, quarantine and
+  rejection are separate decisions with a reason, by Super Admin or Inventory Manager only; rejection is
+  final. Quarantine and rejection take unreserved sellable stock out of sale; release brings quarantined
+  stock back, except stock that was already quarantined before INV-002.
+- Verification records the physical-condition and label checks, notes and the expiry found (a date,
+  unknown, or not applicable where the catalogue does not track expiry). It never releases a batch. A
+  failed check moves the batch to quarantine or rejection in the same action.
+- LEGACY batches hold stock recorded before INV-002: lot and dates unknown, pending inspection, not
+  sellable until verified and then released.
+- Batches are listed first-expiry-first-out; "expiring within N days" (default 90) excludes expired
+  batches, which have their own filter.
+
 ## Suppliers (PUR-001, ADR-021)
 
 - A supplier belongs to one buying legal entity (and its country), fixed after creation; a supplier
@@ -194,8 +219,8 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 
 ## Planned rules (later phases — not enforced yet)
 
-- **Inventory (INV-002…005):** adjustments need a reason and approval; batches with expiry are picked
-  first-expiry-first-out; quarantined or rejected batches are never sold; valuation per ADR-018 (accepted
+- **Inventory (INV-003…005):** adjustments need a reason and approval; batches with expiry are picked
+  first-expiry-first-out (ordering in place since INV-002); valuation per ADR-018 (accepted
   for development; accountant confirmation before go-live).
 - **Orders (ORD-001):** prices, taxes and product names are snapshotted on the order; stock is reserved
   at checkout and released on expiry or cancellation; order numbers are sequential per country.

@@ -78,6 +78,9 @@ export type StockRow = {
   onHand: number;
   reserved: number;
   available: number;
+  /** Units that may be sold now: SELLABLE, unreserved, of an eligible batch (ADR-023). */
+  availableForSale: number;
+  batch: { id: string; lotNumber: string | null; isLegacy: boolean } | null;
   variant: {
     id: string;
     sku: string;
@@ -127,7 +130,7 @@ export async function listStock(ctx: ServiceContext, rawQuery: unknown): Promise
   const page = Math.min(query.page, pageCount);
   const balances = await db.stockBalance.findMany({
     where,
-    orderBy: [{ variant: { sku: "asc" } }, { warehouse: { code: "asc" } }, { status: "asc" }],
+    orderBy: [{ variant: { sku: "asc" } }, { warehouse: { code: "asc" } }, { status: "asc" }, { batchId: "asc" }],
     skip: (page - 1) * STOCK_PAGE_SIZE,
     take: STOCK_PAGE_SIZE,
     select: {
@@ -136,9 +139,23 @@ export async function listStock(ctx: ServiceContext, rawQuery: unknown): Promise
       onHand: true,
       reserved: true,
       variant: { select: variantSummarySelect },
-      warehouse: { select: { id: true, code: true, nameEn: true, nameAr: true } },
+      warehouse: { select: { id: true, code: true, nameEn: true, nameAr: true, timezone: true } },
+      batch: {
+        select: {
+          id: true,
+          lotNumber: true,
+          isLegacy: true,
+          inspectionStatus: true,
+          expiryBasis: true,
+          expiresOn: true,
+          verificationResult: true,
+        },
+      },
     },
   });
+  const now = new Date();
+  const eligibleNow = (balance: (typeof balances)[number]) =>
+    !balance.batch || eligibilityOf(balance.batch, localDateIn(balance.warehouse.timezone, now)).eligible;
 
   return {
     rows: balances.map((balance) => ({
@@ -147,6 +164,10 @@ export async function listStock(ctx: ServiceContext, rawQuery: unknown): Promise
       onHand: balance.onHand,
       reserved: balance.reserved,
       available: balance.onHand - balance.reserved,
+      availableForSale: balance.status === "SELLABLE" && eligibleNow(balance) ? balance.onHand - balance.reserved : 0,
+      batch: balance.batch
+        ? { id: balance.batch.id, lotNumber: balance.batch.lotNumber, isLegacy: balance.batch.isLegacy }
+        : null,
       variant: {
         id: balance.variant.id,
         sku: balance.variant.sku,
@@ -156,7 +177,12 @@ export async function listStock(ctx: ServiceContext, rawQuery: unknown): Promise
         sizeMl: balance.variant.sizeMl?.toString() ?? null,
       },
       product: balance.variant.product,
-      warehouse: balance.warehouse,
+      warehouse: {
+        id: balance.warehouse.id,
+        code: balance.warehouse.code,
+        nameEn: balance.warehouse.nameEn,
+        nameAr: balance.warehouse.nameAr,
+      },
     })),
     total,
     page,

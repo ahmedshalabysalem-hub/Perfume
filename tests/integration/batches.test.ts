@@ -15,7 +15,7 @@ import {
   verifyBatch,
 } from "@/server/modules/inventory/batches.service";
 import { postStockMovements, type StockMovementLine, type StockPosting } from "@/server/modules/inventory/ledger";
-import { getVariantStock, postOpeningBalance } from "@/server/modules/inventory/stock.service";
+import { getVariantStock, listStock, postOpeningBalance } from "@/server/modules/inventory/stock.service";
 import { auditEntries, contextFor, createStaff, seedFixture, type Fixture } from "./fixtures";
 
 // INV-002 (ADR-023, DR-001…DR-010). Acceptance criteria are named in the test titles.
@@ -548,6 +548,13 @@ describe("LEGACY stock (DR-008, DR-010; AC 16–18, 21–23)", () => {
     expect(await db.stockMovement.count({ where: { type: "BATCH_ASSIGNMENT" } })).toBe(4);
     expect(await db.stockMovement.count({ where: { type: "ADJUSTMENT" } })).toBe(2);
     expect(await sellableQuantity(db, variantId, f.warehouseId)).toBe(0);
+    // The stock list shows the units on hand but none of them as available for sale; the emptied
+    // pre-batch balance stays (at zero) with its history.
+    const list = await listStock(invSa, { status: "SELLABLE" });
+    expect(list.rows.map((r) => [r.batch?.isLegacy, r.onHand, r.available, r.availableForSale])).toEqual([
+      [true, 6, 6, 0],
+      [undefined, 0, 0, 0],
+    ]);
     expect((await auditEntries("inventory.batch.legacy_create"))[0]?.entityId).toBe(legacy.id);
     // Running the carry-over again changes nothing.
     const [again] = await db.$queryRaw<Array<{ n: number }>>`SELECT "stock_carry_over_to_legacy_batches"() AS n`;

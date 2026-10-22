@@ -90,7 +90,9 @@ test.describe("inventory", () => {
     await open(page, "/en/admin/inventory/stock?q=QA-ROI-100");
     const row = page.locator("[data-testid=stock-row][data-sku=QA-ROI-100]");
     await expect(row.getByTestId("stock-on-hand")).toHaveText("12");
-    await row.getByRole("link").click();
+    await expect(row.getByTestId("stock-available-for-sale")).toHaveText("12");
+    await expect(row).toContainText("QA-LOT-1");
+    await row.getByRole("link", { name: /QA-ROI-100/ }).click();
     await page.waitForLoadState("networkidle");
     const movement = page.getByTestId("movement-row");
     await expect(movement).toHaveCount(1);

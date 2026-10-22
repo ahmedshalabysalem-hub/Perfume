@@ -12,6 +12,7 @@ import { localized } from "@/lib/utils";
 import { getAdminPageActor } from "@/server/auth/page-guard";
 import { getRequestMeta } from "@/server/context";
 import { canPostOpeningBalances, listStock, listStockWarehouses } from "@/server/modules/inventory/stock.service";
+import { LotLabel } from "../batches/batch-badges";
 import { StockStatusBadge, VariantName } from "../stock-status-badge";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/admin/inventory/stock">): Promise<Metadata> {
@@ -98,10 +99,12 @@ export default async function StockPage({ params, searchParams }: PageProps<"/[l
               <TableRow>
                 <TableHead>{t("columns.variant")}</TableHead>
                 <TableHead>{t("columns.warehouse")}</TableHead>
+                <TableHead>{t("columns.lot")}</TableHead>
                 <TableHead>{t("columns.status")}</TableHead>
                 <TableHead className="text-end">{t("columns.onHand")}</TableHead>
                 <TableHead className="text-end">{t("columns.reserved")}</TableHead>
                 <TableHead className="text-end">{t("columns.available")}</TableHead>
+                <TableHead className="text-end">{t("columns.availableForSale")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -125,6 +128,15 @@ export default async function StockPage({ params, searchParams }: PageProps<"/[l
                       {localized(locale, row.warehouse.nameAr, row.warehouse.nameEn)}
                     </span>
                   </TableCell>
+                  <TableCell className="text-sm">
+                    {row.batch ? (
+                      <Link href={`/admin/inventory/batches/${row.batch.id}`} className="hover:underline">
+                        <LotLabel lotNumber={row.batch.lotNumber} isLegacy={row.batch.isLegacy} />
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell>
                     <StockStatusBadge status={row.status} />
                   </TableCell>
@@ -132,7 +144,10 @@ export default async function StockPage({ params, searchParams }: PageProps<"/[l
                     {row.onHand}
                   </TableCell>
                   <TableCell className="text-end text-muted-foreground tabular-nums">{row.reserved}</TableCell>
-                  <TableCell className="text-end font-medium tabular-nums">{row.available}</TableCell>
+                  <TableCell className="text-end tabular-nums">{row.available}</TableCell>
+                  <TableCell className="text-end font-medium tabular-nums" data-testid="stock-available-for-sale">
+                    {row.availableForSale}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

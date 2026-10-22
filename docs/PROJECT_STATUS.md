@@ -1,11 +1,10 @@
 # Project status
 
-_Last updated: 2026-10-22 — session 4 (INV-002 design review)_
+_Last updated: 2026-10-22 — session 4 (INV-002 implementation)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
-**Next task:** **INV-002 — Batches/lots, inspection and quarantine, expiry** (Ready, effort: highest).
-Design v4 approved 2026-10-22 (ADR-023 Accepted, DR-001…DR-008 and DR-010); implementation in
-progress on PR #5.
+**Next task:** **INV-002** is in **Review** on PR #5 (implemented and tested; merges after CI is green
+and the review is approved). Then INV-003 or PUR-002.
 
 ## Completed
 
@@ -28,11 +27,14 @@ progress on PR #5.
 
 ## In progress
 
-INV-002 implementation (PR #5, branch `claude/project-thread-1a8ij7`).
+INV-002 in Review (PR #5, branch `claude/project-thread-1a8ij7`): ADR-023 Accepted (design v4);
+batches per company with inspection, expiry and verification; one shared eligibility rule in the
+ledger, the services and the database; LEGACY carry-over migration; batch pages; permission
+`inventory.batches.manage`.
 
 ## Pending (Phase 2, in order)
 
-INV-002 (Ready) → INV-003 adjustments/counts/transfers and PUR-002 purchase orders → INV-004
+INV-002 (Review) → INV-003 adjustments/counts/transfers and PUR-002 purchase orders → INV-004
 reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Blockers and open decisions
@@ -44,10 +46,16 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
   name; foreign purchasing currencies (suppliers priced only in SAR/EGP today).
 - **Compliance:** summaries in `docs/COUNTRY_COMPLIANCE.md` still need advisor review. Nothing is
   implemented for e-invoicing, payments or shipping integrations.
-- **Test gaps:** no Critical; High G1–G4 (sign-in rate limiting, image upload, opposite-order
-  concurrent postings, migrations on populated data) tracked as QA-003 in `docs/TEST_PLAN.md`.
+- **Test gaps:** no Critical; High G1–G2 (sign-in rate limiting, image upload) tracked as QA-003 in
+  `docs/TEST_PLAN.md`; G3 and G4 are closed by INV-002 once PR #5 merges.
 
 ## Verification evidence
+
+- Session 4, INV-002 on PR #5 (base `2cf04f0` merged in): `npm run lint`, `npm run typecheck`, Prettier,
+  `npm test` (20 files, 245 tests: unit 82, integration incl. `batches.test.ts` 29 and
+  `inventory-batches-migration.test.ts` 4), the opposite-order concurrency test 20 runs in a row,
+  `npm run build` and `npm run test:e2e` (22 Playwright tests) — all passed. Migration also applied to
+  a populated development database; `prisma migrate diff` reports no drift.
 
 - Session 4 (OPS-001, QA-002), base `812fffc`: Docker 29.9.1 + Compose 5.6 in the sandbox;
   `docker compose up` healthy (PostgreSQL 16.15 alpine), init created `perfume_test`/`perfume_e2e`,

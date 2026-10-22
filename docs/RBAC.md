@@ -7,8 +7,8 @@ Decision: ADR-007. Code: `src/server/rbac/` (`permissions.ts`, `roles.ts`, `scop
 
 ## Model
 
-- **Permissions** — a fixed catalogue in code (49 keys). 20 are active today (`inventory.view` and
-  `inventory.adjust.approve` since INV-001; `suppliers.view` and `suppliers.manage` since PUR-001); the rest are reserved for
+- **Permissions** — a fixed catalogue in code (50 keys). 21 are active today (`inventory.view` and
+  `inventory.adjust.approve` since INV-001; `inventory.batches.manage` since INV-002; `suppliers.view` and `suppliers.manage` since PUR-001); the rest are reserved for
   later modules (`available: false`) so roles can be defined once.
 - **Roles** — 12 system roles in code, each with a permission set and the scope types it may be
   assigned at. `npm run db:sync-rbac` (also run by the seed) upserts both into the database.
@@ -47,6 +47,7 @@ Services call `assertCan(actor, permission, target)` (or `can` / `scopeFilterFor
 | Audit log (and dashboard recent activity)            | `audit.view` — **global** (the log is not partitioned by scope)                                                                  |
 | View stock balances and movements                    | `inventory.view` — the warehouse (lists filtered by scope; ADR-020)                                                              |
 | Enter opening balances                               | `inventory.adjust.approve` — the warehouse                                                                                       |
+| Verify, release, quarantine, reject, correct a batch | `inventory.batches.manage` — every warehouse holding it; a new lot entered as SELLABLE also needs it (DR-002, ADR-023)           |
 | View suppliers, contacts, supplier products, history | `suppliers.view` — the supplier's **legal entity / country** (lists filtered by scope; ADR-021)                                  |
 | Create/update suppliers, contacts, supplier products | `suppliers.manage` — the supplier's **legal entity / country**; STORE and WAREHOUSE assignments never cover suppliers            |
 
@@ -69,7 +70,7 @@ services above are the security boundary; hidden buttons are a convenience only.
 
 | Role (key)                                    | Assignable scopes                        | Purpose                                            |
 | --------------------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| Super Admin (`super_admin`)                   | GLOBAL                                   | Everything (all 49 permissions)                    |
+| Super Admin (`super_admin`)                   | GLOBAL                                   | Everything (all 50 permissions)                    |
 | Business / Store Manager (`business_manager`) | GLOBAL, COUNTRY, LEGAL_ENTITY, STORE     | Runs a business unit: catalogue, prices, approvals |
 | Catalogue Manager (`catalog_manager`)         | GLOBAL, COUNTRY                          | Catalogue content and prices                       |
 | Sales Staff (`sales_staff`)                   | GLOBAL, COUNTRY, STORE                   | Orders and customers                               |
@@ -108,6 +109,7 @@ The Customer role has none.
 | `audit.view`                 | ✓   | ✓   |     |     |     |     |     |     |     |     |     |
 | `inventory.view`             | ✓   | ✓   |     |     | ✓   | ✓   | ✓   |     |     |     |     |
 | `inventory.adjust.approve`   | ✓   | ✓   |     |     | ✓   |     |     |     |     |     |     |
+| `inventory.batches.manage`   | ✓   |     |     |     | ✓   |     |     |     |     |     |     |
 | `suppliers.view`             | ✓   | ✓   |     |     | ✓   |     | ✓   | ✓   |     |     |     |
 | `suppliers.manage`           | ✓   |     |     |     |     |     | ✓   |     |     |     |     |
 
