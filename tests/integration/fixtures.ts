@@ -8,6 +8,8 @@ const TABLES = [
   "audit_logs",
   "approval_actions",
   "approval_requests",
+  "stock_movements",
+  "stock_balances",
   "product_compliance",
   "product_images",
   "product_prices",
@@ -36,10 +38,11 @@ const TABLES = [
   "currencies",
 ];
 
-/** Empty every table (audit log included, via the retention-purge switch). */
+/** Empty every table (audit log and stock ledger included, via their purge switches). */
 export async function resetDatabase(): Promise<void> {
   await db.$transaction(async (tx) => {
     await tx.$executeRawUnsafe("SET LOCAL app.audit_retention_purge = 'on'");
+    await tx.$executeRawUnsafe("SET LOCAL app.stock_ledger_purge = 'on'");
     await tx.$executeRawUnsafe(`TRUNCATE TABLE ${TABLES.map((table) => `"${table}"`).join(", ")} CASCADE`);
   });
 }
@@ -72,6 +75,7 @@ export async function createStaff(
   scope:
     | { type: "GLOBAL" }
     | { type: "COUNTRY"; countryCode: string }
+    | { type: "LEGAL_ENTITY"; legalEntityId: string }
     | { type: "STORE"; storeId: string }
     | { type: "WAREHOUSE"; warehouseId: string },
   options: { type?: "STAFF" | "CUSTOMER" } = {},
@@ -84,9 +88,11 @@ export async function createStaff(
       ? "GLOBAL"
       : scope.type === "COUNTRY"
         ? `COUNTRY:${scope.countryCode}`
-        : scope.type === "STORE"
-          ? `STORE:${scope.storeId}`
-          : `WAREHOUSE:${scope.warehouseId}`;
+        : scope.type === "LEGAL_ENTITY"
+          ? `LEGAL_ENTITY:${scope.legalEntityId}`
+          : scope.type === "STORE"
+            ? `STORE:${scope.storeId}`
+            : `WAREHOUSE:${scope.warehouseId}`;
   await db.userRole.create({
     data: {
       userId: user.id,
@@ -94,6 +100,7 @@ export async function createStaff(
       scopeType: scope.type,
       scopeKey,
       countryCode: scope.type === "COUNTRY" ? scope.countryCode : null,
+      legalEntityId: scope.type === "LEGAL_ENTITY" ? scope.legalEntityId : null,
       storeId: scope.type === "STORE" ? scope.storeId : null,
       warehouseId: scope.type === "WAREHOUSE" ? scope.warehouseId : null,
     },

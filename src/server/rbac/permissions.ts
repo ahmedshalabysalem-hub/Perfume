@@ -138,7 +138,7 @@ const definitions = [
     module: "inventory",
     en: "View stock levels and movements",
     ar: "عرض المخزون وحركاته",
-    available: false,
+    available: true,
   },
   {
     key: "inventory.receive",
@@ -157,10 +157,10 @@ const definitions = [
   {
     key: "inventory.adjust.approve",
     module: "inventory",
-    en: "Approve stock adjustments",
-    ar: "اعتماد تسويات المخزون",
+    en: "Approve stock adjustments and enter opening balances",
+    ar: "اعتماد تسويات المخزون وإدخال الأرصدة الافتتاحية",
     sensitive: true,
-    available: false,
+    available: true,
   },
   {
     key: "inventory.transfer",

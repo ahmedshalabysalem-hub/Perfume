@@ -6,7 +6,7 @@ Decision: ADR-007. Code: `src/server/rbac/` (`permissions.ts`, `roles.ts`, `scop
 
 ## Model
 
-- **Permissions** — a fixed catalogue in code (48 keys). 16 are active today; the rest are reserved for
+- **Permissions** — a fixed catalogue in code (48 keys). 18 are active today (`inventory.view` and `inventory.adjust.approve` since INV-001); the rest are reserved for
   later modules (`available: false`) so roles can be defined once.
 - **Roles** — 12 system roles in code, each with a permission set and the scope types it may be
   assigned at. `npm run db:sync-rbac` (also run by the seed) upserts both into the database.

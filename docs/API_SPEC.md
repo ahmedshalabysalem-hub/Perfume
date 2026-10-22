@@ -75,6 +75,16 @@ type ErrorCode =
 | `createStoreAction` / `updateStoreAction` / `setStoreActiveAction`                   | `organization.manage` (store's entity and country)     | `storeCreateSchema` / `storeUpdateSchema`             |
 | `createWarehouseAction` / `updateWarehouseAction` / `setWarehouseActiveAction`       | `organization.manage` (warehouse's entity and country) | `warehouseCreateSchema` / `warehouseUpdateSchema`     |
 
+### Inventory — `src/app/[locale]/admin/inventory/actions.ts`
+
+| Action                     | Service              | Permission (target)                                         | Input schema           |
+| -------------------------- | -------------------- | ----------------------------------------------------------- | ---------------------- |
+| `postOpeningBalanceAction` | `postOpeningBalance` | `inventory.adjust.approve` (warehouse's entity and country) | `openingBalanceSchema` |
+
+Stock reads (`listStock`, `getVariantStock`) are called by the pages directly and filtered to the
+warehouses covered by the actor's `inventory.view` assignments. Other modules change stock only through
+`postStockMovements(tx, ctx, posting)` (`src/server/modules/inventory/ledger.ts`, ADR-020).
+
 ### Access — `src/app/[locale]/admin/access/actions.ts`, `src/app/[locale]/(auth)/actions.ts`
 
 | Action                                            | Permission (target)                                  | Input schema            |

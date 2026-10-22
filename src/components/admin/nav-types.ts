@@ -8,6 +8,7 @@ export type NavIcon =
   | "notes"
   | "families"
   | "concentrations"
+  | "stock"
   | "countries"
   | "legalEntities"
   | "stores"
@@ -24,6 +25,7 @@ export type NavLabel =
   | "notes"
   | "families"
   | "concentrations"
+  | "stock"
   | "countries"
   | "legalEntities"
   | "stores"
@@ -33,6 +35,6 @@ export type NavLabel =
   | "audit";
 
 export type NavSection = {
-  section: "overview" | "catalog" | "organization" | "access";
+  section: "overview" | "catalog" | "inventory" | "organization" | "access";
   items: Array<{ href: string; label: NavLabel; icon: NavIcon }>;
 };

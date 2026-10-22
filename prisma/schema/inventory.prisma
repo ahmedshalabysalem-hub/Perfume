@@ -1,0 +1,76 @@
+// ─── Inventory ───────────────────────────────────────────────────────────────
+// Stock ledger (ADR-020). Every quantity change is a row in `stock_movements`
+// (append-only, enforced by triggers) and updates exactly one `stock_balances`
+// row in the same transaction. Only `postStockMovements` in
+// src/server/modules/inventory writes either table. CHECK constraints and the
+// append-only triggers live in the migration SQL.
+
+enum StockStatus {
+  SELLABLE
+  QUARANTINED
+  DAMAGED
+  RETURNED
+}
+
+/// The business event behind a movement. Later modules add their own values
+/// (receipt, sale, transfer, count…) together with the code that posts them.
+enum StockMovementType {
+  OPENING_BALANCE
+  ADJUSTMENT
+}
+
+model StockBalance {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  variantId   String      @map("variant_id") @db.Uuid
+  warehouseId String      @map("warehouse_id") @db.Uuid
+  status      StockStatus
+  onHand      Int         @default(0) @map("on_hand")
+  /// Units held for orders or POS (INV-004); only on sellable stock.
+  reserved    Int         @default(0)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  @@unique([variantId, warehouseId, status])
+  @@index([warehouseId, status])
+  @@map("stock_balances")
+}
+
+model StockMovement {
+  id             String            @id @default(uuid(7)) @db.Uuid
+  postedAt       DateTime          @default(now()) @map("posted_at") @db.Timestamptz(3)
+  type           StockMovementType
+  variantId      String            @map("variant_id") @db.Uuid
+  warehouseId    String            @map("warehouse_id") @db.Uuid
+  status         StockStatus
+  /// Signed, never zero: positive adds to the balance, negative removes.
+  quantity       Int
+  /// On-hand quantity of the balance row after this movement.
+  balanceAfter   Int               @map("balance_after")
+  /// Cost per unit in the warehouse country's currency (ADR-018/019).
+  unitCost       Decimal?          @map("unit_cost") @db.Decimal(19, 4)
+  currencyCode   String?           @map("currency_code") @db.Char(3)
+  /// Source document, e.g. ("purchase_receipt", "<uuid>").
+  documentType   String?           @map("document_type") @db.VarChar(40)
+  documentId     String?           @map("document_id") @db.VarChar(64)
+  reason         String?           @db.VarChar(500)
+  actorType      ActorType         @map("actor_type")
+  actorUserId    String?           @map("actor_user_id") @db.Uuid
+  correlationId  String?           @map("correlation_id") @db.VarChar(64)
+  /// Caller-chosen key of the posting this line belongs to; with `lineNo`
+  /// it makes retries harmless.
+  idempotencyKey String            @map("idempotency_key") @db.VarChar(120)
+  lineNo         Int               @map("line_no") @db.SmallInt
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  currency  Currency?      @relation(fields: [currencyCode], references: [code], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([idempotencyKey, lineNo])
+  @@index([variantId, warehouseId, postedAt])
+  @@index([warehouseId, postedAt])
+  @@index([documentType, documentId])
+  @@map("stock_movements")
+}

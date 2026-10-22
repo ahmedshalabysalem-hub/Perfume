@@ -2,9 +2,11 @@
 
 _Last updated: 2026-10-22 — end of session 2_
 
-**Phase:** 1 complete except OPS-001 (docker-compose needs one run on a machine with Docker).
-**Current phase:** 2 — Inventory and suppliers. APR-001 (approval framework) done on branch
-`claude/project-thread-wabex7`, not yet merged. **Next task:** INV-001 (Ready, spec in `docs/TASK_BOARD.md`).
+**Phase:** 2 — Inventory and suppliers, in progress. Phase 1 complete except OPS-001 (docker-compose
+needs one run on a machine with Docker).
+**Merged:** APR-001 approval framework (PR #2, 2026-10-22). **In review:** INV-001 stock ledger (PR #1);
+merge order and ADR numbering in `docs/SESSION_HANDOFF.md`.
+**Next task:** INV-002 batches or INV-003 adjustments (both unblocked once #1 is merged).
 
 ## Completed milestones
 
@@ -16,7 +18,9 @@ _Last updated: 2026-10-22 — end of session 2_
   publish workflow; read-only storefront per market with search, filters, product pages, sitemap.
 - **M1.3 Closure** — governance files, compliance register, README, CI pipeline, full documentation set,
   original brief preserved in `docs/reference/ORIGINAL_BRIEF.md`.
-
+- **M2.1 Stock ledger (INV-001, in review)** — append-only movement ledger and per-status balances
+  (ADR-020), concurrency-safe posting service with idempotency keys, opening balances, stock overview
+  and per-variant movement history in Arabic and English.
 - **APR-001 Approvals** (session 2) — shared maker-checker workflow: requests with resolved scope and
   append-only history, requester can never decide their own request (service + CHECK), scoped
   approvers, one pending request per subject, final and race-safe decisions (ADR-019). No screens yet:
@@ -24,15 +28,18 @@ _Last updated: 2026-10-22 — end of session 2_
 
 ## Verification evidence
 
-- Session 2, commit `436a974`: `npm run verify` (lint, typecheck, 131 tests, build) passed;
-  `prettier --check .` clean; `prisma migrate diff` shows no drift. E2E not re-run (no UI change). CI
-  runs only after the branch is pushed.
+- Session 2, APR-001 commit `436a974`: `npm run verify` (lint, typecheck, 131 tests, build) passed;
+  `prettier --check .` clean; `prisma migrate diff` shows no drift.
+- Session 2, INV-001 branch `claude/project-thread-qunsge`: lint, typecheck, `npx prettier --check .`,
+  138 Vitest tests (53 unit, 85 integration), build and **18/18 Playwright** tests — all passed.
+- Session 2, INV-001 after merging the base with APR-001: fresh databases, deploy (3 migrations), seed, no
+  drift; lint, Prettier check, typecheck, 161 Vitest tests, build and **18/18 Playwright** — all passed.
 - CI run 1 ([39681695967](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39681695967),
   commit `25b1b15`): lint, format, typecheck, 108 Vitest tests, build and **16/16 Playwright** tests on a
   clean runner — all green.
 - CI run 2 ([39683660413](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39683660413),
   commit `f23858a`, with actions v5 and the masked secret): all steps green.
-- Local, end of session: `npm run verify` (lint, typecheck, 108 tests, build) passed; build warning
+- Session 1, local: `npm run verify` (lint, typecheck, 108 tests, build) passed; build warning
   about whole-project tracing fixed and re-built without warnings.
 - `npm audit --omit=dev`: 0 vulnerabilities; dev-only tooling: 5 high (SEC-001).
 
@@ -48,12 +55,13 @@ _Last updated: 2026-10-22 — end of session 2_
 
 ## Recent decisions
 
-ADR-019 generic maker-checker approvals · ADR-016 password forms POST + hydration gate · ADR-017 file-based governance · ADR-018 weighted average
+ADR-019 generic maker-checker approvals · ADR-020 stock ledger (per-status balances, conditional
+updates, posting keys) · ADR-016 password forms POST + hydration gate · ADR-017 file-based governance ·
+ADR-018 weighted average
 cost (**proposed**) · plan re-aligned to the brief's phase numbering with documented sequencing
 deviations (`docs/IMPLEMENTATION_PLAN.md`).
 
 ## Next recommended action
 
-Start INV-001 at highest effort: write its design ADR (balance granularity, cost precision, locking,
-idempotency), then the migration, the posting service with concurrency tests, the opening-balance flow
-and the stock pages.
+Merge INV-001 (PR #1) once CI is green (APR-001, PR #2, is merged). That unblocks INV-003
+adjustments/counts/transfers (needs both) and, with PUR-001 and INV-002, PUR-002 purchase orders.
