@@ -381,6 +381,8 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     carry-over, damage adjustments) stay held; this replaces the LEGACY carry-over subtraction. The
     sum is read after the batch row is locked FOR UPDATE, so no posting of the batch can change it in
     between. The list of inspection-hold types is `INSPECTION_HOLD_TYPES` in `batches.service.ts`.
+    An opening balance entered as QUARANTINED into an already RELEASED lot is refused (checked with
+    the batch row locked FOR SHARE), so every quarantined opening balance awaited inspection.
 - **Alternatives:** a separate per-batch balance table beside `stock_balances` (a second ledger to keep
   consistent); inspection only as stock status without a batch state (loses the lot-level decision that
   blocks later sellable lines); expiry as a scheduled status move (stock changes without a person or

@@ -368,6 +368,15 @@ export async function postOpeningBalance(ctx: ServiceContext, input: unknown): P
       if (data.status === "SELLABLE" && result.created && !mayRelease) {
         throw new InvalidStateError("errors.invalidState.releaseNeedsPermission");
       }
+      // Quarantined opening stock counts as held for inspection (DR-011), which a released lot no
+      // longer is. Locked FOR SHARE so a release cannot commit between this check and the posting.
+      if (data.status === "QUARANTINED" && !result.created) {
+        const [current] = await tx.$queryRaw<Array<{ inspection_status: string }>>`
+          SELECT "inspection_status" FROM "stock_batches" WHERE "id" = ${batch.id}::uuid FOR SHARE`;
+        if (current?.inspection_status === "RELEASED") {
+          throw new InvalidStateError("errors.invalidState.openingQuarantineReleasedLot");
+        }
+      }
     }
 
     const history = await tx.stockMovement.count({

@@ -151,6 +151,11 @@ keeping it held for ever. Ahmed confirmed on 2026-10-26 that stock entered to aw
 as inspection-held (the strict reading, INSPECTION moves only, would have left such intake held until
 an INV-003 adjustment).
 
+Because the rule cannot tell an opening balance that awaits inspection from one held for another
+reason, an opening balance entered as QUARANTINED into a lot that is already RELEASED is refused
+(found by the INV-006 review; decided by the coordinator under Ahmed's delegation, 2026-10-26).
+Damaged units of a released lot are entered as DAMAGED, or later through an INV-003 adjustment.
+
 ## FIN — inventory costing (ADR-018, Accepted)
 
 ### DR-009 — Inventory costing method and landed cost

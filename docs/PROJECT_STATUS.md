@@ -65,7 +65,7 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
 
 ## Verification evidence
 
-- INV-006 (PR #14), locally on the branch: lint, typecheck, Prettier, `npm test` (21 files, 257
+- INV-006 (PR #14), locally on the branch: lint, typecheck, Prettier, `npm test` (21 files, 258
   tests), `npm run build` and `npm run test:e2e` (31 tests) — all passed.
 - Session 4, INV-002 merged as `4210b62`: CI green on the PR head `e77d4a7`; base CI run
   [39768475242](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39768475242) on the merge

@@ -135,6 +135,8 @@ and out of QUARANTINED; INV-004 decides reserved units. No schema change, no mig
 5. A double submit is a replay and moves nothing; concurrent postings touching the batch and another
    batch in opposite orders neither deadlock nor change the result.
 6. The audit entry's `unitsMoved` and the confirmation's preview equal what moved.
+7. An opening balance entered as QUARANTINED into an already RELEASED lot is refused (review
+   finding); DAMAGED is accepted and never moved by a release.
 
 **Security and data integrity** — Unchanged authorization (`inventory.batches.manage` in every
 holding warehouse). Lock order unchanged: batch row FOR UPDATE, then balances FOR UPDATE; the hold sum

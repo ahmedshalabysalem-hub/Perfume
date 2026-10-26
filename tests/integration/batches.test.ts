@@ -431,6 +431,27 @@ describe("opening balances with batches (AC 5 of the spec scope, DR-002)", () =>
     expect(await db.stockBatch.findFirstOrThrow()).toMatchObject({ expiryBasis: "NOT_TRACKED", expiresOn: null });
   });
 
+  it("refuses quarantined stock for a released lot, which a release would return to sale (DR-011)", async () => {
+    await postOpeningBalance(invSa, input());
+    const refused = await errorOf(
+      postOpeningBalance(invSa, input({ status: "QUARANTINED", quantity: "3", reason: "Damaged bottles found" })),
+    );
+    expect(refused.messageKey).toBe("errors.invalidState.openingQuarantineReleasedLot");
+    // Damaged units of a released lot are entered as damaged, which no inspection decision moves.
+    await postOpeningBalance(invSa, input({ status: "DAMAGED", quantity: "3", reason: "Damaged bottles found" }));
+    const batch = await db.stockBatch.findFirstOrThrow({ where: { lotNumber: "A-1" } });
+    await changeBatchStatus(invSa, decision(batch.id, batch.version, "QUARANTINED", "Recall check"));
+    await changeBatchStatus(invSa, decision(batch.id, batch.version + 1, "RELEASED", "Recall cleared"));
+    expect([await onHand(batch.id), await onHand(batch.id, "QUARANTINED"), await onHand(batch.id, "DAMAGED")]).toEqual([
+      10, 0, 3,
+    ]);
+    // A lot still awaiting inspection takes quarantined opening stock in another warehouse.
+    await postOpeningBalance(f.saManager, input({ status: "QUARANTINED", lotNumber: "P-9", quantity: "4" }));
+    expect(await db.stockBatch.findFirstOrThrow({ where: { lotNumber: "P-9" } })).toMatchObject({
+      inspectionStatus: "PENDING_INSPECTION",
+    });
+  });
+
   it("refuses an already expired lot as sellable, leaving nothing behind", async () => {
     const error = await errorOf(postOpeningBalance(invSa, input({ expiresOn: addDays(today(), -1) })));
     expect(error.messageKey).toBe("errors.invalidState.batchNotEligible");

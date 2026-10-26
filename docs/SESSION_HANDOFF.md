@@ -60,7 +60,8 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
    the net QUARANTINED quantity of the batch's `INSPECTION` and `OPENING_BALANCE` movements
    (`INSPECTION_HOLD_TYPES` in `batches.service.ts`). Damage and the LEGACY carry-over stay held; the
    LEGACY subtraction is gone. Ahmed confirmed on 2026-10-26 that opening balances entered to await
-   inspection count as inspection-held.
+   inspection count as inspection-held. A QUARANTINED opening balance into an already RELEASED lot is
+   refused (review finding; coordinator decision under Ahmed's delegation); use DAMAGED.
 2. **Rules INV-006 leaves for later tasks.** PUR-002 adds `RECEIPT` to `INSPECTION_HOLD_TYPES` and
    never posts damaged units into QUARANTINED as a receipt. INV-003 adjustments out of a batch's
    QUARANTINED stock must say which hold they consume, so the inspection-held sum stays exact;
@@ -194,7 +195,7 @@ project files under `windows-setup/`.
 On branch `claude/project-thread-ye4et1`, run locally:
 
 - lint, typecheck and Prettier;
-- `npm test`: 21 files, 257 tests (`batches.test.ts` 35, of which 5 new; three of them fail on the
+- `npm test`: 21 files, 258 tests (`batches.test.ts` 36, of which 6 new; four of them fail on the
   previous code);
 - `npm run test:e2e` (includes `npm run build`): 31 tests.
 
