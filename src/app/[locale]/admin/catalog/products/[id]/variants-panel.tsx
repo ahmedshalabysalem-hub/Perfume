@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Plus, Printer, Tags, Wand2 } from "lucide-react";
+import { Boxes, Pencil, Plus, Printer, Tags, Wand2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -258,12 +258,14 @@ export function VariantsPanel({
   markets,
   canEdit,
   canEditPrices,
+  canViewStock,
 }: {
   productId: string;
   variants: VariantDto[];
   markets: MarketDto[];
   canEdit: boolean;
   canEditPrices: boolean;
+  canViewStock: boolean;
 }) {
   const t = useTranslations("variants");
   const products = useTranslations("products");
@@ -401,6 +403,15 @@ export function VariantsPanel({
                           >
                             {(close) => <VariantForm productId={productId} variant={variant} onDone={close} />}
                           </FormDialog>
+                        ) : null}
+                        {canViewStock && variant.trackInventory ? (
+                          <Link
+                            href={`/admin/inventory/stock/${variant.id}`}
+                            className={buttonVariants({ variant: "ghost", size: "sm" })}
+                            data-testid={`variant-stock-${variant.sku}`}
+                          >
+                            <Boxes /> {t("stockLink")}
+                          </Link>
                         ) : null}
                         {variant.barcode ? (
                           <Link

@@ -43,6 +43,7 @@ export default async function StockPage({ params, searchParams }: PageProps<"/[l
   const t = await getTranslations("inventory");
   const common = await getTranslations("common");
   const statusLabels = await getTranslations("stockStatus");
+  const eligibilityLabels = await getTranslations("batches.ineligible");
   const { query } = result;
 
   return (
@@ -147,6 +148,15 @@ export default async function StockPage({ params, searchParams }: PageProps<"/[l
                   <TableCell className="text-end tabular-nums">{row.available}</TableCell>
                   <TableCell className="text-end font-medium tabular-nums" data-testid="stock-available-for-sale">
                     {row.availableForSale}
+                    {row.ineligibleReason ? (
+                      <span
+                        className="block text-xs font-normal whitespace-nowrap text-muted-foreground"
+                        data-testid="stock-ineligible-reason"
+                        data-reason={row.ineligibleReason}
+                      >
+                        {eligibilityLabels(row.ineligibleReason)}
+                      </span>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

@@ -70,6 +70,7 @@ export default async function ProductPage({
   const defaultTab = (TABS as readonly string[]).includes(requestedTab) ? requestedTab : "general";
 
   const canEdit = can(actor, "products.update", "global");
+  const canViewStock = can(actor, "inventory.view");
   const transitions = allowedProductTransitions(product.status).filter((target) =>
     can(actor, productTransitionPermission(product.status, target), "global"),
   );
@@ -209,6 +210,7 @@ export default async function ProductPage({
             markets={markets}
             canEdit={canEdit}
             canEditPrices={canEditPrices}
+            canViewStock={canViewStock}
           />
         </TabsContent>
 

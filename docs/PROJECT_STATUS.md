@@ -39,7 +39,8 @@ stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `do
 
 ## In progress
 
-Nothing. All PRs (#1–#9) are merged.
+UX-000 audit (`docs/UI_UX_AUDIT.md`) and UX-001 inventory status clarity are in review in one PR;
+INV-006 starts after it merges. UX-002…UX-005 are Backlog.
 
 ## Pending (Phase 2, in order)
 

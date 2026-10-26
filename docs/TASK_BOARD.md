@@ -52,6 +52,11 @@ next: INV-006 (DR-011 decided: Option A), then PUR-002 spec (or INV-003) — see
 | OPS-002   | S3-compatible storage adapter                                | —     | Backlog | P2               | —                                         |
 | SEC-002   | Multi-factor authentication for staff                        | —     | Backlog | P2               | —                                         |
 | SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog | P3               | upstream fix                              |
+| UX-001    | Inventory status clarity (audit F1–F5)                       | —     | Review  | P1               | UX-000; merges before INV-006 starts      |
+| UX-002    | Design tokens, status tones and form accessibility (F8–F17)  | —     | Backlog | P2               | UX-001; lands alone (every page)          |
+| UX-003    | Breadcrumbs, loading states, toast placement (F3, F10–F14)   | —     | Backlog | P2               | UX-002                                    |
+| UX-004    | Dashboard inventory queues and readable activity (F6, F7)    | —     | Backlog | P2               | UX-001 (F6 approved 2026-10-26)           |
+| UX-005    | Phone tables and catalogue polish (F13, F15, F18–F22)        | —     | Backlog | P2               | UX-002                                    |
 
 ## Done
 

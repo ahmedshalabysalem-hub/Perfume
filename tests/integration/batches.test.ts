@@ -315,6 +315,11 @@ describe("sale eligibility (AC 2, 15, 19, 20)", () => {
     expect(await sellableQuantity(db, variantId, f.warehouseId)).toBe(0);
     const stock = (await getVariantStock(invSa, variantId, {}))!;
     expect(stock.balances[0]).toMatchObject({ onHand: 5, availableForSale: 0, ineligibleReason: "EXPIRED" });
+    // The stock list gives the same reason as the variant page.
+    expect((await listStock(invSa, {})).rows.find((row) => row.batch?.id === batch.id)).toMatchObject({
+      availableForSale: 0,
+      ineligibleReason: "EXPIRED",
+    });
     // Removing expired stock stays possible (INV-003 disposal); adding sellable stock is refused.
     expect((await errorOf(post(adjust(line(batch.id, 1))))).messageKey).toBe("errors.invalidState.batchNotEligible");
     await changeBatchStatus(invSa, decision(batch.id, await version(batch.id), "QUARANTINED", "Expired"));
@@ -586,9 +591,11 @@ describe("LEGACY stock (DR-008, DR-010; AC 16–18, 21–23)", () => {
     // The stock list shows the units on hand but none of them as available for sale; the emptied
     // pre-batch balance stays (at zero) with its history.
     const list = await listStock(invSa, { status: "SELLABLE" });
-    expect(list.rows.map((r) => [r.batch?.isLegacy, r.onHand, r.available, r.availableForSale])).toEqual([
-      [true, 6, 6, 0],
-      [undefined, 0, 0, 0],
+    expect(
+      list.rows.map((r) => [r.batch?.isLegacy, r.onHand, r.available, r.availableForSale, r.ineligibleReason]),
+    ).toEqual([
+      [true, 6, 6, 0, "NOT_RELEASED"],
+      [undefined, 0, 0, 0, null],
     ]);
     expect((await auditEntries("inventory.batch.legacy_create"))[0]?.entityId).toBe(legacy.id);
     // Running the carry-over again changes nothing.

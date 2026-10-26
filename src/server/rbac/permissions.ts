@@ -174,7 +174,7 @@ const definitions = [
     key: "inventory.batches.manage",
     module: "inventory",
     en: "Verify, release, quarantine and reject batches and correct batch details",
-    ar: "التحقق من التشغيلات وإجازتها وحجرها ورفضها وتصحيح بياناتها",
+    ar: "التحقق من التشغيلات وإجازتها وإيقافها للفحص ورفضها وتصحيح بياناتها",
     sensitive: true,
     available: true,
   },

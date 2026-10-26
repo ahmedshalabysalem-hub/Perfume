@@ -443,7 +443,8 @@
       "copies": "Copies",
       "hint": "Use your browser's print dialog. Labels are sized 50 × 30 mm.",
       "internalNotice": "Internal code — for in-store scanning only, not a GS1 GTIN."
-    }
+    },
+    "stockLink": "Stock"
   },
   "prices": {
     "title": "Market prices",
@@ -803,7 +804,10 @@
     "notTracked": "Inventory is not tracked for this variant.",
     "viewStock": "Stock",
     "system": "System",
-    "allWarehouses": "All warehouses"
+    "allWarehouses": "All warehouses",
+    "variantStockLink": "Stock of this variant",
+    "productLink": "Open product",
+    "batchesLink": "Batches of this variant"
   },
   "suppliers": {
     "title": "Suppliers",
@@ -983,7 +987,16 @@
     "applyDecision": "Apply decision",
     "verified": "Verification recorded.",
     "statusChanged": "Decision recorded.",
-    "detailsSaved": "Batch details saved."
+    "detailsSaved": "Batch details saved.",
+    "confirmDecision": {
+      "title": "Confirm: {decision}",
+      "currentStock": "Current stock of this batch",
+      "effect": {
+        "RELEASED": "The batch is released. Its quarantined stock in each warehouse moves back to sellable. Units are sold only while the batch is not expired, and verified when its expiry is unknown.",
+        "QUARANTINED": "The batch is quarantined. Its sellable stock in each warehouse moves to quarantined and cannot be sold until the batch is released.",
+        "REJECTED": "This decision is final and cannot be undone. Sellable stock of this batch moves to quarantined and the batch can never be released."
+      }
+    }
   },
   "auditActions": {
     "approvals": {

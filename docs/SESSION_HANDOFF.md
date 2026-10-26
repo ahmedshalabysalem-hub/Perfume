@@ -130,6 +130,26 @@ seed-once marker is `storage/.seeded` (already git-ignored). Docker mode is veri
 compose job; the Windows CI job covers the native PostgreSQL path. Ahmed's Word guides live in the
 project files under `windows-setup/`.
 
+## UX-000 and UX-001 (parallel thread, UI/UX initiative)
+
+- **UX-000** — `docs/UI_UX_AUDIT.md` audits the back office on `7ea936b` (no P0; baseline 252 Vitest,
+  30 Playwright, all green). Ahmed's decisions (2026-10-26) are in its section 12: the Arabic label for
+  QUARANTINED is «موقوف للفحص»; dashboard inventory counts approved (UX-004); staff use every device
+  type (phone tables F13 → P1). Order (coordinator, delegated by Ahmed): UX-001 merges first, then
+  INV-006 starts — never in parallel on the inventory files.
+- **UX-001 (done in the same PR)** — UI only, no rule changes: the Arabic quarantine wording; the stock
+  list shows the eligibility reason under a zero "Available for sale" (`listStock` returns
+  `ineligibleReason`, as `getVariantStock` already did); links product variant → stock → product, stock
+  → batches of the variant, batch → product and → stock; batch header shows inspection and sale
+  badges; a batch decision opens a confirmation naming its effect (Rejected is final) and the batch's
+  stock by status before anything is applied. Tests: integration `batches.test.ts`, e2e
+  `inventory.spec.ts` (new test plus the confirmation step in `decide`).
+- **For INV-006:** the release confirmation text (`batches.confirmDecision.effect.RELEASED`) says
+  quarantined stock moves back to sellable; update it when the release restores only inspection-held
+  stock.
+- **Next UX slice:** UX-002 (tokens and accessibility) lands alone; UX-005 (phone tables) is now P2 on
+  the board with F13 at P1 inside it.
+
 ## Context that would otherwise be lost
 
 - **Session start:** read `CLAUDE.md`, then this file, then the task's board entry. Reply to Ahmed in
