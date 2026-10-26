@@ -59,13 +59,14 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
   implemented for e-invoicing, payments or shipping integrations.
 - **Test gaps:** no Critical; High G1–G2 (sign-in rate limiting, image upload) tracked as QA-003 in
   `docs/TEST_PLAN.md`; G3 and G4 closed by INV-002.
-- **DR-011 (Option A) implemented by INV-006, in review.** Counting stock entered to await inspection
-  (opening balances, later receipts) as inspection-held was put to Ahmed for confirmation on
-  2026-10-26; without it, a batch quarantined before its first release would keep that stock held.
+- **DR-011 (Option A) implemented by INV-006, in review.** Ahmed confirmed on 2026-10-26 that stock
+  entered to await inspection (opening balances, later receipts) counts as inspection-held.
 - **Repository:** the default branch is still named `ccr-04855f0a-4t6vb0`; renaming is the owner's call.
 
 ## Verification evidence
 
+- INV-006 (PR #14), locally on the branch: lint, typecheck, Prettier, `npm test` (21 files, 257
+  tests), `npm run build` and `npm run test:e2e` (31 tests) — all passed.
 - Session 4, INV-002 merged as `4210b62`: CI green on the PR head `e77d4a7`; base CI run
   [39768475242](https://github.com/ahmedshalabysalem-hub/Perfume/actions/runs/39768475242) on the merge
   commit. Locally at `e77d4a7`: lint, typecheck, Prettier, `npm test` (246), build, 22 e2e.

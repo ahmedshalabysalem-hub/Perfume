@@ -59,8 +59,8 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
    warehouse, a release moves back `min(inspection-held, on hand − reserved)`, where inspection-held is
    the net QUARANTINED quantity of the batch's `INSPECTION` and `OPENING_BALANCE` movements
    (`INSPECTION_HOLD_TYPES` in `batches.service.ts`). Damage and the LEGACY carry-over stay held; the
-   LEGACY subtraction is gone. Counting opening balances entered to await inspection as inspection-held
-   was put to Ahmed on 2026-10-26 (decision card in the INV-006 thread); merge after his answer.
+   LEGACY subtraction is gone. Ahmed confirmed on 2026-10-26 that opening balances entered to await
+   inspection count as inspection-held.
 2. **Rules INV-006 leaves for later tasks.** PUR-002 adds `RECEIPT` to `INSPECTION_HOLD_TYPES` and
    never posts damaged units into QUARANTINED as a receipt. INV-003 adjustments out of a batch's
    QUARANTINED stock must say which hold they consume, so the inspection-held sum stays exact;
@@ -85,8 +85,7 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
 
 ## Next exact task
 
-**Merge INV-006** once the independent review passes, CI is green and Ahmed has answered the
-decision card (see open item 1).
+**Merge INV-006** once the independent review passes and CI is green (see open item 1).
 
 **Then PUR-002 — purchase orders, approvals and goods receipts.** Effort: high for the spec, highest for
 receipt posting and cost (financial consistency and inventory concurrency).
@@ -190,15 +189,13 @@ project files under `windows-setup/`.
   - Next.js maintains `AGENTS.md`; keep it committed.
   - `docs/reference/ORIGINAL_BRIEF.md` is excluded from Prettier on purpose.
 
-## Checks actually run (session 4, final)
+## Checks actually run (INV-006, 2026-10-26)
 
-INV-002 at head `e77d4a7`, run locally:
+On branch `claude/project-thread-ye4et1`, run locally:
 
 - lint, typecheck and Prettier;
-- `npm test`: 20 files, 246 tests;
-- `npm run build`;
-- `npm run test:e2e`: 22 tests;
-- the G3 opposite-order test, 20 runs in a row.
+- `npm test`: 21 files, 257 tests (`batches.test.ts` 35, of which 5 new; three of them fail on the
+  previous code);
+- `npm run test:e2e` (includes `npm run build`): 31 tests.
 
-CI was green on `e77d4a7` (both jobs), and the CI run on the merge commit `4210b62` is recorded in
-`docs/PROJECT_STATUS.md`. This handoff PR changes documentation only.
+CI and the independent review are recorded on PR #14.

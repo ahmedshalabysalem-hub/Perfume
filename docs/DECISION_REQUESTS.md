@@ -147,9 +147,9 @@ put into QUARANTINED (the LEGACY `BATCH_ASSIGNMENT` carry-over, adjustments such
 The same rule applies to every release, from PENDING_INSPECTION or QUARANTINED, so it reproduces the
 earlier PENDING_INSPECTION behaviour on all stock that exists today, and a batch quarantined before its
 first release (pending intake, then QUARANTINED, then RELEASED) gets its intake back instead of
-keeping it held for ever. Counting stock entered to await inspection as inspection-held was put to
-Ahmed for confirmation on 2026-10-26; the strict reading (INSPECTION moves only) would leave such
-intake held until an INV-003 adjustment.
+keeping it held for ever. Ahmed confirmed on 2026-10-26 that stock entered to await inspection counts
+as inspection-held (the strict reading, INSPECTION moves only, would have left such intake held until
+an INV-003 adjustment).
 
 ## FIN — inventory costing (ADR-018, Accepted)
 
