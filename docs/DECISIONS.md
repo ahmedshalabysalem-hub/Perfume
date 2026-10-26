@@ -374,6 +374,15 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     is changed. It runs as one atomic statement, is idempotent, and reconciles quantities per variant,
     warehouse and status before and after, aborting on any difference (DR-008, DR-010).
   - **FEFO order:** earliest expiry first, no expiry last, then received date, then lot number.
+  - **Amendment (INV-006, DR-011 Option A, 2026-10-26):** a release restores, per warehouse, only
+    the batch's inspection-held quarantined stock: the net quantity of its `INSPECTION` movements and
+    of intake that entered QUARANTINED to await inspection (`OPENING_BALANCE`; PUR-002 adds `RECEIPT`),
+    capped at the unreserved quarantined balance. Units quarantined by any other movement (LEGACY
+    carry-over, damage adjustments) stay held; this replaces the LEGACY carry-over subtraction. The
+    sum is read after the batch row is locked FOR UPDATE, so no posting of the batch can change it in
+    between. The list of inspection-hold types is `INSPECTION_HOLD_TYPES` in `batches.service.ts`.
+    An opening balance entered as QUARANTINED into an already RELEASED lot is refused (checked with
+    the batch row locked FOR SHARE), so every quarantined opening balance awaited inspection.
 - **Alternatives:** a separate per-batch balance table beside `stock_balances` (a second ledger to keep
   consistent); inspection only as stock status without a batch state (loses the lot-level decision that
   blocks later sellable lines); expiry as a scheduled status move (stock changes without a person or

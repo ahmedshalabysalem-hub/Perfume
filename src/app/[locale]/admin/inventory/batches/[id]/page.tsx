@@ -284,6 +284,7 @@ export default async function BatchPage({ params }: PageProps<"/[locale]/admin/i
                   (s): s is "RELEASED" | "QUARANTINED" | "REJECTED" => s !== "PENDING_INSPECTION",
                 )}
                 stock={stockByStatus}
+                releasable={result.releasableUnits}
               />
             </CardContent>
           </Card>

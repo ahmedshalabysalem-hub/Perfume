@@ -1,7 +1,7 @@
 # Session handoff
 
-_Complete handoff after session 4 — 2026-10-22. Default branch `ccr-04855f0a-4t6vb0` at `4210b62`
-(PR #5 merged). No open pull requests and no work in progress. A fresh session can start here._
+_Handoff updated 2026-10-26 for INV-006. Default branch `ccr-04855f0a-4t6vb0` at `111f65b` (PR #13
+merged). INV-006 is in review on branch `claude/project-thread-ye4et1`; nothing else is in progress._
 
 ## Where things stand
 
@@ -19,6 +19,7 @@ default branch, and CI is green on it.
 | #8  | —               | ADR-018 and ADR-024 accepted for development                                           | `2cf04f0` |
 | #9  | —               | ADR-018 and ADR-024 Accepted by the owner; accounting approvals by accountant or owner | `0a9d224` |
 | #5  | INV-002         | Batches, inspection and expiry (ADR-023), after an independent review                  | `4210b62` |
+| #13 | UX-000, UX-001  | UI/UX audit; inventory status clarity («موقوف للفحص», decision confirmation)           | `111f65b` |
 
 Decisions made in sessions 2–4 (all Accepted, details in `docs/DECISIONS.md`):
 
@@ -54,16 +55,17 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
 
 ## Open items (carry these forward)
 
-1. **Release restores all quarantined stock — decided (DR-011, Option A), implement as INV-006 before
-   INV-003 or PUR-002 put damaged units into QUARANTINED on a released batch.** Releasing a QUARANTINED batch moves all of its
-   quarantined stock in each warehouse back to SELLABLE, except the LEGACY carry-over. That includes
-   units quarantined for another reason, such as damage. Ahmed chose: QUARANTINED → RELEASED moves back
-   only the net quantity of the batch's own `INSPECTION` movements, while PENDING_INSPECTION → RELEASED
-   keeps today's behaviour (code: `moveForDecision` in `src/server/modules/inventory/batches.service.ts`).
-2. **LEGACY quarantined units.** Release keeps a LEGACY batch's pre-INV-002 quarantined units out of
-   sale by subtracting the carried-over quantity. If INV-003 disposes of some of those units, the
-   subtraction can hold back more than remains (safe side). INV-006 replaces it with the same
-   net-INSPECTION rule.
+1. **INV-006 (in review) — a release restores only inspection-held stock (DR-011, Option A).** Per
+   warehouse, a release moves back `min(inspection-held, on hand − reserved)`, where inspection-held is
+   the net QUARANTINED quantity of the batch's `INSPECTION` and `OPENING_BALANCE` movements
+   (`INSPECTION_HOLD_TYPES` in `batches.service.ts`). Damage and the LEGACY carry-over stay held; the
+   LEGACY subtraction is gone. Ahmed confirmed on 2026-10-26 that opening balances entered to await
+   inspection count as inspection-held. A QUARANTINED opening balance into an already RELEASED lot is
+   refused (review finding; coordinator decision under Ahmed's delegation); use DAMAGED.
+2. **Rules INV-006 leaves for later tasks.** PUR-002 adds `RECEIPT` to `INSPECTION_HOLD_TYPES` and
+   never posts damaged units into QUARANTINED as a receipt. INV-003 adjustments out of a batch's
+   QUARANTINED stock must say which hold they consume, so the inspection-held sum stays exact;
+   otherwise a later release can return damaged units.
 3. **INV-004, reserved units.** There are no reservations yet, so quarantine moves only unreserved
    SELLABLE stock. INV-004 must decide what happens to reserved units of a batch that is quarantined.
 4. **Future sales paths.** INV-004, ORD-001 and POS-001 must sell or allocate only through the shared
@@ -84,13 +86,7 @@ be changed by UPDATE (`stock_balances_key_fixed`); stock moves only through move
 
 ## Next exact task
 
-**INV-006 — a release restores only inspection-held stock (DR-011, Option A).** Effort: highest
-(inventory concurrency). Small and contained: `moveForDecision` in
-`src/server/modules/inventory/batches.service.ts`, plus the LEGACY carry-over subtraction (open items 1
-and 2). Board entry in `docs/TASK_BOARD.md`; write it up as a Ready spec with `docs/TASK_TEMPLATE.md`
-first. Tests: mixed inspection and damage quarantine in one warehouse, LEGACY, replay and the
-opposite-order lock test. It must merge before PUR-002 receipts or INV-003 adjustments put damaged stock
-into QUARANTINED.
+**Merge INV-006** once the independent review passes and CI is green (see open item 1).
 
 **Then PUR-002 — purchase orders, approvals and goods receipts.** Effort: high for the spec, highest for
 receipt posting and cost (financial consistency and inventory concurrency).
@@ -144,9 +140,6 @@ project files under `windows-setup/`.
   badges; a batch decision opens a confirmation naming its effect (Rejected is final) and the batch's
   stock by status before anything is applied. Tests: integration `batches.test.ts`, e2e
   `inventory.spec.ts` (new test plus the confirmation step in `decide`).
-- **For INV-006:** the release confirmation text (`batches.confirmDecision.effect.RELEASED`) says
-  quarantined stock moves back to sellable; update it when the release restores only inspection-held
-  stock.
 - **Next UX slice:** UX-002 (tokens and accessibility) lands alone; UX-005 (phone tables) is now P2 on
   the board with F13 at P1 inside it.
 
@@ -189,6 +182,9 @@ project files under `windows-setup/`.
     reset script must do the same.
 - **Approval effects** are applied by the consuming module inside the same transaction (ADR-019); there
   is no generic approvals inbox.
+- **Dialog pitfall (fixed in INV-006):** Radix renders a dialog's overlay and content as separate
+  portals, so reopening a dialog while the last one is closing can append the overlay after the
+  content. Dialog content therefore sits at `z-[51]`, above its `z-50` overlay; keep it that way.
 - **CHECK pitfall:** a CHECK written as `col = 'X' AND n BETWEEN …` passes when `n` is NULL; write
   `IS NOT NULL` explicitly.
 - **Workflow:**
@@ -197,15 +193,13 @@ project files under `windows-setup/`.
   - Next.js maintains `AGENTS.md`; keep it committed.
   - `docs/reference/ORIGINAL_BRIEF.md` is excluded from Prettier on purpose.
 
-## Checks actually run (session 4, final)
+## Checks actually run (INV-006, 2026-10-26)
 
-INV-002 at head `e77d4a7`, run locally:
+On branch `claude/project-thread-ye4et1`, run locally:
 
 - lint, typecheck and Prettier;
-- `npm test`: 20 files, 246 tests;
-- `npm run build`;
-- `npm run test:e2e`: 22 tests;
-- the G3 opposite-order test, 20 runs in a row.
+- `npm test`: 21 files, 258 tests (`batches.test.ts` 36, of which 6 new; four of them fail on the
+  previous code);
+- `npm run test:e2e` (includes `npm run build`): 31 tests, after the dialog fix below.
 
-CI was green on `e77d4a7` (both jobs), and the CI run on the merge commit `4210b62` is recorded in
-`docs/PROJECT_STATUS.md`. This handoff PR changes documentation only.
+CI and the independent review are recorded on PR #14.

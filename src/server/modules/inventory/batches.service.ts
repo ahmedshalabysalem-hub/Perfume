@@ -294,11 +294,40 @@ async function knownExpired(tx: Tx, batch: LockedBatch, holdings: Holding[], exp
 }
 
 /**
+ * Movement types whose QUARANTINED units are held by the batch's inspection
+ * (DR-011): its own INSPECTION moves, and stock that entered quarantine to
+ * await inspection (an opening balance; PUR-002 adds its receipts). Units put
+ * into QUARANTINED by any other movement are held for their own reason — the
+ * LEGACY carry-over (BATCH_ASSIGNMENT, reason unknown) or an adjustment such
+ * as damage — and only their own movement takes them out.
+ */
+const INSPECTION_HOLD_TYPES = ["INSPECTION", "OPENING_BALANCE"] as const;
+
+/**
+ * Net QUARANTINED quantity per warehouse that the batch's inspection holds.
+ * Call it with the batch row locked: postings lock it FOR SHARE, so no
+ * movement of this batch can commit in between.
+ */
+async function inspectionHeld(client: DbClient, batchId: string): Promise<Map<string, number>> {
+  const rows = await client.stockMovement.groupBy({
+    by: ["warehouseId"],
+    where: { batchId, status: "QUARANTINED", type: { in: [...INSPECTION_HOLD_TYPES] } },
+    _sum: { quantity: true },
+  });
+  return new Map(rows.map((row) => [row.warehouseId, row._sum.quantity ?? 0]));
+}
+
+/** Units a release moves back to SELLABLE from one QUARANTINED balance. */
+function releasable(balance: { onHand: number; reserved: number }, held: number): number {
+  return Math.max(0, Math.min(held, balance.onHand - balance.reserved));
+}
+
+/**
  * Move the batch's stock between SELLABLE and QUARANTINED for an inspection
  * decision, through the ledger, in the caller's transaction.
  * - to QUARANTINED: all unreserved SELLABLE stock;
- * - to SELLABLE: QUARANTINED stock except units that were already quarantined
- *   before INV-002 (carried over by BATCH_ASSIGNMENT; nobody knows why).
+ * - to SELLABLE: in each warehouse, only the QUARANTINED units its inspection
+ *   holds (DR-011, Option A); units held for another reason stay held.
  */
 async function moveForDecision(
   tx: Tx,
@@ -315,19 +344,13 @@ async function moveForDecision(
      WHERE "batch_id" = ${batch.id}::uuid AND "status" = ${from}::"StockStatus"
      ORDER BY "warehouse_id"
        FOR UPDATE`;
-  let carried = new Map<string, number>();
-  if (direction === "toSellable") {
-    const rows = await tx.stockMovement.groupBy({
-      by: ["warehouseId"],
-      where: { batchId: batch.id, status: "QUARANTINED", type: "BATCH_ASSIGNMENT", quantity: { gt: 0 } },
-      _sum: { quantity: true },
-    });
-    carried = new Map(rows.map((row) => [row.warehouseId, row._sum.quantity ?? 0]));
-  }
+  const held = direction === "toSellable" ? await inspectionHeld(tx, batch.id) : null;
   const lines: StockMovementLine[] = [];
   let moved = 0;
   for (const balance of balances) {
-    const quantity = Math.max(0, balance.on_hand - balance.reserved - (carried.get(balance.warehouse_id) ?? 0));
+    const quantity = held
+      ? releasable({ onHand: balance.on_hand, reserved: balance.reserved }, held.get(balance.warehouse_id) ?? 0)
+      : Math.max(0, balance.on_hand - balance.reserved);
     if (quantity === 0) continue;
     moved += quantity;
     const base = { variantId: batch.variantId, warehouseId: balance.warehouse_id, batchId: batch.id };
@@ -880,6 +903,11 @@ export async function getBatch(ctx: ServiceContext, rawId: string) {
   );
   const today = await todayByCountry();
   const now = new Date();
+  // What a release would move back now (a preview; the decision recomputes it under lock).
+  const held = await inspectionHeld(db, id);
+  const releasableUnits = balances
+    .filter((row) => row.status === "QUARANTINED")
+    .reduce((sum, row) => sum + releasable(row, held.get(row.warehouse.id) ?? 0), 0);
 
   return {
     batch: {
@@ -914,6 +942,7 @@ export async function getBatch(ctx: ServiceContext, rawId: string) {
           ? row.onHand - row.reserved
           : 0,
     })),
+    releasableUnits,
     movements,
     history: history.map(({ actorUserId, ...row }) => ({
       ...row,

@@ -48,7 +48,7 @@ async function seedLegacyStock(sku: string, warehouseCode: string, quantity: num
   }
 }
 
-async function decide(page: Page, label: string, reason: string) {
+async function decide(page: Page, label: string, reason: string, effect?: string) {
   const form = page.getByTestId("batch-status-form");
   await form.locator("[data-field=status]").selectOption({ label });
   await form.locator("[data-field=reason]").fill(reason);
@@ -56,6 +56,7 @@ async function decide(page: Page, label: string, reason: string) {
   // Nothing is applied until the confirmation that names the decision.
   const confirm = page.getByTestId("batch-decision-confirm");
   await expect(confirm).toContainText(`Confirm: ${label}`);
+  if (effect) await expect(confirm).toContainText(effect);
   await confirm.getByTestId("batch-decision-confirm-apply").click();
   await expect(page.getByText("Decision recorded.")).toBeVisible();
 }
@@ -136,7 +137,8 @@ test.describe("inventory", () => {
 
     await decide(page, "Quarantine", "Outer cartons damp");
     await expect(page.getByTestId("batch-inspection")).toContainText("Quarantined");
-    await decide(page, "Release for sale", "Bottles inspected, all intact");
+    // Stock entered to await inspection is held by the inspection, so the release restores it (DR-011).
+    await decide(page, "Release for sale", "Bottles inspected, all intact", "Moves back to sellable: 9");
     await expect(page.getByTestId("batch-inspection")).toContainText("Released");
     await expect(page.getByTestId("batch-eligibility")).toContainText("Sellable");
     const sellable = page.locator("[data-testid=batch-balance-row][data-status=SELLABLE]");
@@ -226,6 +228,16 @@ test.describe("inventory", () => {
     await confirm.getByRole("button", { name: "Cancel" }).click();
     await expect(confirm).toHaveCount(0);
     await expect(page.getByTestId("batch-inspection")).toContainText("Pending inspection");
+    // Reopened while the last one is still closing, the confirmation stays above its backdrop.
+    for (const delay of [0, 100, 140, 160, 180, 200]) {
+      await page.getByTestId("batch-status-submit").click();
+      await confirm.getByRole("button", { name: "Cancel" }).click();
+      await page.waitForTimeout(delay);
+      await page.getByTestId("batch-status-submit").click();
+      await confirm.getByTestId("batch-decision-confirm-apply").click({ trial: true, timeout: 3000 });
+      await confirm.getByRole("button", { name: "Cancel" }).click();
+      await expect(confirm).toHaveCount(0);
+    }
 
     // Arabic: the quarantine status reads «موقوفة للفحص», never «محجور».
     await open(page, "/ar/admin/inventory/batches?status=QUARANTINED");

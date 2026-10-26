@@ -127,6 +127,7 @@
       "batchRejected": "This batch was rejected; no further decisions are possible.",
       "batchVerifierRequired": "Only a signed-in staff member can record a verification.",
       "releaseNeedsPermission": "Only a user who may release batches can enter a new lot as sellable. Enter it as quarantined instead.",
+      "openingQuarantineReleasedLot": "This lot is already released, so its quarantined stock would return to sale on its next release. Enter damaged units as damaged instead.",
       "trackingLocked": "Stock has been recorded for {sku}; its inventory and batch tracking can no longer change.",
       "expiryTrackingBlocked": "A batch of {sku} is recorded as expiry not applicable; expiry tracking cannot be switched on.",
       "expiryTracked": "{sku} tracks expiry, so \"not applicable\" is not allowed.",
@@ -991,8 +992,10 @@
     "confirmDecision": {
       "title": "Confirm: {decision}",
       "currentStock": "Current stock of this batch",
+      "releasable": "Moves back to sellable",
+      "staysHeld": "Stays quarantined for another reason",
       "effect": {
-        "RELEASED": "The batch is released. Its quarantined stock in each warehouse moves back to sellable. Units are sold only while the batch is not expired, and verified when its expiry is unknown.",
+        "RELEASED": "The batch is released. In each warehouse, only stock held for inspection moves back to sellable: units quarantined by an inspection decision or entered into quarantine to await inspection. Units held for another reason, such as damage or stock carried over from before batches, stay quarantined until their own decision. Units are sold only while the batch is not expired, and verified when its expiry is unknown.",
         "QUARANTINED": "The batch is quarantined. Its sellable stock in each warehouse moves to quarantined and cannot be sold until the batch is released.",
         "REJECTED": "This decision is final and cannot be undone. Sellable stock of this batch moves to quarantined and the batch can never be released."
       }

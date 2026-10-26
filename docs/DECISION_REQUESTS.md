@@ -139,6 +139,23 @@ including units quarantined for another reason, such as damage.
 
 Answer: Option A (Ahmed, 2026-10-22).
 
+**Implemented by INV-006 (2026-10-26).** In each warehouse a release moves back to SELLABLE the net
+QUARANTINED quantity of the batch's inspection-hold movements, capped at the unreserved quarantined
+balance. Inspection-hold movements are the batch's own `INSPECTION` moves and stock that entered
+QUARANTINED to await inspection: an `OPENING_BALANCE` today, PUR-002 receipts later. Everything else
+put into QUARANTINED (the LEGACY `BATCH_ASSIGNMENT` carry-over, adjustments such as damage) stays held.
+The same rule applies to every release, from PENDING_INSPECTION or QUARANTINED, so it reproduces the
+earlier PENDING_INSPECTION behaviour on all stock that exists today, and a batch quarantined before its
+first release (pending intake, then QUARANTINED, then RELEASED) gets its intake back instead of
+keeping it held for ever. Ahmed confirmed on 2026-10-26 that stock entered to await inspection counts
+as inspection-held (the strict reading, INSPECTION moves only, would have left such intake held until
+an INV-003 adjustment).
+
+Because the rule cannot tell an opening balance that awaits inspection from one held for another
+reason, an opening balance entered as QUARANTINED into a lot that is already RELEASED is refused
+(found by the INV-006 review; decided by the coordinator under Ahmed's delegation, 2026-10-26).
+Damaged units of a released lot are entered as DAMAGED, or later through an INV-003 adjustment.
+
 ## FIN — inventory costing (ADR-018, Accepted)
 
 ### DR-009 — Inventory costing method and landed cost

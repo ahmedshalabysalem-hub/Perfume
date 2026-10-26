@@ -160,11 +160,14 @@ export function BatchStatusForm({
   version,
   allowed,
   stock,
+  releasable,
 }: {
   batchId: string;
   version: number;
   allowed: Array<Exclude<BatchInspectionStatusValue, "PENDING_INSPECTION">>;
   stock: BatchStockSummary;
+  /** Quarantined units a release would move back to sellable (DR-011). */
+  releasable: number;
 }) {
   const t = useTranslations("batches");
   const common = useTranslations("common");
@@ -186,6 +189,7 @@ export function BatchStatusForm({
     });
   if (allowed.length === 0) return <p className="text-sm text-muted-foreground">{t("noDecision")}</p>;
   const decision = pendingDecision?.status as (typeof allowed)[number] | undefined;
+  const quarantined = stock.find((row) => row.status === "QUARANTINED")?.onHand ?? 0;
 
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-3" data-testid="batch-status-form">
@@ -225,6 +229,19 @@ export function BatchStatusForm({
                 ))}
               </ul>
             </div>
+          ) : null}
+          {decision === "RELEASED" && quarantined > 0 ? (
+            <ul className="grid gap-1 text-sm" data-testid="batch-release-effect">
+              <li>
+                {t("confirmDecision.releasable")}: <span className="font-medium tabular-nums">{releasable}</span>
+              </li>
+              {quarantined > releasable ? (
+                <li>
+                  {t("confirmDecision.staysHeld")}:{" "}
+                  <span className="font-medium tabular-nums">{quarantined - releasable}</span>
+                </li>
+              ) : null}
+            </ul>
           ) : null}
           {pendingDecision?.reason ? (
             <p className="text-sm">
