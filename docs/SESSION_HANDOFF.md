@@ -130,6 +130,15 @@ seed-once marker is `storage/.seeded` (already git-ignored). Docker mode is veri
 compose job; the Windows CI job covers the native PostgreSQL path. Ahmed's Word guides live in the
 project files under `windows-setup/`.
 
+## UX-000 (parallel thread, UI/UX audit — Phase 1, read-only)
+
+`docs/UI_UX_AUDIT.md` audits the back office on `7ea936b`: no P0; P1 findings are inventory status
+wording (Arabic «محجور» vs «المحجوز»), "Sellable" rows with nothing for sale and no reason, missing
+links between catalogue/stock/batches, and unconfirmed batch decisions. Baseline checks all passed
+(252 Vitest, 30 Playwright). Board tasks UX-001…UX-005 wait for the Project Director's approval of the
+direction (audit section 12); no application code changed. UX slices must not run in parallel with
+INV-006/INV-003/PUR-002 on the same inventory files.
+
 ## Context that would otherwise be lost
 
 - **Session start:** read `CLAUDE.md`, then this file, then the task's board entry. Reply to Ahmed in

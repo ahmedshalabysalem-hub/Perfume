@@ -39,7 +39,8 @@ stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `do
 
 ## In progress
 
-Nothing. All PRs (#1–#9) are merged.
+Nothing in code. UX-000 UI/UX audit (`docs/UI_UX_AUDIT.md`, read-only) awaits the Project
+Director's review; UX-001…UX-005 are on the board pending that approval.
 
 ## Pending (Phase 2, in order)
 
