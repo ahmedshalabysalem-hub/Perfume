@@ -206,15 +206,16 @@ are confirmed.
 - Batch decision: confirmation dialog naming the decision, the warehouse quantities affected (already
   on the page) and, for _Rejected_, that it is final. Server rules unchanged.
 - Batch header: inspection and sale badges next to the title.
-- Wording (F1) only after the Project Director chooses the term.
+- Wording (F1): QUARANTINED becomes «موقوف للفحص» in Arabic (decided 2026-10-26), in every
+  stock-status label and filter.
 
 Acceptance: no service rule changes; unit test for the tone/reason mapping; e2e for the confirmation and
 the links; lint, typecheck, tests, build, e2e; screenshots in both languages and at phone width.
 
 ## 12. Items for Project Director approval
 
-1. **Arabic term for QUARANTINED** (F1). Options: «معزول»; «موقوف (فحص)»; «في الحجر» — keep
-   «محجوز للطلبات» for reserved. The English stays "Quarantined".
+1. **Arabic term for QUARANTINED** (F1) — **Decided by Ahmed, 2026-10-26: «موقوف للفحص»** (chosen
+   over «معزول» and «في الحجر»). «المحجوز للطلبات» stays for reserved; the English stays "Quarantined".
 2. **Dashboard inventory widgets** (F6): add counts of batches pending inspection, expiring within the
    configured window, and expired with stock — read-only queries, linked to existing filters.
 3. **Direction and order** of sections 5 and 10, and that UX-001 starts now and must finish before
