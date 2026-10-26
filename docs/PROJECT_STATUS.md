@@ -1,10 +1,10 @@
 # Project status
 
-_Last updated: 2026-10-22 — end of session 4 (complete handoff; INV-002 merged)_
+_Last updated: 2026-10-26 — INV-006 in review (UX-000/UX-001 merged as PR #13)_
 
 **Phase:** 2 — Inventory and suppliers, in progress. Phase 1 done (OPS-001 validated 2026-10-22).
-**Next task:** **INV-006** (DR-011 decided as Option A: a release restores only inspection-held
-stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `docs/SESSION_HANDOFF.md`. No open PRs.
+**Next task:** merge **INV-006** (DR-011 Option A: a release restores only inspection-held stock),
+then **PUR-002** (spec first) or INV-003. Details and prerequisites: `docs/SESSION_HANDOFF.md`.
 
 ## Completed
 
@@ -39,12 +39,14 @@ stock), then **PUR-002** (spec first) or INV-003. Details and prerequisites: `do
 
 ## In progress
 
-UX-000 audit (`docs/UI_UX_AUDIT.md`) and UX-001 inventory status clarity are in review in one PR;
-INV-006 starts after it merges. UX-002…UX-005 are Backlog.
+**INV-006** (DR-011, Option A) is in review: a release moves back to sellable, per warehouse, only the
+batch's inspection-held quarantined units (its `INSPECTION` moves and stock entered to await
+inspection); damage and the LEGACY carry-over stay held. The release confirmation shows both counts.
+UX-000 and UX-001 merged as PR #13 (`111f65b`); UX-002…UX-005 are Backlog.
 
 ## Pending (Phase 2, in order)
 
-INV-006 (DR-011) → PUR-002 purchase orders and INV-003 adjustments/counts/transfers → INV-004
+PUR-002 purchase orders and INV-003 adjustments/counts/transfers → INV-004
 reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Blockers and open decisions
@@ -57,8 +59,9 @@ reservations, INV-005 alerts and scanning. Later phases: `docs/IMPLEMENTATION_PL
   implemented for e-invoicing, payments or shipping integrations.
 - **Test gaps:** no Critical; High G1–G2 (sign-in rate limiting, image upload) tracked as QA-003 in
   `docs/TEST_PLAN.md`; G3 and G4 closed by INV-002.
-- **DR-011 decided (Option A, Ahmed, 2026-10-22), not yet implemented:** releasing a QUARANTINED batch
-  still restores all of its quarantined stock, including damaged units, until INV-006 lands.
+- **DR-011 (Option A) implemented by INV-006, in review.** Counting stock entered to await inspection
+  (opening balances, later receipts) as inspection-held was put to Ahmed for confirmation on
+  2026-10-26; without it, a batch quarantined before its first release would keep that stock held.
 - **Repository:** the default branch is still named `ccr-04855f0a-4t6vb0`; renaming is the owner's call.
 
 ## Verification evidence
