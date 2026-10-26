@@ -27,6 +27,11 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
 
+    # A folder name with a space, like "E:\AI Projects\Perfume", must work.
+    defaults:
+      run:
+        working-directory: AI Projects/Perfume
+
     env:
       PERFUME_CI: "1"
       # Throw-away demo password for this job only, so the seed does not print a generated one.
@@ -35,11 +40,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          path: AI Projects/Perfume
 
       - uses: actions/setup-node@v5
         with:
-          node-version-file: .nvmrc
+          node-version-file: AI Projects/Perfume/.nvmrc
           cache: npm
+          cache-dependency-path: AI Projects/Perfume/package-lock.json
 
       - name: Start PostgreSQL and create the project role (guide step 6)
         env:
@@ -65,6 +73,7 @@ jobs:
           }
           if ((Invoke-WebRequest "http://localhost:3000/ar/login" -UseBasicParsing -TimeoutSec 120).StatusCode -ne 200) { throw "/ar/login did not return 200" }
           if (-not (Test-Path "storage\.seeded")) { throw "seed marker missing" }
+          if (-not (Test-Path ".next\.perfume-root")) { throw "build-cache marker missing" }
           if ((Get-Content ".env" -Raw) -notmatch '(?m)^BETTER_AUTH_SECRET="[^"]{32,}"') { throw "BETTER_AUTH_SECRET was not generated" }
 
       - name: Stop

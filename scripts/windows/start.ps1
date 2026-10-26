@@ -84,6 +84,16 @@ if (-not (Test-Path $installed) -or ((Get-Item "package-lock.json").LastWriteTim
   if ($LASTEXITCODE -ne 0) { Fail "npm ci failed. Read the messages above." }
 }
 
+# A moved project folder leaves old absolute paths in the .next build cache: clear it once.
+$nextDir = Join-Path $Root ".next"
+$rootMarker = Join-Path $nextDir ".perfume-root"
+if ((Test-Path $nextDir) -and (-not (Test-Path $rootMarker) -or (Get-Content $rootMarker -Raw).Trim() -ne $Root)) {
+  Say "Clearing the old build cache (.next)..."
+  Remove-Item -Recurse -Force $nextDir
+}
+New-Item -ItemType Directory -Force -Path $nextDir | Out-Null
+Set-Content -Path $rootMarker -Value $Root -Encoding utf8
+
 # 5. Migrations (applies only pending ones).
 Say "Updating the database tables..."
 npm.cmd run db:deploy
