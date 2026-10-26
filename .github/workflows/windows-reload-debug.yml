@@ -38,7 +38,9 @@ jobs:
           Start-Service -Name $svc.Name
           & "$env:PGBIN\psql.exe" -c "CREATE ROLE perfume LOGIN CREATEDB PASSWORD 'perfume_dev_password';"
           & "$env:PGBIN\createdb.exe" -O perfume perfume_dev
-      - name: Start site
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Start site and probe
         run: |
           Start-Process cmd.exe -ArgumentList "/c", "scripts\windows\start.cmd" -RedirectStandardOutput start.log -RedirectStandardError start.err -NoNewWindow
           $deadline = (Get-Date).AddMinutes(15)
@@ -49,10 +51,6 @@ jobs:
           }
           Invoke-WebRequest "http://localhost:3000/en" -UseBasicParsing -TimeoutSec 180 | Out-Null
           Invoke-WebRequest "http://localhost:3000/ar/login" -UseBasicParsing -TimeoutSec 180 | Out-Null
-      - name: Install Chromium
-        run: npx playwright install chromium
-      - name: Probe with a file watcher
-        run: |
           $root = (Get-Location).Path
           $w = New-Object System.IO.FileSystemWatcher $root
           $w.IncludeSubdirectories = $true
