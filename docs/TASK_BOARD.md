@@ -8,55 +8,55 @@ next: INV-006 (DR-011 decided: Option A), then PUR-002 spec (or INV-003) — see
 
 ## Open tasks
 
-| ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                                            |
-| --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | --------------------------------------------------------------------- |
-| INV-006   | Release restores only inspection-held stock (DR-011)         | 2     | Backlog | P1               | INV-002                                                               |
-| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001, INV-006                                    |
-| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002, INV-006                                    |
-| QA-003    | Close the High gaps of the 2026-10-22 test plan (G1, G2)     | 2     | Backlog | P1               | — (G3, G4 closed by INV-002)                                          |
-| INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                                               |
-| INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                                               |
-| CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                                              |
-| PRC-001   | Tax rates and price calculation                              | 3     | Backlog | P2               | CAT-001                                                               |
-| SHIP-001  | Shipping zones, methods and fees                             | 3     | Backlog | P2               | ORG-001                                                               |
-| ORD-001   | Cart, checkout and order creation with reservation           | 3     | Backlog | P2               | INV-004, CUST-001, PRC-001, SHIP-001                                  |
-| ORD-002   | Order lifecycle administration and notifications             | 3     | Backlog | P2               | ORD-001                                                               |
-| STORE-002 | Seller identification and legal pages per market             | 3     | Backlog | P2               | ORG-001                                                               |
-| PAY-001   | Payment adapters (manual/mock), COD, bank transfer, webhooks | 4     | Backlog | P3               | ORD-001                                                               |
-| PAY-002   | Online payment provider integration per market               | 4     | Blocked | P3               | PAY-001; provider choice and credentials                              |
-| SHIP-002  | Carrier abstraction, shipments and tracking                  | 4     | Backlog | P3               | ORD-002                                                               |
-| RET-001   | Returns, dispositions and refunds                            | 4     | Backlog | P3               | PAY-001, SHIP-002                                                     |
-| POS-001   | POS foundations: lookup, scan, sale, tender, receipt         | 4     | Backlog | P3               | INV-004, PRC-001, PAY-001                                             |
-| INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog | P3               | ORD-001, POS-001                                                      |
-| EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding                             |
-| EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog | P0 for EG sales  | INVC-001; live use needs ETA registration                             |
-| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog | P3               | ADR-018 (dev), INVC-001, PUR-002                                      |
-| FIN-002   | Expense categories and expenses                              | 5     | Backlog | P3               | FIN-001                                                               |
-| FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog | P3               | FIN-001                                                               |
-| PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog | P3               | PUR-002, FIN-001                                                      |
-| CRM-001   | Segmentation and support notes                               | 6     | Backlog | P3               | CUST-001                                                              |
-| LOY-001   | Loyalty ledger                                               | 6     | Backlog | P3               | ORD-001, RET-001                                                      |
-| MKT-001   | Coupons and promotions                                       | 6     | Backlog | P3               | PRC-001, ORD-001                                                      |
-| REV-001   | Product reviews and moderation                               | 6     | Backlog | P3               | CUST-001                                                              |
-| POS-002   | Cashier sessions, drawer reconciliation, sales channels      | 6     | Backlog | P3               | POS-001                                                               |
-| SETL-001  | COD and supplier settlement workflows                        | 6     | Backlog | P3               | PAY-001, PUR-003                                                      |
-| RPT-001   | Operational and financial dashboards and reports             | 7     | Backlog | P3               | FIN-003                                                               |
-| AUD-002   | Audit retention settings and export                          | 7     | Backlog | P3               | AUD-001                                                               |
-| INT-001   | Integration API, business events, webhooks (n8n)             | 7     | Backlog | P3               | ORD-001                                                               |
-| AI-001    | AI-assisted features behind business rules                   | 7     | Backlog | P3               | INT-001                                                               |
-| REL-001   | Release verification suite                                   | 8     | Backlog | P0               | release scope                                                         |
-| SEC-003   | Pre-release security review                                  | 8     | Backlog | P0               | release scope                                                         |
-| OPS-003   | Production hosting, backups, observability                   | 8     | Backlog | P0               | OPS-002                                                               |
-| CAT-002   | Refuse GS1 demo-range barcodes in production                 | —     | Backlog | P2               | —                                                                     |
-| CAT-003   | Product import/export with validation                        | —     | Backlog | P2               | CAT-001                                                               |
-| OPS-002   | S3-compatible storage adapter                                | —     | Backlog | P2               | —                                                                     |
-| SEC-002   | Multi-factor authentication for staff                        | —     | Backlog | P2               | —                                                                     |
-| SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog | P3               | upstream fix                                                          |
-| UX-001    | Inventory status clarity (audit F1–F5)                       | —     | Backlog | P1               | Director approval of `docs/UI_UX_AUDIT.md`; not parallel with INV-006 |
-| UX-002    | Design tokens, status tones and form accessibility (F8–F17)  | —     | Backlog | P2               | UX-001; lands alone (touches every page)                              |
-| UX-003    | Breadcrumbs, loading states, toast placement (F3, F10–F14)   | —     | Backlog | P2               | UX-002                                                                |
-| UX-004    | Dashboard inventory queues and readable activity (F6, F7)    | —     | Backlog | P2               | Director approval                                                     |
-| UX-005    | Phone tables and catalogue polish (F13, F15, F18–F22)        | —     | Backlog | P3               | UX-002                                                                |
+| ID        | Title                                                        | Phase | Status  | Pri              | Depends on                                |
+| --------- | ------------------------------------------------------------ | ----- | ------- | ---------------- | ----------------------------------------- |
+| INV-006   | Release restores only inspection-held stock (DR-011)         | 2     | Backlog | P1               | INV-002                                   |
+| PUR-002   | Purchase orders, approvals and goods receipts                | 2     | Backlog | P1               | INV-002, PUR-001, APR-001, INV-006        |
+| INV-003   | Adjustments (approved), stock counts and transfers           | 2     | Backlog | P1               | INV-001, APR-001, INV-002, INV-006        |
+| QA-003    | Close the High gaps of the 2026-10-22 test plan (G1, G2)     | 2     | Backlog | P1               | — (G3, G4 closed by INV-002)              |
+| INV-004   | Stock reservations                                           | 2     | Backlog | P1               | INV-001                                   |
+| INV-005   | Reorder thresholds, low-stock/expiry alerts, scanning flows  | 2     | Backlog | P1               | INV-002                                   |
+| CUST-001  | Customer accounts, addresses, consent, data requests         | 3     | Backlog | P2               | AUTH-001                                  |
+| PRC-001   | Tax rates and price calculation                              | 3     | Backlog | P2               | CAT-001                                   |
+| SHIP-001  | Shipping zones, methods and fees                             | 3     | Backlog | P2               | ORG-001                                   |
+| ORD-001   | Cart, checkout and order creation with reservation           | 3     | Backlog | P2               | INV-004, CUST-001, PRC-001, SHIP-001      |
+| ORD-002   | Order lifecycle administration and notifications             | 3     | Backlog | P2               | ORD-001                                   |
+| STORE-002 | Seller identification and legal pages per market             | 3     | Backlog | P2               | ORG-001                                   |
+| PAY-001   | Payment adapters (manual/mock), COD, bank transfer, webhooks | 4     | Backlog | P3               | ORD-001                                   |
+| PAY-002   | Online payment provider integration per market               | 4     | Blocked | P3               | PAY-001; provider choice and credentials  |
+| SHIP-002  | Carrier abstraction, shipments and tracking                  | 4     | Backlog | P3               | ORD-002                                   |
+| RET-001   | Returns, dispositions and refunds                            | 4     | Backlog | P3               | PAY-001, SHIP-002                         |
+| POS-001   | POS foundations: lookup, scan, sale, tender, receipt         | 4     | Backlog | P3               | INV-004, PRC-001, PAY-001                 |
+| INVC-001  | Invoices, credit notes, sequences, tax profiles              | 5     | Backlog | P3               | ORD-001, POS-001                          |
+| EINV-001  | ZATCA e-invoicing adapter and checklist                      | 5     | Backlog | P0 for KSA sales | INVC-001; live use needs ZATCA onboarding |
+| EINV-002  | ETA e-invoice and e-receipt adapter and checklist            | 5     | Backlog | P0 for EG sales  | INVC-001; live use needs ETA registration |
+| FIN-001   | Chart of accounts, periods, journal entries                  | 5     | Backlog | P3               | ADR-018 (dev), INVC-001, PUR-002          |
+| FIN-002   | Expense categories and expenses                              | 5     | Backlog | P3               | FIN-001                                   |
+| FIN-003   | Inventory cost, COGS and basic financial reports             | 5     | Backlog | P3               | FIN-001                                   |
+| PUR-003   | Supplier invoices, returns, payments and balances            | 5     | Backlog | P3               | PUR-002, FIN-001                          |
+| CRM-001   | Segmentation and support notes                               | 6     | Backlog | P3               | CUST-001                                  |
+| LOY-001   | Loyalty ledger                                               | 6     | Backlog | P3               | ORD-001, RET-001                          |
+| MKT-001   | Coupons and promotions                                       | 6     | Backlog | P3               | PRC-001, ORD-001                          |
+| REV-001   | Product reviews and moderation                               | 6     | Backlog | P3               | CUST-001                                  |
+| POS-002   | Cashier sessions, drawer reconciliation, sales channels      | 6     | Backlog | P3               | POS-001                                   |
+| SETL-001  | COD and supplier settlement workflows                        | 6     | Backlog | P3               | PAY-001, PUR-003                          |
+| RPT-001   | Operational and financial dashboards and reports             | 7     | Backlog | P3               | FIN-003                                   |
+| AUD-002   | Audit retention settings and export                          | 7     | Backlog | P3               | AUD-001                                   |
+| INT-001   | Integration API, business events, webhooks (n8n)             | 7     | Backlog | P3               | ORD-001                                   |
+| AI-001    | AI-assisted features behind business rules                   | 7     | Backlog | P3               | INT-001                                   |
+| REL-001   | Release verification suite                                   | 8     | Backlog | P0               | release scope                             |
+| SEC-003   | Pre-release security review                                  | 8     | Backlog | P0               | release scope                             |
+| OPS-003   | Production hosting, backups, observability                   | 8     | Backlog | P0               | OPS-002                                   |
+| CAT-002   | Refuse GS1 demo-range barcodes in production                 | —     | Backlog | P2               | —                                         |
+| CAT-003   | Product import/export with validation                        | —     | Backlog | P2               | CAT-001                                   |
+| OPS-002   | S3-compatible storage adapter                                | —     | Backlog | P2               | —                                         |
+| SEC-002   | Multi-factor authentication for staff                        | —     | Backlog | P2               | —                                         |
+| SEC-001   | Dev-dependency audit follow-up                               | —     | Backlog | P3               | upstream fix                              |
+| UX-001    | Inventory status clarity (audit F1–F5)                       | —     | Backlog | P1               | Director approval; not with INV-006       |
+| UX-002    | Design tokens, status tones and form accessibility (F8–F17)  | —     | Backlog | P2               | UX-001; lands alone (every page)          |
+| UX-003    | Breadcrumbs, loading states, toast placement (F3, F10–F14)   | —     | Backlog | P2               | UX-002                                    |
+| UX-004    | Dashboard inventory queues and readable activity (F6, F7)    | —     | Backlog | P2               | Director approval                         |
+| UX-005    | Phone tables and catalogue polish (F13, F15, F18–F22)        | —     | Backlog | P3               | UX-002                                    |
 
 ## Done
 
