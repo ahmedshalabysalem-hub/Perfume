@@ -228,6 +228,16 @@ test.describe("inventory", () => {
     await confirm.getByRole("button", { name: "Cancel" }).click();
     await expect(confirm).toHaveCount(0);
     await expect(page.getByTestId("batch-inspection")).toContainText("Pending inspection");
+    // Reopened while the last one is still closing, the confirmation stays above its backdrop.
+    for (const delay of [0, 100, 140, 160, 180, 200]) {
+      await page.getByTestId("batch-status-submit").click();
+      await confirm.getByRole("button", { name: "Cancel" }).click();
+      await page.waitForTimeout(delay);
+      await page.getByTestId("batch-status-submit").click();
+      await confirm.getByTestId("batch-decision-confirm-apply").click({ trial: true, timeout: 3000 });
+      await confirm.getByRole("button", { name: "Cancel" }).click();
+      await expect(confirm).toHaveCount(0);
+    }
 
     // Arabic: the quarantine status reads «موقوفة للفحص», never «محجور».
     await open(page, "/ar/admin/inventory/batches?status=QUARANTINED");

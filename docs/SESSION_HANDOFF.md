@@ -182,6 +182,9 @@ project files under `windows-setup/`.
     reset script must do the same.
 - **Approval effects** are applied by the consuming module inside the same transaction (ADR-019); there
   is no generic approvals inbox.
+- **Dialog pitfall (fixed in INV-006):** Radix renders a dialog's overlay and content as separate
+  portals, so reopening a dialog while the last one is closing can append the overlay after the
+  content. Dialog content therefore sits at `z-[51]`, above its `z-50` overlay; keep it that way.
 - **CHECK pitfall:** a CHECK written as `col = 'X' AND n BETWEEN …` passes when `n` is NULL; write
   `IS NOT NULL` explicitly.
 - **Workflow:**
@@ -197,6 +200,6 @@ On branch `claude/project-thread-ye4et1`, run locally:
 - lint, typecheck and Prettier;
 - `npm test`: 21 files, 258 tests (`batches.test.ts` 36, of which 6 new; four of them fail on the
   previous code);
-- `npm run test:e2e` (includes `npm run build`): 31 tests.
+- `npm run test:e2e` (includes `npm run build`): 31 tests, after the dialog fix below.
 
 CI and the independent review are recorded on PR #14.
