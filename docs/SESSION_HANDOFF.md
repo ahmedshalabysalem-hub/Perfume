@@ -122,6 +122,14 @@ the choice is saved on the account. Known limits, not changed here: native date 
 browser's own placeholder (`mm/dd/yyyy`); stored audit summaries stay in the language they were
 written in (English); timestamps display in `APP_TIME_ZONE` (Riyadh) for Egyptian records too.
 
+## OPS-004 (parallel thread, Windows start scripts)
+
+`scripts/windows/start.cmd` and `stop.cmd` (logic in the `.ps1` files beside them, ASCII-only for
+Windows PowerShell 5.1, CRLF via `.gitattributes`) let Ahmed start the site with a double-click. The
+seed-once marker is `storage/.seeded` (already git-ignored). Docker mode is verified only by the Linux
+compose job; the Windows CI job covers the native PostgreSQL path. Ahmed's Word guides live in the
+project files under `windows-setup/`.
+
 ## Context that would otherwise be lost
 
 - **Session start:** read `CLAUDE.md`, then this file, then the task's board entry. Reply to Ahmed in

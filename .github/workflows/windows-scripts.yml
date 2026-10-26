@@ -1,0 +1,107 @@
+name: Windows start scripts
+
+# Runs scripts/windows/start.cmd and stop.cmd on a real Windows machine against the runner's
+# preinstalled PostgreSQL (the "native" database path). Docker mode cannot run here: Windows
+# runners only offer Windows containers.
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "scripts/windows/**"
+      - ".github/workflows/windows-scripts.yml"
+  pull_request:
+    paths:
+      - "scripts/windows/**"
+      - ".github/workflows/windows-scripts.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-scripts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  start-stop:
+    name: start.cmd / stop.cmd on Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    # A folder name with a space, like "E:\AI Projects\Perfume", must work.
+    defaults:
+      run:
+        working-directory: AI Projects/Perfume
+
+    env:
+      PERFUME_CI: "1"
+      # Throw-away demo password for this job only, so the seed does not print a generated one.
+      SEED_ADMIN_PASSWORD: ci-only-demo-pass-7391
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: AI Projects/Perfume
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: AI Projects/Perfume/.nvmrc
+          cache: npm
+          cache-dependency-path: AI Projects/Perfume/package-lock.json
+
+      - name: Start PostgreSQL and create the project role (guide step 6)
+        env:
+          # Credentials of the runner image's own PostgreSQL.
+          PGUSER: postgres
+          PGPASSWORD: root
+        run: |
+          $svc = Get-Service -Name "postgresql*" | Select-Object -First 1
+          Set-Service -Name $svc.Name -StartupType Manual
+          Start-Service -Name $svc.Name
+          & "$env:PGBIN\psql.exe" -c "CREATE ROLE perfume LOGIN CREATEDB PASSWORD 'perfume_dev_password';"
+          & "$env:PGBIN\createdb.exe" -O perfume perfume_dev
+
+      - name: First start (creates .env, installs, migrates, seeds, serves)
+        run: |
+          $p = Start-Process cmd.exe -ArgumentList "/c", "scripts\windows\start.cmd" -RedirectStandardOutput start1.log -RedirectStandardError start1.err -PassThru -NoNewWindow
+          $deadline = (Get-Date).AddMinutes(15)
+          while ($true) {
+            try { if ((Invoke-WebRequest "http://localhost:3000/api/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200) { break } } catch {}
+            if ($p.HasExited) { throw "start.cmd exited before the site answered" }
+            if ((Get-Date) -gt $deadline) { throw "the site did not answer within 15 minutes" }
+            Start-Sleep -Seconds 5
+          }
+          if ((Invoke-WebRequest "http://localhost:3000/ar/login" -UseBasicParsing -TimeoutSec 120).StatusCode -ne 200) { throw "/ar/login did not return 200" }
+          if (-not (Test-Path "storage\.seeded")) { throw "seed marker missing" }
+          if (-not (Test-Path ".next\.perfume-root")) { throw "build-cache marker missing" }
+          if ((Get-Content ".env" -Raw) -notmatch '(?m)^BETTER_AUTH_SECRET="[^"]{32,}"') { throw "BETTER_AUTH_SECRET was not generated" }
+
+      - name: Stop
+        run: |
+          cmd.exe /c "scripts\windows\stop.cmd"
+          Start-Sleep -Seconds 5
+          if (Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue) { throw "port 3000 is still in use" }
+
+      - name: Second start (skips install and seed) and stop
+        run: |
+          $p = Start-Process cmd.exe -ArgumentList "/c", "scripts\windows\start.cmd" -RedirectStandardOutput start2.log -RedirectStandardError start2.err -PassThru -NoNewWindow
+          $deadline = (Get-Date).AddMinutes(5)
+          while ($true) {
+            try { if ((Invoke-WebRequest "http://localhost:3000/api/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200) { break } } catch {}
+            if ($p.HasExited) { throw "start.cmd exited before the site answered" }
+            if ((Get-Date) -gt $deadline) { throw "the site did not answer within 5 minutes" }
+            Start-Sleep -Seconds 3
+          }
+          $log = Get-Content start2.log -Raw
+          if ($log -match "Installing dependencies") { throw "second start reinstalled dependencies" }
+          if ($log -match "Adding demo data") { throw "second start re-ran the seed" }
+          cmd.exe /c "scripts\windows\stop.cmd"
+          Start-Sleep -Seconds 5
+          if (Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue) { throw "port 3000 is still in use" }
+
+      - name: Script output
+        if: always()
+        run: |
+          foreach ($f in "start1.log", "start1.err", "start2.log", "start2.err") {
+            if (Test-Path $f) { Write-Host "----- $f -----"; Get-Content $f }
+          }
