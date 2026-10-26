@@ -50,6 +50,17 @@ npm run dev                                # http://localhost:3000 → /ar or /e
 
 Staff sign-in: `http://localhost:3000/en/login` (or `/ar/login`).
 
+### Windows: one-click start
+
+After the first-time setup (Node.js 22, and either Docker Desktop or PostgreSQL 16 with the `perfume`
+role and `perfume_dev` database), double-click `scripts\windows\start.cmd`. It detects the database
+(Docker Desktop or the PostgreSQL Windows service; `PERFUME_DB=docker|native` overrides), creates
+`.env` and its `BETTER_AUTH_SECRET` if missing (never printed), runs `npm ci` only when
+`package-lock.json` changed, applies pending migrations, seeds on the first run only, starts
+`npm run dev` and opens `http://localhost:3000`. `scripts\windows\stop.cmd` stops the server and the
+Docker database container (data kept). The CI workflow "Windows start scripts" runs both on Windows
+against a native PostgreSQL.
+
 > Both database paths are verified: `docker-compose.yml` was run on 2026-10-22 (OPS-001) and CI starts it
 > on every push (job "Docker Compose database"). The init script only runs on an empty data volume.
 
