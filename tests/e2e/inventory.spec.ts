@@ -53,6 +53,10 @@ async function decide(page: Page, label: string, reason: string) {
   await form.locator("[data-field=status]").selectOption({ label });
   await form.locator("[data-field=reason]").fill(reason);
   await page.getByTestId("batch-status-submit").click();
+  // Nothing is applied until the confirmation that names the decision.
+  const confirm = page.getByTestId("batch-decision-confirm");
+  await expect(confirm).toContainText(`Confirm: ${label}`);
+  await confirm.getByTestId("batch-decision-confirm-apply").click();
   await expect(page.getByText("Decision recorded.")).toBeVisible();
 }
 
@@ -157,6 +161,7 @@ test.describe("inventory", () => {
     await status.locator("[data-field=status]").selectOption({ label: "Release for sale" });
     await status.locator("[data-field=reason]").fill("Looks fine");
     await page.getByTestId("batch-status-submit").click();
+    await page.getByTestId("batch-decision-confirm-apply").click();
     await expect(page.getByText("Record a passing verification before releasing this batch.")).toBeVisible();
 
     const verify = page.getByTestId("batch-verify-form");
@@ -178,6 +183,54 @@ test.describe("inventory", () => {
     await open(page, "/ar/admin/inventory/batches?q=QA-ROI-50");
     await expect(page.getByRole("heading", { name: "التشغيلات والصلاحية" })).toBeVisible();
     await expect(page.locator("[data-testid=batch-row][data-sku=QA-ROI-50]").first()).toContainText("قابل للبيع");
+  });
+
+  test("stock and batch screens say why stock is not for sale, link to each other and confirm decisions", async ({
+    page,
+  }) => {
+    // Carried-over stock: SELLABLE units of a LEGACY batch that is not yet released.
+    await seedLegacyStock("QA-TRE-30", "SA-RUH-WH1", 3);
+    await signIn(page, USERS.admin);
+
+    // The list gives the reason next to the zero, from the shared eligibility rule.
+    await open(page, "/en/admin/inventory/stock?q=QA-TRE-30");
+    const row = page.locator("[data-testid=stock-row][data-sku=QA-TRE-30]").first();
+    await expect(row.getByTestId("stock-available-for-sale")).toContainText("0");
+    await expect(row.getByTestId("stock-ineligible-reason")).toHaveAttribute("data-reason", "NOT_RELEASED");
+    await expect(row.getByTestId("stock-ineligible-reason")).toHaveText("Not released");
+
+    // Stock of the variant → product → stock again, and → its batches.
+    await row.getByRole("link").first().click();
+    await page.waitForLoadState("networkidle");
+    await page.getByTestId("variant-stock-product-link").click();
+    await page.waitForLoadState("networkidle");
+    await page.getByTestId("tab-variants").click();
+    await page.getByTestId("variant-stock-QA-TRE-30").click();
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("variant-balance-row").first()).toBeVisible();
+    await page.getByTestId("variant-batches-link").click();
+    await page.waitForLoadState("networkidle");
+    await page.locator("[data-testid=batch-row][data-sku=QA-TRE-30]").first().getByRole("link").click();
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("batch-header-status")).toContainText("Not released");
+    await expect(page.getByTestId("batch-variant-stock-link")).toBeVisible();
+    await expect(page.getByTestId("batch-product-link")).toBeVisible();
+
+    // Cancelling the confirmation changes nothing.
+    const status = page.getByTestId("batch-status-form");
+    await status.locator("[data-field=status]").selectOption({ label: "Reject (final)" });
+    await status.locator("[data-field=reason]").fill("Wrong supplier");
+    await page.getByTestId("batch-status-submit").click();
+    const confirm = page.getByTestId("batch-decision-confirm");
+    await expect(confirm).toContainText("This decision is final and cannot be undone.");
+    await confirm.getByRole("button", { name: "Cancel" }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(page.getByTestId("batch-inspection")).toContainText("Pending inspection");
+
+    // Arabic: the quarantine status reads «موقوفة للفحص», never «محجور».
+    await open(page, "/ar/admin/inventory/batches?status=QUARANTINED");
+    await expect(page.locator("select[name=status]")).toContainText("موقوفة للفحص");
+    await expect(page.locator("main")).not.toContainText("محجور");
   });
 
   test("stock pages follow inventory permissions", async ({ page }) => {

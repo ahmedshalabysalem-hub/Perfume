@@ -1,3 +1,4 @@
+import { ArrowLeft, PackageCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -14,6 +15,7 @@ import { localized } from "@/lib/utils";
 import { getAdminPageActor } from "@/server/auth/page-guard";
 import { getRequestMeta } from "@/server/context";
 import { getVariantStock, listStockWarehouses } from "@/server/modules/inventory/stock.service";
+import { can } from "@/server/rbac/authorize";
 import { isUuid } from "@/server/validation";
 import { LotLabel } from "../../batches/batch-badges";
 import { StockStatusBadge, VariantName } from "../../stock-status-badge";
@@ -58,6 +60,7 @@ export default async function VariantStockPage({
   const typeLabels = await getTranslations("movementType");
   const eligibilityLabels = await getTranslations("batches.ineligible");
   const format = await getFormatter();
+  const canViewProducts = can(actor, "products.view");
   const { variant, query } = stock;
   const pathname = `/admin/inventory/stock/${variant.id}`;
 
@@ -67,15 +70,36 @@ export default async function VariantStockPage({
         title={t("variantTitle", { sku: variant.sku })}
         description={
           <>
-            {localized(locale, variant.product.nameAr, variant.product.nameEn)}
+            {canViewProducts ? (
+              <Link
+                href={`/admin/catalog/products/${variant.product.id}`}
+                className="underline-offset-4 hover:underline"
+                data-testid="variant-stock-product-link"
+              >
+                {localized(locale, variant.product.nameAr, variant.product.nameEn)}
+              </Link>
+            ) : (
+              localized(locale, variant.product.nameAr, variant.product.nameEn)
+            )}
             {" · "}
             <VariantName locale={locale} variant={variant} />
           </>
         }
         actions={
-          <Link href="/admin/inventory/stock" className={buttonVariants({ variant: "outline" })}>
-            {t("title")}
-          </Link>
+          <>
+            <Link href="/admin/inventory/stock" className={buttonVariants({ variant: "outline" })}>
+              <ArrowLeft className="rtl:rotate-180" aria-hidden="true" /> {t("title")}
+            </Link>
+            {variant.trackBatches ? (
+              <Link
+                href={{ pathname: "/admin/inventory/batches", query: { q: variant.sku } }}
+                className={buttonVariants({ variant: "outline" })}
+                data-testid="variant-batches-link"
+              >
+                <PackageCheck aria-hidden="true" /> {t("batchesLink")}
+              </Link>
+            ) : null}
+          </>
         }
       />
       {!variant.trackInventory ? (

@@ -808,7 +808,7 @@ export async function getBatch(ctx: ServiceContext, rawId: string) {
           nameEn: true,
           nameAr: true,
           trackExpiry: true,
-          product: { select: { nameEn: true, nameAr: true } },
+          product: { select: { id: true, nameEn: true, nameAr: true } },
         },
       },
       supplier: { select: { id: true, code: true, nameEn: true, nameAr: true } },

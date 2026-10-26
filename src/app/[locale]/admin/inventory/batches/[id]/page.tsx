@@ -1,3 +1,4 @@
+import { ArrowLeft, Boxes } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -14,6 +15,7 @@ import { getAdminPageActor } from "@/server/auth/page-guard";
 import { getRequestMeta } from "@/server/context";
 import { db } from "@/server/db";
 import { getBatch } from "@/server/modules/inventory/batches.service";
+import { can } from "@/server/rbac/authorize";
 import { isUuid } from "@/server/validation";
 import { StockStatusBadge } from "../../stock-status-badge";
 import { EligibilityBadge, ExpiryText, InspectionBadge, LotLabel } from "../batch-badges";
@@ -41,6 +43,11 @@ export default async function BatchPage({ params }: PageProps<"/[locale]/admin/i
   const inventory = await getTranslations("inventory");
   const typeLabels = await getTranslations("movementType");
   const format = await getFormatter();
+  const canViewProducts = can(actor, "products.view", "any");
+  const stockByStatus = [...new Set(result.balances.map((balance) => balance.status))].map((status) => ({
+    status,
+    onHand: result.balances.filter((balance) => balance.status === status).reduce((sum, b) => sum + b.onHand, 0),
+  }));
   const suppliers = result.canManage
     ? await db.supplier.findMany({
         where: { legalEntity: { code: batch.legalEntity.code } },
@@ -89,18 +96,45 @@ export default async function BatchPage({ params }: PageProps<"/[locale]/admin/i
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title={t("detailHeading", { sku: variant.sku })}
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            {t("detailHeading", { sku: variant.sku })}
+            <span className="flex flex-wrap gap-1.5" data-testid="batch-header-status">
+              <InspectionBadge status={batch.inspectionStatus} />
+              <EligibilityBadge eligibility={batch.eligibility} />
+            </span>
+          </span>
+        }
         description={
           <>
-            {localized(locale, variant.product.nameAr, variant.product.nameEn)}
+            {canViewProducts ? (
+              <Link
+                href={`/admin/catalog/products/${variant.product.id}`}
+                className="underline-offset-4 hover:underline"
+                data-testid="batch-product-link"
+              >
+                {localized(locale, variant.product.nameAr, variant.product.nameEn)}
+              </Link>
+            ) : (
+              localized(locale, variant.product.nameAr, variant.product.nameEn)
+            )}
             {" · "}
             <LotLabel lotNumber={batch.lotNumber} isLegacy={batch.isLegacy} />
           </>
         }
         actions={
-          <Link href="/admin/inventory/batches" className={buttonVariants({ variant: "outline" })}>
-            {t("title")}
-          </Link>
+          <>
+            <Link href="/admin/inventory/batches" className={buttonVariants({ variant: "outline" })}>
+              <ArrowLeft className="rtl:rotate-180" aria-hidden="true" /> {t("title")}
+            </Link>
+            <Link
+              href={`/admin/inventory/stock/${variant.id}`}
+              className={buttonVariants({ variant: "outline" })}
+              data-testid="batch-variant-stock-link"
+            >
+              <Boxes aria-hidden="true" /> {inventory("variantStockLink")}
+            </Link>
+          </>
         }
       />
       {batch.isLegacy && batch.verificationResult === "NONE" ? (
@@ -249,6 +283,7 @@ export default async function BatchPage({ params }: PageProps<"/[locale]/admin/i
                 allowed={INSPECTION_TRANSITIONS[batch.inspectionStatus].filter(
                   (s): s is "RELEASED" | "QUARANTINED" | "REJECTED" => s !== "PENDING_INSPECTION",
                 )}
+                stock={stockByStatus}
               />
             </CardContent>
           </Card>

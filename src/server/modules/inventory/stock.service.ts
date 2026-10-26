@@ -80,6 +80,8 @@ export type StockRow = {
   available: number;
   /** Units that may be sold now: SELLABLE, unreserved, of an eligible batch (ADR-023). */
   availableForSale: number;
+  /** Why SELLABLE units of this batch cannot be sold now; null when they can or the status says it. */
+  ineligibleReason: "NOT_RELEASED" | "EXPIRED" | "EXPIRY_UNVERIFIED" | null;
   batch: { id: string; lotNumber: string | null; isLegacy: boolean } | null;
   variant: {
     id: string;
@@ -154,36 +156,44 @@ export async function listStock(ctx: ServiceContext, rawQuery: unknown): Promise
     },
   });
   const now = new Date();
-  const eligibleNow = (balance: (typeof balances)[number]) =>
-    !balance.batch || eligibilityOf(balance.batch, localDateIn(balance.warehouse.timezone, now)).eligible;
 
   return {
-    rows: balances.map((balance) => ({
-      id: balance.id,
-      status: balance.status,
-      onHand: balance.onHand,
-      reserved: balance.reserved,
-      available: balance.onHand - balance.reserved,
-      availableForSale: balance.status === "SELLABLE" && eligibleNow(balance) ? balance.onHand - balance.reserved : 0,
-      batch: balance.batch
-        ? { id: balance.batch.id, lotNumber: balance.batch.lotNumber, isLegacy: balance.batch.isLegacy }
-        : null,
-      variant: {
-        id: balance.variant.id,
-        sku: balance.variant.sku,
-        barcode: balance.variant.barcode,
-        nameEn: balance.variant.nameEn,
-        nameAr: balance.variant.nameAr,
-        sizeMl: balance.variant.sizeMl?.toString() ?? null,
-      },
-      product: balance.variant.product,
-      warehouse: {
-        id: balance.warehouse.id,
-        code: balance.warehouse.code,
-        nameEn: balance.warehouse.nameEn,
-        nameAr: balance.warehouse.nameAr,
-      },
-    })),
+    rows: balances.map((balance) => {
+      const eligibility = balance.batch
+        ? eligibilityOf(balance.batch, localDateIn(balance.warehouse.timezone, now))
+        : null;
+      return {
+        id: balance.id,
+        status: balance.status,
+        onHand: balance.onHand,
+        reserved: balance.reserved,
+        available: balance.onHand - balance.reserved,
+        availableForSale:
+          balance.status === "SELLABLE" && (!eligibility || eligibility.eligible)
+            ? balance.onHand - balance.reserved
+            : 0,
+        ineligibleReason:
+          balance.status === "SELLABLE" && eligibility && !eligibility.eligible ? eligibility.reason : null,
+        batch: balance.batch
+          ? { id: balance.batch.id, lotNumber: balance.batch.lotNumber, isLegacy: balance.batch.isLegacy }
+          : null,
+        variant: {
+          id: balance.variant.id,
+          sku: balance.variant.sku,
+          barcode: balance.variant.barcode,
+          nameEn: balance.variant.nameEn,
+          nameAr: balance.variant.nameAr,
+          sizeMl: balance.variant.sizeMl?.toString() ?? null,
+        },
+        product: balance.variant.product,
+        warehouse: {
+          id: balance.warehouse.id,
+          code: balance.warehouse.code,
+          nameEn: balance.warehouse.nameEn,
+          nameAr: balance.warehouse.nameAr,
+        },
+      };
+    }),
     total,
     page,
     pageCount,
