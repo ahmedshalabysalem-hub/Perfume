@@ -187,8 +187,8 @@ databases and a `.env` (as `README.md` describes).
 | UX-001 | Inventory status clarity: F1 (after approval), F2, F3 links, F4, F5 header status | Medium | inventory pages, batch forms, badges, messages    |
 | UX-002 | Tokens and accessibility: F8, F9 (one tone map), F12, F16, F17                    | Medium | `globals.css`, `ui/*`, forms, badges — every page |
 | UX-003 | Page frame and feedback: breadcrumbs/back links (rest of F3), F10, F11, F14       | Low    | `page-parts`, shell, toaster, `loading.tsx`       |
-| UX-004 | Dashboard: F6, F7 (needs approval)                                                | Medium | dashboard page and service                        |
-| UX-005 | Phone tables and catalogue polish: F13, F15, F18–F22                              | Low    | list pages, product form                          |
+| UX-004 | Dashboard: F6 (approved), F7                                                      | Medium | dashboard page and service                        |
+| UX-005 | Phone tables (F13, now P1) and catalogue polish: F15, F18–F22                     | Low    | list pages, product form                          |
 
 Order follows impact and file ownership: UX-001 first while no inventory task is running; UX-002 as
 its own PR between feature tasks; later slices any time.
@@ -216,8 +216,10 @@ the links; lint, typecheck, tests, build, e2e; screenshots in both languages and
 
 1. **Arabic term for QUARANTINED** (F1) — **Decided by Ahmed, 2026-10-26: «موقوف للفحص»** (chosen
    over «معزول» and «في الحجر»). «المحجوز للطلبات» stays for reserved; the English stays "Quarantined".
-2. **Dashboard inventory widgets** (F6): add counts of batches pending inspection, expiring within the
-   configured window, and expired with stock — read-only queries, linked to existing filters.
+2. **Dashboard inventory widgets** (F6) — **Approved by Ahmed, 2026-10-26.** Counts of batches pending
+   inspection, expiring within the configured window, and expired with stock — read-only queries,
+   linked to existing filters (UX-004).
 3. **Direction and order** of sections 5 and 10, and that UX-001 starts now and must finish before
    INV-006 begins (or after it merges — not in parallel).
-4. Whether phone use of inventory screens matters for warehouse staff (decides F13's priority).
+4. Phone use — **Decided by Ahmed, 2026-10-26: staff work on every kind of device.** F13 rises to P1:
+   the stock and batch lists get a stacked phone layout, and every slice is checked at phone width.

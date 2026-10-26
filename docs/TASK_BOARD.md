@@ -55,8 +55,8 @@ next: INV-006 (DR-011 decided: Option A), then PUR-002 spec (or INV-003) — see
 | UX-001    | Inventory status clarity (audit F1–F5)                       | —     | Backlog | P1               | Director approval; not with INV-006       |
 | UX-002    | Design tokens, status tones and form accessibility (F8–F17)  | —     | Backlog | P2               | UX-001; lands alone (every page)          |
 | UX-003    | Breadcrumbs, loading states, toast placement (F3, F10–F14)   | —     | Backlog | P2               | UX-002                                    |
-| UX-004    | Dashboard inventory queues and readable activity (F6, F7)    | —     | Backlog | P2               | Director approval                         |
-| UX-005    | Phone tables and catalogue polish (F13, F15, F18–F22)        | —     | Backlog | P3               | UX-002                                    |
+| UX-004    | Dashboard inventory queues and readable activity (F6, F7)    | —     | Backlog | P2               | UX-001 (F6 approved 2026-10-26)           |
+| UX-005    | Phone tables and catalogue polish (F13, F15, F18–F22)        | —     | Backlog | P2               | UX-002                                    |
 
 ## Done
 
