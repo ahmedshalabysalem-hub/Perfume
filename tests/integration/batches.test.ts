@@ -749,6 +749,129 @@ describe("LEGACY stock (DR-008, DR-010; AC 16–18, 21–23)", () => {
   });
 });
 
+describe("a release restores only inspection-held stock (INV-006, DR-011 Option A)", () => {
+  const damaged = (batchId: string, quantity: number, warehouseId = f.warehouseId) =>
+    post(adjust(line(batchId, quantity, { status: "QUARANTINED", warehouseId })));
+
+  async function secondWarehouse() {
+    return (
+      await db.warehouse.create({
+        data: {
+          code: "SA-WH-2",
+          legalEntityId: f.legalEntitySaId,
+          countryCode: "SA",
+          nameEn: "Jeddah",
+          nameAr: "جدة",
+          timezone: "Asia/Riyadh",
+        },
+      })
+    ).id;
+  }
+
+  it("keeps units quarantined for another reason, such as damage, in every warehouse", async () => {
+    const wh2 = await secondWarehouse();
+    const batch = await newBatch();
+    await post(adjust(line(batch.id, 10), line(batch.id, 4, { warehouseId: wh2 })));
+    // Damage found before the inspection decision, in both warehouses.
+    await damaged(batch.id, 3);
+    await damaged(batch.id, 2, wh2);
+    await changeBatchStatus(invSa, decision(batch.id, 1, "QUARANTINED", "Supplier recall notice"));
+    expect([await onHand(batch.id, "QUARANTINED"), await onHand(batch.id, "QUARANTINED", wh2)]).toEqual([13, 6]);
+    // More damage found while the batch is quarantined.
+    await damaged(batch.id, 1);
+
+    const preview = await getBatch(invSa, batch.id);
+    expect(preview?.releasableUnits).toBe(14);
+    await changeBatchStatus(invSa, decision(batch.id, 2, "RELEASED", "Recall does not cover this lot"));
+    expect([await onHand(batch.id), await onHand(batch.id, "QUARANTINED")]).toEqual([10, 4]);
+    expect([await onHand(batch.id, "SELLABLE", wh2), await onHand(batch.id, "QUARANTINED", wh2)]).toEqual([4, 2]);
+    const audit = (await auditEntries("inventory.batch.status")).at(-1);
+    expect(audit?.after).toMatchObject({ inspectionStatus: "RELEASED", unitsMoved: 14 });
+    expect((await getBatch(invSa, batch.id))?.releasableUnits).toBe(0);
+
+    // A double submit moves nothing more; a second quarantine and release cycle still leaves the damage.
+    expect(await changeBatchStatus(invSa, decision(batch.id, 2, "RELEASED", "Recall does not cover this lot"))).toEqual(
+      {
+        version: 3,
+        replayed: true,
+      },
+    );
+    await changeBatchStatus(invSa, decision(batch.id, 3, "QUARANTINED", "Second complaint"));
+    await changeBatchStatus(invSa, decision(batch.id, 4, "RELEASED", "Complaint unfounded"));
+    expect([await onHand(batch.id), await onHand(batch.id, "QUARANTINED")]).toEqual([10, 4]);
+    expect([await onHand(batch.id, "SELLABLE", wh2), await onHand(batch.id, "QUARANTINED", wh2)]).toEqual([4, 2]);
+    await expectLedgerConsistent();
+  });
+
+  it("restores stock entered to await inspection, even after a quarantine before the first release", async () => {
+    await postOpeningBalance(f.saManager, {
+      variantCode: "ROI-100",
+      warehouseId: f.warehouseId,
+      status: "QUARANTINED",
+      quantity: "7",
+      unitCost: "50",
+      reason: "Received before go-live",
+      lotNumber: "P-2",
+      expiresOn: addDays(today(), 200),
+    });
+    const batch = await db.stockBatch.findFirstOrThrow({ where: { lotNumber: "P-2" } });
+    await damaged(batch.id, 2);
+    await changeBatchStatus(invSa, decision(batch.id, 1, "QUARANTINED", "Cartons damp"));
+    expect((await getBatch(invSa, batch.id))?.releasableUnits).toBe(7);
+    await changeBatchStatus(invSa, decision(batch.id, 2, "RELEASED", "Bottles intact"));
+    expect([await onHand(batch.id), await onHand(batch.id, "QUARANTINED")]).toEqual([7, 2]);
+    await expectLedgerConsistent();
+  });
+
+  it("never moves more than the quarantined balance holds", async () => {
+    const batch = await newBatch();
+    await post(adjust(line(batch.id, 10)));
+    await changeBatchStatus(invSa, decision(batch.id, 1, "QUARANTINED", "Recall check"));
+    // Units taken out of quarantine by another movement (a later adjustment, INV-003).
+    await damaged(batch.id, -4);
+    await changeBatchStatus(invSa, decision(batch.id, 2, "RELEASED", "Recall cleared"));
+    expect([await onHand(batch.id), await onHand(batch.id, "QUARANTINED")]).toEqual([6, 0]);
+    await expectLedgerConsistent();
+  });
+
+  it("keeps LEGACY carry-over held by the same rule, even after some of it is disposed of", async () => {
+    const legacy = await legacyStock(variantId, [
+      { status: "SELLABLE", quantity: 6 },
+      { status: "QUARANTINED", quantity: 3 },
+    ]);
+    // One carried-over unit disposed of; the old subtraction would then have held back a sound unit.
+    await damaged(legacy.id, -1);
+    await verifyBatch(invSa, verification(legacy.id, 1));
+    await changeBatchStatus(invSa, decision(legacy.id, 2, "RELEASED", "Verified, expiry unknown"));
+    expect([await onHand(legacy.id), await onHand(legacy.id, "QUARANTINED")]).toEqual([6, 2]);
+    await changeBatchStatus(invSa, decision(legacy.id, 3, "QUARANTINED", "Customer complaint"));
+    expect(await onHand(legacy.id, "QUARANTINED")).toBe(8);
+    await changeBatchStatus(invSa, decision(legacy.id, 4, "RELEASED", "Complaint unfounded"));
+    expect([await onHand(legacy.id), await onHand(legacy.id, "QUARANTINED")]).toEqual([6, 2]);
+    expect(await sellableQuantity(db, variantId, f.warehouseId)).toBe(6);
+    await expectLedgerConsistent();
+  });
+
+  it("stays exact while postings touch the batch, and another, in opposite orders", async () => {
+    const a = await newBatch();
+    const b = await newBatch();
+    await post(adjust(line(a.id, 10), line(b.id, 20)));
+    await changeBatchStatus(invSa, decision(a.id, 1, "QUARANTINED", "Recall check"));
+    const into = (id: string, quantity: number) =>
+      id === a.id ? line(a.id, quantity, { status: "QUARANTINED" }) : line(b.id, quantity);
+    const results = await Promise.allSettled([
+      changeBatchStatus(invSa, decision(a.id, 2, "RELEASED", "Recall cleared")),
+      ...Array.from({ length: 8 }, (_, i) =>
+        post(i % 2 === 0 ? adjust(into(a.id, 1), into(b.id, -1)) : adjust(into(b.id, -1), into(a.id, 1))),
+      ),
+    ]);
+    expect(results.every((result) => result.status === "fulfilled")).toBe(true);
+    // Whatever the order, the 10 inspection-held units are back and the 8 damaged units are not.
+    expect([await onHand(a.id), await onHand(a.id, "QUARANTINED"), await onHand(b.id)]).toEqual([10, 8, 12]);
+    await expectLedgerConsistent();
+  });
+});
+
 describe("batch details and lot numbers (AC 9, 12, 13, DR-005)", () => {
   it("keeps a lot number fixed once stock exists, except on LEGACY batches, which cannot take a used lot", async () => {
     const legacy = await legacyStock(variantId, [{ status: "SELLABLE", quantity: 2 }]);

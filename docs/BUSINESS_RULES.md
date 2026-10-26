@@ -191,8 +191,10 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 - Inspection: new purchase lots start pending inspection (PUR-002); an opening balance entered as
   sellable creates a released lot only for a user who may release batches. Release, quarantine and
   rejection are separate decisions with a reason, by Super Admin or Inventory Manager only; rejection is
-  final. Quarantine and rejection take unreserved sellable stock out of sale; release brings quarantined
-  stock back, except stock that was already quarantined before INV-002.
+  final. Quarantine and rejection take unreserved sellable stock out of sale; release brings back only
+  the stock the inspection holds (quarantined by an inspection decision, or entered into quarantine to
+  await inspection). Stock quarantined for another reason, such as damage or the pre-INV-002
+  carry-over, stays quarantined (DR-011).
 - Verification records the physical-condition and label checks, notes and the expiry found (a date,
   unknown, or not applicable where the catalogue does not track expiry). It never releases a batch. A
   failed check moves the batch to quarantine or rejection in the same action.
