@@ -64,6 +64,7 @@ export const STORES = [
     timezone: "Asia/Riyadh",
     currencyCode: "SAR",
     city: null,
+    fulfilmentWarehouseCode: "SA-RUH-WH1",
   },
   {
     code: "SA-RUH-01",
@@ -84,6 +85,7 @@ export const STORES = [
     timezone: "Africa/Cairo",
     currencyCode: "EGP",
     city: null,
+    fulfilmentWarehouseCode: "EG-CAI-WH1",
   },
 ] as const;
 
@@ -95,6 +97,14 @@ export const WAREHOUSES = [
     nameAr: "مستودع الرياض الرئيسي",
     timezone: "Asia/Riyadh",
     city: "Riyadh",
+  },
+  {
+    code: "EG-CAI-WH1",
+    legalEntityCode: "DEMO-EG",
+    nameEn: "Cairo Warehouse",
+    nameAr: "مستودع القاهرة",
+    timezone: "Africa/Cairo",
+    city: "Cairo",
   },
 ] as const;
 
@@ -331,7 +341,7 @@ export const PRODUCTS: SeedProduct[] = [
         sku: "NS-DVT-100-T",
         sizeMl: "100",
         nameEn: "100 ml Tester",
-        nameAr: "١٠٠ مل (تستر)",
+        nameAr: "100 مل (تستر)",
         isTester: true,
         barcode: { kind: "internal", value: "PF0000000201" },
         prices: [{ country: "SA", amount: "360.00" }],
@@ -378,7 +388,7 @@ export const PRODUCTS: SeedProduct[] = [
     shortDescriptionAr: "أو دو بارفان ومعطر للجسم وعبوة سفر.",
     descriptionEn:
       "A gift box with Amber Nights eau de parfum (100 ml), matching body mist (75 ml) and a 10 ml travel spray.",
-    descriptionAr: "علبة هدايا تضم أو دو بارفان ليالي العنبر (١٠٠ مل) ومعطر جسم مطابق (٧٥ مل) وعبوة سفر ١٠ مل.",
+    descriptionAr: "علبة هدايا تضم أو دو بارفان ليالي العنبر (100 مل) ومعطر جسم مطابق (75 مل) وعبوة سفر 10 مل.",
     audience: "UNISEX",
     concentration: "EDP",
     family: "AMBER",

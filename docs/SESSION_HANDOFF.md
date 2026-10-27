@@ -107,6 +107,36 @@ receipt posting and cost (financial consistency and inventory concurrency).
   counts, transfers) after INV-006. It needs a spec too.
 - **Parallel option:** QA-003 (G1, G2) is independent, normal effort, and can run in its own thread.
 
+## ORD-001 (parallel thread, cart and guest checkout — 2026-10-27)
+
+- **Branch:** `claude/project-thread-k1vx0h`; decision record ADR-025 (Proposed until Ahmed confirms the
+  stock/status policy and the delivery-fee choice; the code implements the recommended options:
+  reserve at placement, PENDING_REVIEW/UNPAID, auto-cancel after 48 h, fee set by staff at confirmation).
+- **What exists:** migration `20261027090000_storefront_orders` (orders, items, status history,
+  reservations, per-country counters, throttles; 19 CHECKs, 4 triggers; `stores.fulfilment_warehouse_id`);
+  services `src/server/modules/orders/*` and `inventory/reservations.ts`; storefront `/cart`, `/checkout`,
+  `/checkout/confirmation/[orderNumber]`; admin `/admin/orders`; `npm run orders:expire`.
+- **Rules for later tasks:** stock is only reserved here; ORD-002 deducts at fulfilment and must consume
+  the reservation (never deduct twice). POS-001 and INV-003 must use `on_hand - reserved`. A quarantined
+  lot keeps its reserved units SELLABLE (quarantine moves unreserved stock only); such an order cannot be
+  confirmed until the lot is resolved or the order is cancelled — INV-004 decides a re-allocation rule.
+  CUST-001 can link guest orders to accounts; SHIP-001 replaces the manual fee; PAY-001 adds payment
+  states. Production needs `npm run orders:expire` scheduled (OPS-003).
+- **Independent review (2026-10-27):** fixed the High finding (trusted-hop client IP via
+  `TRUSTED_PROXY_HOPS`, at most 3 orders awaiting review per mobile number, at most 30 units per
+  order, confirmed by Ahmed 2026-10-27; in production checkout is refused while the client IP is
+  unknown unless `ALLOW_CHECKOUT_WITHOUT_CLIENT_IP=true`), the Medium one (released units of a quarantined lot
+  return to QUARANTINED) and Lows 3–5. Open follow-ups: the per-country order counter serialises
+  checkouts of one country; no database tie between a reservation's warehouse and its order's; no
+  live check that Σ active reservations = `reserved`. Residual risk for Ahmed: one client IP can
+  still hold about 240 units per 15 minutes (8 orders × 30) with fresh phone numbers; a daily per-IP
+  cap or a per-variant cap on held units would narrow it.
+- **Production setup:** set `TRUSTED_PROXY_HOPS` to exactly the number of reverse
+  proxies (usually 1; too high makes the client address forgeable) or storefront checkout is refused.
+- **Checks run (2026-10-27, after the review fixes):** lint, typecheck, prettier, `npm test` 306
+  passed, Playwright 38 passed on a production build.
+- **Also fixed:** the seed's Arabic tester name and gift-set description used Arabic-Indic digits (ADR-009).
+
 ## I18N-002 (parallel thread, localization gaps)
 
 Branch `claude/project-thread-fokfn9`, UI and messages only; no schema change and no inventory or

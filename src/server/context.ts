@@ -1,6 +1,8 @@
 import "server-only";
 import { headers } from "next/headers";
 import { cache } from "react";
+import { clientAddress } from "@/lib/client-ip";
+import { env } from "@/lib/env";
 import type { Actor } from "@/server/rbac/actor";
 
 /** Request metadata recorded with audit entries. */
@@ -20,17 +22,18 @@ export const CORRELATION_HEADER = "x-request-id";
 
 /**
  * Per-request metadata. The correlation id is assigned by `src/proxy.ts` (or
- * an upstream load balancer). The client IP comes from X-Forwarded-For, so the
- * reverse proxy in front of the app must overwrite that header; it is used for
- * audit and rate limiting, never for authorisation decisions.
+ * an upstream load balancer). The client IP is read from X-Forwarded-For at
+ * the hop of the outermost trusted proxy (`TRUSTED_PROXY_HOPS`), never from
+ * the client-controlled entries left of it; with no trusted proxy it is
+ * unknown (null). It is used for audit and rate limiting, never for
+ * authorisation decisions.
  */
 export const getRequestMeta = cache(async (): Promise<RequestMeta> => {
   const requestHeaders = await headers();
-  const forwardedFor = requestHeaders.get("x-forwarded-for");
-  const ip = forwardedFor ? forwardedFor.split(",")[0]?.trim() : requestHeaders.get("x-real-ip");
+  const ip = clientAddress(requestHeaders.get("x-forwarded-for"), env().TRUSTED_PROXY_HOPS);
   return {
     correlationId: requestHeaders.get(CORRELATION_HEADER) ?? crypto.randomUUID(),
-    ipAddress: ip ? ip.slice(0, 64) : null,
+    ipAddress: ip,
     userAgent: requestHeaders.get("user-agent")?.slice(0, 512) ?? null,
   };
 });

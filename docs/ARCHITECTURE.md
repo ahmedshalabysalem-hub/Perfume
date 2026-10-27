@@ -149,7 +149,13 @@ codes shown to users (audit actions, permission modules) get labels under `audit
 - SEO: per-page metadata, canonical and `hreflang` alternates, `sitemap.xml` (dynamic), `robots.txt`
   (dynamic, disallows admin, auth and API paths), JSON-LD `Product` with offers per market; `gtin` only
   for manufacturer barcodes; no availability claims until inventory exists.
-- No cart or checkout until ORD-001; product pages state that online ordering is unavailable.
+- Cart and guest checkout (ORD-001, ADR-025): the cart lives in `localStorage` per market
+  (`src/components/store/cart/cart-store.ts`, `useSyncExternalStore`, synced across tabs) and holds
+  only variant ids and quantities. `priceCartAction` returns server prices and availability;
+  `placeOrderAction` calls `placeOrder` (`src/server/modules/orders/checkout.service.ts`), which in one
+  transaction re-prices, reserves FEFO eligible stock (`src/server/modules/inventory/reservations.ts`),
+  numbers and records the order. Market → online store → legal entity → fulfilment warehouse is
+  resolved by `resolveOnlineStore`. Confirmation access is an HMAC token in an httpOnly cookie.
 
 ## 10. Files
 
@@ -161,16 +167,17 @@ restrictive CSP. S3-compatible storage is OPS-002 **(planned)**.
 
 ## 11. Security controls
 
-| Control                                                                            | Where                                              |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------- |
-| CSP with nonces, `strict-dynamic`, `frame-ancestors 'none'`                        | `src/proxy.ts`                                     |
-| `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS (prod) | `next.config.ts`                                   |
-| Server-side authorization on every read and write                                  | services, `src/server/rbac`                        |
-| Input validation (shared schemas, size limits)                                     | `src/lib/schemas`, services                        |
-| CSRF/origin checks, rate limiting, secure cookies                                  | Better Auth configuration                          |
-| Secrets only from environment, validated lazily                                    | `src/lib/env.ts`, `.env.example`                   |
-| No secrets or passwords in logs or audit entries                                   | `src/server/audit/redact.ts`, action error mapping |
-| Safe redirects after sign-in (same-origin admin paths only)                        | `src/lib/safe-redirect.ts`                         |
+| Control                                                                             | Where                                              |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------- |
+| CSP with nonces, `strict-dynamic`, `frame-ancestors 'none'`                         | `src/proxy.ts`                                     |
+| `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS (prod)  | `next.config.ts`                                   |
+| Server-side authorization on every read and write                                   | services, `src/server/rbac`                        |
+| Input validation (shared schemas, size limits)                                      | `src/lib/schemas`, services                        |
+| CSRF/origin checks, rate limiting, secure cookies                                   | Better Auth configuration                          |
+| Guest checkout: origin check, idempotency keys, DB rate limits, per-phone/unit caps | `src/server/throttle.ts`, checkout service         |
+| Secrets only from environment, validated lazily                                     | `src/lib/env.ts`, `.env.example`                   |
+| No secrets or passwords in logs or audit entries                                    | `src/server/audit/redact.ts`, action error mapping |
+| Safe redirects after sign-in (same-origin admin paths only)                         | `src/lib/safe-redirect.ts`                         |
 
 ## 12. Observability and operations
 

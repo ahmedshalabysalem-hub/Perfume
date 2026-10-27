@@ -116,9 +116,26 @@ scope.
 
 ### Storefront — `src/app/[locale]/(store)/actions.ts`
 
-| Action                  | Auth | Behaviour                                                                                       |
-| ----------------------- | ---- | ----------------------------------------------------------------------------------------------- |
-| `setMarketAction(code)` | none | Accepts only an active market code; sets the http-only `market` cookie (1 year, `SameSite=Lax`) |
+| Action                            | Auth | Behaviour                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setMarketAction(code)`           | none | Accepts only an active market code; sets the http-only `market` cookie (1 year, `SameSite=Lax`)                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `priceCartAction(market, lines)`  | none | Refuses when `market` is not the cookie's market (`errors.checkout.marketChanged`); 120 calls/min per client address; returns `PricedCart` (per line: status `OK`/`UNAVAILABLE`/`OUT_OF_STOCK`/`INSUFFICIENT_STOCK`, names, unit price, line total; subtotal, `canCheckout`). No stock quantities, costs or supplier data                                                                                                                                                                                                                                 |
+| `placeOrderAction(market, input)` | none | `input` = `{ idempotencyKey, locale, lines: [{ variantId, quantity, expectedUnitPrice? }], details }` (`placeOrderInputSchema`; details validated per country). 8 attempts per 15 min per client address. Returns `{ orderNumber }` and sets the http-only `order_access` cookie (30 days, last 5 orders). Errors: `errors.checkout.cartChanged` (field errors `lines.<variantId>` = UNAVAILABLE / OUT_OF_STOCK / INSUFFICIENT_STOCK / PRICE_CHANGED), `errors.checkout.unavailable`, `errors.checkout.keyReused`, `errors.rateLimited`, field validation |
+
+Guest actions run through `runPublicAction` (`src/server/actions/run-public-action.ts`): no session,
+system actor label `storefront.cart` / `storefront.checkout` in audit entries, same error mapping as
+`runAction`. Next.js refuses Server Action requests whose `Origin` does not match the host (CSRF).
+
+### Orders — `src/app/[locale]/admin/orders/actions.ts`
+
+| Action                      | Permission                     | Behaviour                                                                                                                                                                                                      |
+| --------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `confirmOrderAction(input)` | `orders.update` at order scope | `{ orderId, version, shippingFee }`; PENDING_REVIEW only; fee 0 or more in the order currency (excess precision refused); sets total; refused while a reserved lot is ineligible; audit `orders.order.confirm` |
+| `cancelOrderAction(input)`  | `orders.cancel` at order scope | `{ orderId, version, reason }`; releases reservations; audit `orders.order.cancel`                                                                                                                             |
+
+Pages: `/admin/orders` (list, `orders.view`), `/admin/orders/[id]` (detail; out of scope = 404).
+Storefront pages: `/cart`, `/checkout`, `/checkout/confirmation/[orderNumber]` (needs the access cookie;
+`noindex`, `Referrer-Policy: no-referrer`).
 
 ## 2. HTTP endpoints
 

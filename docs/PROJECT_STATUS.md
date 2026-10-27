@@ -39,6 +39,15 @@ then **PUR-002** (spec first) or INV-003. Details and prerequisites: `docs/SESSI
 
 ## In progress
 
+**ORD-001 cart and guest checkout** (ADR-025, branch `claude/project-thread-k1vx0h`, in review):
+header cart with live count, add to cart on product pages and single-size cards, per-market browser
+cart priced by the server, guest checkout with Saudi/Egyptian address rules, confirmation page behind
+an httpOnly access cookie, FEFO reservation of eligible stock at placement, per-country order numbers,
+idempotent and rate-limited placement, Sales → Orders in the back office (scoped list, detail, confirm
+with delivery fee, cancel releasing stock, automatic expiry after `ORDER_REVIEW_HOURS`). No payment is
+taken or recorded. Two business choices await Ahmed (stock/status policy and the delivery fee); the
+code follows the recommended options.
+
 **INV-006** (DR-011, Option A) is in review: a release moves back to sellable, per warehouse, only the
 batch's inspection-held quarantined units (its `INSPECTION` moves and stock entered to await
 inspection); damage and the LEGACY carry-over stay held. The release confirmation shows both counts.

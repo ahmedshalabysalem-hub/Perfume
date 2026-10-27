@@ -175,6 +175,7 @@ test.describe("coverage of every implemented page", () => {
       user: await one("select id from users where type = 'STAFF' order by created_at limit 1"),
       supplier: await one("select id from suppliers order by created_at limit 1"),
       batch: await one("select id from stock_batches order by created_at limit 1"),
+      order: await one("select id from orders order by placed_at limit 1"),
     };
     await client.end();
 
@@ -182,9 +183,14 @@ test.describe("coverage of every implemented page", () => {
       "",
       "/products",
       `/products/${ids.slug}`,
+      "/cart",
+      "/checkout",
+      "/checkout/confirmation/SA-000001",
       "/account/password",
       "/no-such-page",
       "/admin",
+      "/admin/orders",
+      ...(ids.order ? [`/admin/orders/${ids.order}`] : []),
       "/admin/access/audit",
       "/admin/access/roles",
       "/admin/access/users",

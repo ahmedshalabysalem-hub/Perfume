@@ -184,10 +184,20 @@ async function loadEntityForLocation(ctx: ServiceContext, legalEntityId: string)
   return entity;
 }
 
+/** A store ships online orders only from a warehouse of its own legal entity (ADR-025). */
+async function assertFulfilmentWarehouse(legalEntityId: string, warehouseId: string | null): Promise<void> {
+  if (!warehouseId) return;
+  const warehouse = await db.warehouse.findUnique({ where: { id: warehouseId }, select: { legalEntityId: true } });
+  if (!warehouse || warehouse.legalEntityId !== legalEntityId) {
+    throw new ValidationError({ fulfilmentWarehouseId: ["validation.invalidReference"] });
+  }
+}
+
 export async function createStore(ctx: ServiceContext, input: unknown): Promise<{ id: string }> {
   assertCan(ctx.actor, "organization.manage");
   const data = parseInput(storeCreateSchema, input);
   const entity = await loadEntityForLocation(ctx, data.legalEntityId);
+  await assertFulfilmentWarehouse(entity.id, data.fulfilmentWarehouseId);
   try {
     return await db.$transaction(async (tx) => {
       // Country and currency always follow the legal entity (composite FK).
@@ -217,6 +227,7 @@ export async function updateStore(ctx: ServiceContext, id: string, input: unknow
     legalEntityId: existing.legalEntityId,
     storeId: id,
   });
+  await assertFulfilmentWarehouse(existing.legalEntityId, data.fulfilmentWarehouseId);
   try {
     await db.$transaction(async (tx) => {
       const updated = await tx.store.update({ where: { id }, data });

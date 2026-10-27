@@ -65,3 +65,35 @@ export function formatMoney(amount: string, currency: string, locale: string, mi
   });
   return formatter.format(amount as unknown as number);
 }
+
+// ─── Exact arithmetic on canonical decimal strings (cart and order totals) ───
+// Amounts are converted to integer minor units (BigInt), so the browser and
+// the server compute identical totals without floats or rounding.
+
+function toMinorUnits(amount: string, minorUnits: number): bigint {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(amount);
+  if (!match) throw new Error(`not a canonical decimal amount: ${amount}`);
+  const fraction = match[2] ?? "";
+  if (fraction.length > minorUnits) throw new Error(`amount ${amount} has more than ${minorUnits} decimals`);
+  return BigInt(match[1]! + fraction.padEnd(minorUnits, "0"));
+}
+
+function fromMinorUnits(value: bigint, minorUnits: number): string {
+  const digits = value.toString().padStart(minorUnits + 1, "0");
+  if (minorUnits === 0) return digits;
+  return `${digits.slice(0, -minorUnits)}.${digits.slice(-minorUnits)}`;
+}
+
+/** `amount × quantity` for a whole-unit quantity, exact ("12.50" × 3 → "37.50"). */
+export function multiplyMoney(amount: string, quantity: number, minorUnits = 2): string {
+  if (!Number.isSafeInteger(quantity) || quantity < 0) throw new Error("quantity must be a non-negative integer");
+  return fromMinorUnits(toMinorUnits(amount, minorUnits) * BigInt(quantity), minorUnits);
+}
+
+/** Sum of canonical decimal amounts, exact. */
+export function sumMoney(amounts: readonly string[], minorUnits = 2): string {
+  return fromMinorUnits(
+    amounts.reduce((total, amount) => total + toMinorUnits(amount, minorUnits), 0n),
+    minorUnits,
+  );
+}

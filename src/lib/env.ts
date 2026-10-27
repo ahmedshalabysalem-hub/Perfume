@@ -16,6 +16,20 @@ const envSchema = z.object({
   APP_TIME_ZONE: z.string().min(1).default("Asia/Riyadh"),
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   STORAGE_LOCAL_DIR: z.string().min(1).default("./storage/uploads"),
+  /** Hours a storefront order may wait for staff review before it is cancelled; 0 = never (ADR-025). */
+  ORDER_REVIEW_HOURS: z.coerce.number().int().min(0).max(720).default(48),
+  /**
+   * Reverse proxies in front of the app that append to X-Forwarded-For; the
+   * client IP is read at that hop. 0 = no proxy: the header is ignored and the
+   * client IP is unknown.
+   */
+  TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  /**
+   * In production a checkout without a known client IP is refused, so a
+   * missing TRUSTED_PROXY_HOPS cannot silently switch off the per-client
+   * limit. Set to true only to accept that risk deliberately.
+   */
+  ALLOW_CHECKOUT_WITHOUT_CLIENT_IP: booleanString.default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;

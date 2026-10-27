@@ -199,6 +199,7 @@ model Product {
   notes           ProductFragranceNote[]
   images          ProductImage[]
   compliance      ProductCompliance[]
+  orderItems      OrderItem[]
 
   @@index([status])
   @@index([brandId])
@@ -262,9 +263,11 @@ model ProductVariant {
   images    ProductImage[]
   suppliers SupplierProduct[]
 
-  stockBalances  StockBalance[]
-  stockMovements StockMovement[]
-  stockBatches   StockBatch[]
+  stockBalances     StockBalance[]
+  stockMovements    StockMovement[]
+  stockBatches      StockBatch[]
+  orderItems        OrderItem[]
+  stockReservations StockReservation[]
 
   @@index([productId])
   @@index([status])

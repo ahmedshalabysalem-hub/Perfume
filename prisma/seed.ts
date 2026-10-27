@@ -68,25 +68,39 @@ async function seedOrganisation(tx: Tx) {
     });
     entities.set(entity.code, { id: row.id, countryCode: row.countryCode });
   }
-  const stores = new Map<string, string>();
-  for (const store of STORES) {
-    const entity = entities.get(store.legalEntityCode)!;
-    const { legalEntityCode: _legalEntityCode, ...data } = store;
-    const row = await tx.store.upsert({
-      where: { code: store.code },
-      update: { nameEn: store.nameEn, nameAr: store.nameAr },
-      create: { ...data, legalEntityId: entity.id, countryCode: entity.countryCode },
-    });
-    stores.set(store.code, row.id);
-  }
+  const warehouses = new Map<string, string>();
   for (const warehouse of WAREHOUSES) {
     const entity = entities.get(warehouse.legalEntityCode)!;
     const { legalEntityCode: _legalEntityCode, ...data } = warehouse;
-    await tx.warehouse.upsert({
+    const row = await tx.warehouse.upsert({
       where: { code: warehouse.code },
       update: { nameEn: warehouse.nameEn, nameAr: warehouse.nameAr },
       create: { ...data, legalEntityId: entity.id, countryCode: entity.countryCode },
     });
+    warehouses.set(warehouse.code, row.id);
+  }
+  const stores = new Map<string, string>();
+  for (const store of STORES) {
+    const entity = entities.get(store.legalEntityCode)!;
+    const {
+      legalEntityCode: _legalEntityCode,
+      fulfilmentWarehouseCode,
+      ...data
+    } = {
+      fulfilmentWarehouseCode: undefined as string | undefined,
+      ...store,
+    };
+    const fulfilmentWarehouseId = fulfilmentWarehouseCode ? warehouses.get(fulfilmentWarehouseCode)! : null;
+    const row = await tx.store.upsert({
+      where: { code: store.code },
+      update: { nameEn: store.nameEn, nameAr: store.nameAr },
+      create: { ...data, legalEntityId: entity.id, countryCode: entity.countryCode, fulfilmentWarehouseId },
+    });
+    // An online store seeded before ORD-001 gets its fulfilment warehouse once; a choice made since is kept.
+    if (fulfilmentWarehouseId && !row.fulfilmentWarehouseId) {
+      await tx.store.update({ where: { id: row.id }, data: { fulfilmentWarehouseId } });
+    }
+    stores.set(store.code, row.id);
   }
   return { stores };
 }

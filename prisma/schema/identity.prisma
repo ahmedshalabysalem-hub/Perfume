@@ -43,14 +43,17 @@ model User {
 
   sessions           Session[]
   accounts           Account[]
-  roleAssignments    UserRole[]        @relation("UserRoleAssignee")
-  assignedRoles      UserRole[]        @relation("UserRoleAssigner")
-  approvalsRequested ApprovalRequest[] @relation("ApprovalRequester")
-  approvalsDecided   ApprovalRequest[] @relation("ApprovalDecider")
-  approvalActions    ApprovalAction[]  @relation("ApprovalActor")
-  batchesCreated     StockBatch[]      @relation("StockBatchCreator")
-  batchStatusChanges StockBatch[]      @relation("StockBatchStatusChanger")
-  batchVerifications StockBatch[]      @relation("StockBatchVerifier")
+  roleAssignments    UserRole[]          @relation("UserRoleAssignee")
+  assignedRoles      UserRole[]          @relation("UserRoleAssigner")
+  approvalsRequested ApprovalRequest[]   @relation("ApprovalRequester")
+  approvalsDecided   ApprovalRequest[]   @relation("ApprovalDecider")
+  approvalActions    ApprovalAction[]    @relation("ApprovalActor")
+  batchesCreated     StockBatch[]        @relation("StockBatchCreator")
+  batchStatusChanges StockBatch[]        @relation("StockBatchStatusChanger")
+  batchVerifications StockBatch[]        @relation("StockBatchVerifier")
+  ordersConfirmed    Order[]             @relation("OrderConfirmer")
+  ordersCancelled    Order[]             @relation("OrderCanceller")
+  orderStatusChanges OrderStatusChange[] @relation("OrderStatusActor")
 
   @@index([type, status])
   @@map("users")

@@ -106,7 +106,46 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 - Shows only sellable products (see above) for the visitor's market; drafts, inactive and discontinued
   products and products of inactive brands return 404.
 - "From" price = lowest active price among the product's active variants in that market.
-- No online ordering yet; the product page says so (ADR-014).
+- Guests can order without an account or online payment (ORD-001, ADR-025); see "Cart and guest
+  checkout" below.
+
+## Cart and guest checkout (ORD-001, ADR-025)
+
+- The cart is per market and lives in the visitor's browser: variant ids and quantities only. A line
+  holds 1–10 units of one variant (the same variant always merges into one line); a cart holds at most
+  20 lines, and one order at most 30 units (larger purchases go through the store). Prices, names, availability and totals are always recomputed by the server.
+- A variant can be ordered when its product is PUBLISHED with an active brand, the variant is ACTIVE,
+  tracks inventory and has an active price in the market, and the market's online store warehouse
+  holds enough **eligible** stock (released, not expired, expiry verified — INV-002) not already
+  reserved. Shoppers see "in stock" or "out of stock", never quantities.
+- Checkout asks for name, mobile (Saudi `05XXXXXXXX` or Egyptian `01[0125]XXXXXXXX`, stored as E.164)
+  and an optional e-mail, and a delivery address inside the market's country only:
+  Saudi Arabia — city, district, street required; building number (4 digits), unit, postal code
+  (5 digits), national short address (`ABCD1234`) and directions optional. Egypt — governorate (list),
+  city, street required; district, building, unit, postal code and directions optional.
+- Placing an order: re-prices every line (a changed price or availability refuses the order and
+  shows what changed), reserves stock first-expiry-first-out, takes the next order number of the
+  country and records the order as **Awaiting review / Not paid**. All or nothing.
+- Repeated submissions of the same attempt (double click, retry, reload) return the same order. At most
+  8 checkout attempts per client address per 15 minutes (only behind a configured trusted proxy), and
+  at most 3 orders awaiting review per mobile number: a fourth waits until staff confirm or cancel one.
+- The confirmation page shows the order number, items, subtotal, status and payment status; it opens
+  only in the browser that placed the order, for 30 days. Nothing claims an e-mail or SMS was sent.
+- Delivery fee: set by staff when confirming the order (0 = free). Until then the shopper sees
+  "confirmed by our team". Prices are shown as listed (VAT-inclusive in both markets today).
+
+## Orders in the back office (ORD-001, ADR-025)
+
+- Statuses: Awaiting review → Confirmed or Cancelled; Confirmed → Cancelled. Cancelled is final.
+  Payment status is always "Not paid" until PAY-001.
+- Confirm (`orders.update`): requires the delivery fee; total = subtotal + fee. Refused while any
+  reserved unit sits in a batch that is no longer eligible (quarantined, rejected, expired).
+- Cancel (`orders.cancel`): requires a reason; releases the reserved stock. Units from a lot that was
+  quarantined or rejected meanwhile go back to that lot's quarantine, not to sale.
+- Unreviewed orders are cancelled automatically `ORDER_REVIEW_HOURS` (default 48) after placement and
+  their stock released (`npm run orders:expire`, also run on checkout and on the order list).
+- Staff see orders of their scope; full mobile, e-mail and address need `customers.view`.
+- An online store's fulfilment warehouse must belong to the store's own legal entity.
 
 ## Organisation
 
@@ -225,8 +264,8 @@ Regulatory sources: `docs/COUNTRY_COMPLIANCE.md`. Decisions: `docs/DECISIONS.md`
 - **Inventory (INV-003…005):** adjustments need a reason and approval; batches with expiry are picked
   first-expiry-first-out (ordering in place since INV-002); valuation per ADR-018 (moving weighted
   average per legal entity).
-- **Orders (ORD-001):** prices, taxes and product names are snapshotted on the order; stock is reserved
-  at checkout and released on expiry or cancellation; order numbers are sequential per country.
+- **Orders (ORD-002):** fulfilment, stock deduction at shipping, notifications, customer accounts
+  (CUST-001), shipping zones (SHIP-001) and tax lines (PRC-001) build on ORD-001 above.
 - **Payments (PAY-001/002):** an order is paid only on verified evidence (provider confirmation with a
   valid signature, staff-verified bank transfer, collected COD); refunds need approval; no card data is
   stored.

@@ -48,6 +48,8 @@ export default defineConfig({
       // Every test signs in; throttling is covered by integration tests.
       AUTH_RATE_LIMIT_ENABLED: "false",
       DEFAULT_MARKET: "SA",
+      // Tests present their own client address, as one trusted proxy would append it.
+      TRUSTED_PROXY_HOPS: "1",
       NEXT_TELEMETRY_DISABLED: "1",
     },
   },

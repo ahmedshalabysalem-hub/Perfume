@@ -81,24 +81,25 @@ Demo barcodes use GS1 prefix 952, which GS1 reserves for examples — they are n
 
 ## Commands
 
-| Command                           | Purpose                                                              |
-| --------------------------------- | -------------------------------------------------------------------- |
-| `npm run dev`                     | Development server (Turbopack)                                       |
-| `npm run build` / `start`         | Production build / serve it                                          |
-| `npm run lint`                    | ESLint, zero warnings allowed                                        |
-| `npm run typecheck`               | Route type generation + `tsc --noEmit`                               |
-| `npm run format` / `format:check` | Prettier write / check                                               |
-| `npm test`                        | Unit and integration tests (Vitest)                                  |
-| `npm run test:unit`               | Unit tests only (no database)                                        |
-| `npm run test:integration`        | Integration tests against `TEST_DATABASE_URL`                        |
-| `npm run test:e2e`                | Playwright end-to-end tests (builds and starts the app on port 3100) |
-| `npm run verify`                  | lint + typecheck + tests + build                                     |
-| `npm run db:deploy`               | Apply pending migrations (non-destructive)                           |
-| `npm run db:migrate`              | Create/apply a migration while changing the schema (development)     |
-| `npm run db:seed`                 | Development seed                                                     |
-| `npm run db:sync-rbac`            | Sync the code-defined permissions and roles into the database        |
-| `npm run db:studio`               | Prisma Studio                                                        |
-| `npm run db:reset`                | **Drops and recreates the development database**, then seeds         |
+| Command                           | Purpose                                                                |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| `npm run dev`                     | Development server (Turbopack)                                         |
+| `npm run build` / `start`         | Production build / serve it                                            |
+| `npm run lint`                    | ESLint, zero warnings allowed                                          |
+| `npm run typecheck`               | Route type generation + `tsc --noEmit`                                 |
+| `npm run format` / `format:check` | Prettier write / check                                                 |
+| `npm test`                        | Unit and integration tests (Vitest)                                    |
+| `npm run test:unit`               | Unit tests only (no database)                                          |
+| `npm run test:integration`        | Integration tests against `TEST_DATABASE_URL`                          |
+| `npm run test:e2e`                | Playwright end-to-end tests (builds and starts the app on port 3100)   |
+| `npm run verify`                  | lint + typecheck + tests + build                                       |
+| `npm run db:deploy`               | Apply pending migrations (non-destructive)                             |
+| `npm run db:migrate`              | Create/apply a migration while changing the schema (development)       |
+| `npm run db:seed`                 | Development seed                                                       |
+| `npm run db:sync-rbac`            | Sync the code-defined permissions and roles into the database          |
+| `npm run orders:expire`           | Cancel online orders unreviewed past `ORDER_REVIEW_HOURS`; schedule it |
+| `npm run db:studio`               | Prisma Studio                                                          |
+| `npm run db:reset`                | **Drops and recreates the development database**, then seeds           |
 
 After editing `prisma/schema/*.prisma`, run `npx prisma generate` (Prisma 7 no longer does it during
 `migrate dev`). CHECK constraints and triggers are written by hand in migration SQL — see
@@ -123,7 +124,17 @@ Details and coverage map: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md).
 
 See [`.env.example`](.env.example) for every variable with comments. Required: `DATABASE_URL`,
 `APP_URL`, `BETTER_AUTH_SECRET`. Never commit `.env`; production secrets belong in the hosting
-provider's secret manager.
+provider's secret manager. `ORDER_REVIEW_HOURS` (default 48, `0` = never) is how long an online order
+may wait for staff review before it is cancelled and its reserved stock released (ADR-025). Set
+`TRUSTED_PROXY_HOPS` to exactly the number of reverse proxies in front of the app in production (usually
+1; a value that is too high lets a client forge its address again);
+the default 0 ignores X-Forwarded-For, which a client can forge, so no client IP is recorded — and in
+production checkout is then refused (unless `ALLOW_CHECKOUT_WITHOUT_CLIENT_IP=true`), because unpaid
+orders could otherwise hold stock with no per-client limit.
+
+Online ordering needs, per market, exactly one active ONLINE store with a fulfilment warehouse of the
+same legal entity (Organisation → Stores → Edit). The seed sets SA-ONLINE → SA-RUH-WH1 and
+EG-ONLINE → EG-CAI-WH1 but adds no stock: enter opening balances and release batches before testing.
 
 ## Project layout
 

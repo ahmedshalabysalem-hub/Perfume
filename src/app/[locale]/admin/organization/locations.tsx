@@ -23,7 +23,12 @@ type LocationRow = {
   addressLine1: string | null;
   city: string | null;
   isActive: boolean;
-  store: { type: "ONLINE" | "RETAIL"; phone: string | null; email: string | null } | null;
+  store: {
+    type: "ONLINE" | "RETAIL";
+    phone: string | null;
+    email: string | null;
+    fulfilmentWarehouseId: string | null;
+  } | null;
 };
 
 /** Shared page body for stores and warehouses. */
@@ -32,13 +37,28 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
   if (!actor) return <NoAccess />;
   const ctx = { actor, meta: await getRequestMeta() };
   const entities = await listLegalEntities(ctx);
+  const warehouses = await listWarehouses(ctx);
+  const warehouseOptions = warehouses
+    .filter((warehouse) => warehouse.isActive)
+    .map((warehouse) => ({
+      id: warehouse.id,
+      code: warehouse.code,
+      nameEn: warehouse.nameEn,
+      nameAr: warehouse.nameAr,
+      legalEntityId: warehouse.legalEntityId,
+    }));
   const rows: LocationRow[] =
     kind === "store"
       ? (await listStores(ctx)).map((store) => ({
           ...store,
-          store: { type: store.type, phone: store.phone, email: store.email },
+          store: {
+            type: store.type,
+            phone: store.phone,
+            email: store.email,
+            fulfilmentWarehouseId: store.fulfilmentWarehouseId,
+          },
         }))
-      : (await listWarehouses(ctx)).map((warehouse) => ({ ...warehouse, store: null }));
+      : warehouses.map((warehouse) => ({ ...warehouse, store: null }));
   const entityOptions = entities
     .filter(
       (entity) =>
@@ -66,7 +86,7 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
         actions={
           entityOptions.length > 0 ? (
             kind === "store" ? (
-              <NewStoreButton entities={entityOptions} />
+              <NewStoreButton entities={entityOptions} warehouses={warehouseOptions} />
             ) : (
               <NewWarehouseButton entities={entityOptions} />
             )
@@ -137,11 +157,13 @@ export async function LocationsPage({ kind, locale }: { kind: "store" | "warehou
                             id={row.id}
                             isActive={row.isActive}
                             entities={entityList}
+                            warehouses={warehouseOptions}
                             defaults={{
                               ...base,
                               type: row.store.type,
                               phone: row.store.phone ?? "",
                               email: row.store.email ?? "",
+                              fulfilmentWarehouseId: row.store.fulfilmentWarehouseId ?? "",
                             }}
                           />
                         ) : (

@@ -4,6 +4,7 @@ import { cache } from "react";
 import { normalizeSearchText } from "@/lib/catalog-text";
 import { z } from "@/lib/validation/zod";
 import { db, Prisma } from "@/server/db";
+import { cartAvailability } from "@/server/modules/orders/cart.service";
 
 /**
  * Public storefront reads. Only PUBLISHED products with at least one ACTIVE
@@ -91,6 +92,10 @@ export type StoreProductCard = {
   minPrice: string;
   compareAtPrice: string | null;
   variantCount: number;
+  /** The product's only variant when it has exactly one, so the card can offer "Add to cart". */
+  singleVariantId: string | null;
+  /** Whether that single variant can be ordered online now (checkout open and in stock). */
+  singleVariantInStock: boolean;
 };
 
 async function descendantCategoryIds(slug: string): Promise<string[]> {
@@ -179,6 +184,7 @@ export async function listStoreProducts(market: Market, rawQuery: unknown, local
       variants: {
         where: { status: "ACTIVE" },
         select: {
+          id: true,
           prices: {
             where: { countryCode: market.code, isActive: true },
             select: { amount: true, compareAtAmount: true },
@@ -211,9 +217,21 @@ export async function listStoreProducts(market: Market, rawQuery: unknown, local
         minPrice: cheapest ? cheapest.amount.toFixed(market.minorUnits) : row.min_price,
         compareAtPrice: cheapest?.compareAtAmount ? cheapest.compareAtAmount.toFixed(market.minorUnits) : null,
         variantCount: Number(row.variant_count),
+        singleVariantId:
+          Number(row.variant_count) === 1
+            ? (detail.variants.find((variant) => variant.prices.length > 0)?.id ?? null)
+            : null,
+        singleVariantInStock: false,
       },
     ];
   });
+  const singles = products.flatMap((product) => (product.singleVariantId ? [product.singleVariantId] : []));
+  if (singles.length > 0) {
+    const { inStock } = await cartAvailability(db, market.code, singles);
+    for (const product of products) {
+      product.singleVariantInStock = !!product.singleVariantId && inStock.has(product.singleVariantId);
+    }
+  }
   return { products, total, page, pageCount, query: { ...query, page } };
 }
 
