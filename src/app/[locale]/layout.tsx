@@ -43,7 +43,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const dir = localeDirection(locale);
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="min-h-dvh">
+      {/* Browser extensions (e.g. converters) add attributes to <body> before React hydrates;
+          ignore that one level only — mismatches inside the tree are still reported. */}
+      <body className="min-h-dvh" suppressHydrationWarning>
         <NextIntlClientProvider>
           <Providers dir={dir}>{children}</Providers>
         </NextIntlClientProvider>

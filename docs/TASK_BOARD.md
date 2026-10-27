@@ -92,7 +92,8 @@ Commits are where the work landed; tests are the evidence that it still holds. C
 | OPS-001   | docker-compose for local PostgreSQL, validated by a real run and a CI job                                                     | session 4 commit                | compose healthy, 4 migrations, no drift; 193 Vitest, 20 e2e on it                                         |
 | QA-002    | Test-plan gap assessment; direct tests of ledger, approval and audit-log CHECKs                                               | session 4 commit                | `database-constraints.test.ts` (12); full Vitest suite                                                    |
 | INV-002   | Batches/lots, inspection and quarantine, expiry (ADR-023)                                                                     | merge `4210b62` (PR #5)         | `batches.test.ts` (30), migration test (4), unit, e2e; 246 Vitest, 22 e2e; CI green; independent review   |
-| OPS-004   | Windows one-click `start.cmd` / `stop.cmd` (Docker Desktop or native PostgreSQL)                                              | PR (session branch)             | CI "Windows start scripts": two starts and stops on Windows                                               |
+| OPS-004   | Windows one-click `start.cmd` / `stop.cmd` (Docker Desktop or native PostgreSQL)                                              | merge `7ea936b` (PR #12)        | CI "Windows start scripts": two starts and stops on Windows                                               |
+| OPS-005   | Ignore extension-added `<body>` attributes in hydration (seen on Windows dev: `data-smart-converter-loaded`)                  | PR (session branch)             | Chromium check with the attribute injected: 1 hydration error before, 0 after                             |
 
 ---
 
