@@ -15,6 +15,10 @@ const NAVIGATION: NavDefinition[] = [
     items: [{ href: "/admin", label: "dashboard", icon: "dashboard", permission: "dashboard.view" }],
   },
   {
+    section: "sales",
+    items: [{ href: "/admin/orders", label: "orders", icon: "orders", permission: "orders.view" }],
+  },
+  {
     section: "catalog",
     items: [
       { href: "/admin/catalog/products", label: "products", icon: "products", permission: "products.view" },

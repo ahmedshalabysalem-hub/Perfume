@@ -10,6 +10,7 @@ export type NavIcon =
   | "concentrations"
   | "stock"
   | "batches"
+  | "orders"
   | "countries"
   | "legalEntities"
   | "stores"
@@ -29,6 +30,7 @@ export type NavLabel =
   | "concentrations"
   | "stock"
   | "batches"
+  | "orders"
   | "countries"
   | "legalEntities"
   | "stores"
@@ -39,6 +41,6 @@ export type NavLabel =
   | "audit";
 
 export type NavSection = {
-  section: "overview" | "catalog" | "inventory" | "procurement" | "organization" | "access";
+  section: "overview" | "sales" | "catalog" | "inventory" | "procurement" | "organization" | "access";
   items: Array<{ href: string; label: NavLabel; icon: NavIcon }>;
 };

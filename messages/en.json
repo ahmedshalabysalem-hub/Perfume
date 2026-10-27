@@ -267,7 +267,9 @@
     "stock": "Stock levels",
     "procurement": "Procurement",
     "suppliers": "Suppliers",
-    "batches": "Batches & expiry"
+    "batches": "Batches & expiry",
+    "sales": "Sales",
+    "orders": "Orders"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -610,7 +612,9 @@
     "deactivated": "Deactivated.",
     "deactivateConfirm": "Deactivate this record? It stays in history but cannot be used for new activity.",
     "countryLockedHint": "The country comes from the legal entity and cannot be changed.",
-    "currencyLockedHint": "Changing a market currency is a migration project, not a setting."
+    "currencyLockedHint": "Changing a market currency is a migration project, not a setting.",
+    "fulfilmentWarehouse": "Online orders ship from",
+    "fulfilmentWarehouseHint": "Warehouse of the same legal entity whose released stock this online store sells and reserves."
   },
   "users": {
     "title": "Staff users",
@@ -754,7 +758,7 @@
     },
     "cart": {
       "title": "Your cart",
-      "indicatorLabel": "Cart, {count, plural, =0 {empty} one {# item} other {# items}}",
+      "indicatorLabel": "Cart, {count, plural, =0 {no items} one {# item} other {# items}}",
       "add": "Add to cart",
       "added": "{name} added to your cart",
       "viewCart": "View cart",
@@ -1298,5 +1302,78 @@
   },
   "paymentStatus": {
     "UNPAID": "Not paid"
+  },
+  "orders": {
+    "title": "Orders",
+    "detailTitle": "Order",
+    "subtitle": "Storefront orders of the countries, companies and stores you are responsible for. Nothing here takes or records a payment.",
+    "searchPlaceholder": "Order number, customer name or mobile…",
+    "filters": {
+      "status": "Status",
+      "country": "Country"
+    },
+    "empty": "No orders yet",
+    "emptyHint": "Orders placed on the storefront appear here for review.",
+    "columns": {
+      "order": "Order",
+      "customer": "Customer",
+      "store": "Store",
+      "status": "Status",
+      "amount": "Amount",
+      "product": "Product",
+      "quantity": "Qty",
+      "unitPrice": "Unit price",
+      "lineTotal": "Line total"
+    },
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "subtotalOnly": "Subtotal, delivery not set",
+    "placedOn": "Placed {date} · {store}",
+    "guest": "Guest",
+    "reviewDue": "Awaiting review. Unless confirmed by {date}, the order is cancelled automatically and its reserved stock released.",
+    "reservationBlocked": "Some reserved units are in a batch that can no longer be sold (quarantined, rejected or expired). Resolve the batch or cancel the order; it cannot be confirmed meanwhile.",
+    "itemsHeading": "Items",
+    "tester": "Tester",
+    "reservation": {
+      "ACTIVE": "{quantity} reserved",
+      "RELEASED": "{quantity} released"
+    },
+    "legacyLot": "Legacy lot",
+    "expires": "expires",
+    "notSellable": "no longer sellable",
+    "subtotal": "Subtotal",
+    "shippingFee": "Delivery fee",
+    "total": "Total",
+    "notSet": "Not set yet",
+    "pricesIncludeTax": "Prices include VAT.",
+    "pricesExcludeTax": "Prices exclude VAT.",
+    "historyHeading": "Status history",
+    "system": "System",
+    "customerHeading": "Customer",
+    "contactHidden": "Full contact details and the address need the “View customer profiles and order contact details” permission.",
+    "addressHeading": "Delivery address",
+    "fulfilmentHeading": "Fulfilment",
+    "warehouse": "Warehouse",
+    "confirmedBy": "Confirmed by",
+    "cancelledBy": "Cancelled by",
+    "confirmHeading": "Confirm order",
+    "confirmHint": "Confirm after you have contacted the customer and agreed the delivery fee. Confirming does not mark the order paid.",
+    "fields": {
+      "shippingFee": "Delivery fee ({currency})",
+      "shippingFeeHint": "0 for free delivery.",
+      "cancelReason": "Reason for cancelling"
+    },
+    "confirm": "Confirm order",
+    "confirmed": "Order confirmed",
+    "cancelHeading": "Cancel order",
+    "cancel": "Cancel order",
+    "cancelled": "Order cancelled",
+    "cancelDialog": {
+      "title": "Cancel this order?",
+      "effect": "The order is cancelled for good and its reserved stock becomes available for sale again."
+    },
+    "systemReason": {
+      "placed": "Placed on the storefront",
+      "expired": "Not reviewed before the review deadline; reserved stock released"
+    }
   }
 }

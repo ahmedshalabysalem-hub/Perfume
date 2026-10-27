@@ -8,6 +8,7 @@ import { postStockMovements } from "@/server/modules/inventory/ledger";
 import { priceCart } from "@/server/modules/orders/cart.service";
 import { getOrderConfirmation, placeOrder } from "@/server/modules/orders/checkout.service";
 import { resolveOnlineStore, type OnlineStore } from "@/server/modules/orders/online-store";
+import { updateStore } from "@/server/modules/organization/organization.service";
 import {
   cancelOrder,
   confirmOrder,
@@ -282,6 +283,24 @@ describe("online store resolution", () => {
     expect(
       await dbErrorOf(db.store.update({ where: { id: saStoreId }, data: { fulfilmentWarehouseId: egWarehouseId } })),
     ).toMatch(/foreign key|Foreign key/);
+  });
+
+  it("the store form only accepts a warehouse of the store's own company", async () => {
+    const store = await db.store.findUniqueOrThrow({ where: { id: saStoreId } });
+    const input = {
+      code: store.code,
+      nameEn: store.nameEn,
+      nameAr: store.nameAr,
+      timezone: store.timezone,
+      type: store.type,
+      fulfilmentWarehouseId: egWarehouseId,
+    };
+    const refused = await errorOf(updateStore(f.superAdmin, saStoreId, input));
+    expect(refused.fieldErrors).toEqual({ fulfilmentWarehouseId: ["validation.invalidReference"] });
+    await updateStore(f.superAdmin, saStoreId, { ...input, fulfilmentWarehouseId: "" });
+    expect((await db.store.findUniqueOrThrow({ where: { id: saStoreId } })).fulfilmentWarehouseId).toBeNull();
+    await updateStore(f.superAdmin, saStoreId, { ...input, fulfilmentWarehouseId: f.warehouseId });
+    expect((await resolveOnlineStore(db, "SA"))?.warehouseId).toBe(f.warehouseId);
   });
 });
 
@@ -706,6 +725,10 @@ describe("order administration", () => {
     expect((await errorOf(listOrders(f.cashier, {}))).code).toBe("FORBIDDEN");
     expect((await listOrders(f.saManager, { q: "0512345678" })).total).toBe(1);
     expect((await listOrders(f.saManager, { q: sa.orderNumber })).total).toBe(1);
+    // An order number never matches phone digits of other orders ("SA-000001" is not "1").
+    expect((await listOrders(f.superAdmin, { q: sa.orderNumber })).rows.map((row) => row.orderNumber)).toEqual([
+      sa.orderNumber,
+    ]);
   });
 
   it("confirms with a shipping fee, fixing the total, without marking it paid", async () => {

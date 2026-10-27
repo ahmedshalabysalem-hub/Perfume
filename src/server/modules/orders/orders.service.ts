@@ -63,14 +63,20 @@ export async function listOrders(ctx: ServiceContext, rawQuery: unknown) {
   if (query.country) conditions.push({ countryCode: query.country });
   if (query.q) {
     const text = normalizeDigits(query.q).trim();
-    const digits = text.replace(/\D/g, "");
-    conditions.push({
-      OR: [
-        { orderNumber: { contains: text.toUpperCase() } },
-        { customerName: { contains: text, mode: "insensitive" } },
-        ...(digits.length >= 4 ? [{ customerPhone: { contains: digits.replace(/^0+/, "") } }] : []),
-      ],
-    });
+    if (/^[A-Z]{2}-\d+$/i.test(text)) {
+      // An order number: match it alone, never phone digits ("SA-000002" must not find every "2").
+      conditions.push({ orderNumber: { contains: text.toUpperCase() } });
+    } else {
+      // Phone digits without the trunk zero, so "0551234567" finds "+966551234567".
+      const digits = text.replace(/\D/g, "").replace(/^0+/, "");
+      conditions.push({
+        OR: [
+          { orderNumber: { contains: text.toUpperCase() } },
+          { customerName: { contains: text, mode: "insensitive" } },
+          ...(digits.length >= 4 ? [{ customerPhone: { contains: digits } }] : []),
+        ],
+      });
+    }
   }
   const where: Prisma.OrderWhereInput = { AND: conditions };
   const total = await db.order.count({ where });

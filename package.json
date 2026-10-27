@@ -21,6 +21,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:sync-rbac": "tsx scripts/sync-rbac.ts",
+    "orders:expire": "tsx --conditions=react-server scripts/expire-orders.ts",
     "db:reset": "prisma migrate reset --force && prisma db seed",
     "db:studio": "prisma studio",
     "test": "vitest run",

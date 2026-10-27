@@ -53,7 +53,7 @@
     "previous": "السابق",
     "next": "التالي",
     "pageOf": "صفحة {page} من {pages}",
-    "resultsCount": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+    "resultsCount": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {#نتائج} many {#نتيجة} other {#نتيجة}}",
     "sortBy": "الترتيب حسب",
     "language": "اللغة",
     "english": "English",
@@ -267,7 +267,9 @@
     "stock": "أرصدة المخزون",
     "procurement": "المشتريات",
     "suppliers": "الموردون",
-    "batches": "التشغيلات والصلاحية"
+    "batches": "التشغيلات والصلاحية",
+    "sales": "المبيعات",
+    "orders": "الطلبات"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -281,7 +283,7 @@
     "staffUsers": "موظفون نشطون",
     "marketCoverage": "تغطية الأسواق",
     "marketCoverageHint": "الأصناف النشطة التي لها سعر نشط في كل سوق.",
-    "pricedSkus": "{count, plural, =0 {لا توجد أصناف مسعّرة} one {صنف مسعّر واحد} two {صنفان مسعّران} few {# أصناف مسعّرة} many {# صنفًا مسعّرًا} other {# صنف مسعّر}}",
+    "pricedSkus": "{count, plural, =0 {لا توجد أصناف مسعّرة} one {صنف مسعّر واحد} two {صنفان مسعّران} few {#أصناف مسعّرة} many {#صنفًا مسعّرًا} other {#صنف مسعّر}}",
     "catalogHealth": "سلامة الكتالوج",
     "catalogHealthHint": "عناصر تحتاج إلى معالجة قبل أن تُباع.",
     "publishedWithoutPrice": "منتجات منشورة بلا سعر في {market}",
@@ -610,7 +612,9 @@
     "deactivated": "تم الإيقاف.",
     "deactivateConfirm": "هل تريد إيقاف هذا السجل؟ سيبقى في السجل التاريخي لكن لا يمكن استخدامه لنشاط جديد.",
     "countryLockedHint": "الدولة مأخوذة من الكيان القانوني ولا يمكن تغييرها.",
-    "currencyLockedHint": "تغيير عملة السوق مشروع ترحيل وليس إعدادًا."
+    "currencyLockedHint": "تغيير عملة السوق مشروع ترحيل وليس إعدادًا.",
+    "fulfilmentWarehouse": "مستودع تنفيذ الطلبات الإلكترونية",
+    "fulfilmentWarehouseHint": "مستودع تابع لنفس الكيان القانوني، يبيع المتجر الإلكتروني من مخزونه المفرج عنه ويحجز منه."
   },
   "users": {
     "title": "المستخدمون",
@@ -658,7 +662,7 @@
     "subtitle": "أدوار النظام معرّفة في الكود وتُزامَن عند النشر. تُطبَّق الصلاحيات على الخادم.",
     "system": "دور نظام",
     "allowedScopes": "يمكن تعيينه على مستوى",
-    "usersCount": "{count, plural, =0 {لا يوجد مستخدمون} one {مستخدم واحد} two {مستخدمان} few {# مستخدمين} many {# مستخدمًا} other {# مستخدم}}",
+    "usersCount": "{count, plural, =0 {لا يوجد مستخدمون} one {مستخدم واحد} two {مستخدمان} few {#مستخدمين} many {#مستخدمًا} other {#مستخدم}}",
     "permissions": "الصلاحيات",
     "notYetAvailable": "الوحدة غير متاحة بعد",
     "sensitive": "حساسة",
@@ -754,7 +758,7 @@
     },
     "cart": {
       "title": "سلة المشتريات",
-      "indicatorLabel": "السلة، {count, plural, =0 {فارغة} one {قطعة واحدة} two {قطعتان} few {# قطع} many {# قطعة} other {# قطعة}}",
+      "indicatorLabel": "السلة، {count, plural, =0 {فارغة} one {قطعة واحدة} two {قطعتان} few {#قطع} many {#قطعة} other {#قطعة}}",
       "add": "أضف إلى السلة",
       "added": "تمت إضافة {name} إلى السلة",
       "viewCart": "عرض السلة",
@@ -1298,5 +1302,78 @@
   },
   "paymentStatus": {
     "UNPAID": "غير مدفوع"
+  },
+  "orders": {
+    "title": "الطلبات",
+    "detailTitle": "الطلب",
+    "subtitle": "طلبات المتجر الإلكتروني للدول والشركات والفروع التي تتولاها. لا يتم هنا تحصيل أي دفعة أو تسجيلها.",
+    "searchPlaceholder": "رقم الطلب أو اسم العميل أو الجوال…",
+    "filters": {
+      "status": "الحالة",
+      "country": "الدولة"
+    },
+    "empty": "لا توجد طلبات بعد",
+    "emptyHint": "تظهر هنا طلبات المتجر الإلكتروني لمراجعتها.",
+    "columns": {
+      "order": "الطلب",
+      "customer": "العميل",
+      "store": "الفرع",
+      "status": "الحالة",
+      "amount": "المبلغ",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "unitPrice": "سعر الوحدة",
+      "lineTotal": "الإجمالي"
+    },
+    "itemCount": "{count, plural, one {قطعة واحدة} two {قطعتان} few {#قطع} many {#قطعة} other {#قطعة}}",
+    "subtotalOnly": "المجموع الفرعي، التوصيل لم يُحدد",
+    "placedOn": "تاريخ الطلب {date} · {store}",
+    "guest": "ضيف",
+    "reviewDue": "بانتظار المراجعة. إذا لم يُؤكَّد قبل {date} يُلغى الطلب تلقائياً ويُفك حجز مخزونه.",
+    "reservationBlocked": "بعض القطع المحجوزة من دفعة لم تعد صالحة للبيع (موقوفة للفحص أو مرفوضة أو منتهية). عالج الدفعة أو ألغِ الطلب؛ لا يمكن تأكيده حتى ذلك الحين.",
+    "itemsHeading": "المنتجات",
+    "tester": "تستر",
+    "reservation": {
+      "ACTIVE": "{quantity} محجوزة",
+      "RELEASED": "{quantity} تم فك حجزها"
+    },
+    "legacyLot": "دفعة قديمة",
+    "expires": "تنتهي",
+    "notSellable": "لم تعد صالحة للبيع",
+    "subtotal": "المجموع الفرعي",
+    "shippingFee": "رسوم التوصيل",
+    "total": "الإجمالي",
+    "notSet": "لم تُحدد بعد",
+    "pricesIncludeTax": "الأسعار شاملة ضريبة القيمة المضافة.",
+    "pricesExcludeTax": "الأسعار غير شاملة ضريبة القيمة المضافة.",
+    "historyHeading": "سجل الحالة",
+    "system": "النظام",
+    "customerHeading": "العميل",
+    "contactHidden": "بيانات التواصل الكاملة والعنوان تحتاج صلاحية «عرض ملفات العملاء وبيانات التواصل في الطلبات».",
+    "addressHeading": "عنوان التوصيل",
+    "fulfilmentHeading": "التنفيذ",
+    "warehouse": "المستودع",
+    "confirmedBy": "أكّده",
+    "cancelledBy": "ألغاه",
+    "confirmHeading": "تأكيد الطلب",
+    "confirmHint": "أكّد بعد التواصل مع العميل والاتفاق على رسوم التوصيل. التأكيد لا يعني أن الطلب مدفوع.",
+    "fields": {
+      "shippingFee": "رسوم التوصيل ({currency})",
+      "shippingFeeHint": "اكتب 0 للتوصيل المجاني.",
+      "cancelReason": "سبب الإلغاء"
+    },
+    "confirm": "تأكيد الطلب",
+    "confirmed": "تم تأكيد الطلب",
+    "cancelHeading": "إلغاء الطلب",
+    "cancel": "إلغاء الطلب",
+    "cancelled": "تم إلغاء الطلب",
+    "cancelDialog": {
+      "title": "إلغاء هذا الطلب؟",
+      "effect": "يُلغى الطلب نهائياً ويعود مخزونه المحجوز متاحاً للبيع."
+    },
+    "systemReason": {
+      "placed": "طلب من المتجر الإلكتروني",
+      "expired": "لم يُراجَع قبل الموعد المحدد؛ تم فك حجز المخزون"
+    }
   }
 }

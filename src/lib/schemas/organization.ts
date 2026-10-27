@@ -6,6 +6,7 @@ import {
   isoCountryCode,
   optionalEmail,
   optionalText,
+  optionalUuid,
   requiredText,
   timeZoneField,
   uuid,
@@ -80,6 +81,8 @@ export const storeCreateSchema = z.object({
   type: z.enum(STORE_TYPES),
   phone: optionalText(32),
   email: optionalEmail(),
+  /** Warehouse of the same legal entity that ships this store's online orders (ADR-025). */
+  fulfilmentWarehouseId: optionalUuid(),
 });
 
 /** A store's legal entity (and therefore country/currency) is fixed once created. */

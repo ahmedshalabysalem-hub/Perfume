@@ -3,7 +3,7 @@
 import { Pencil, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { ActivationToggle } from "@/components/admin/activation-toggle";
 import { FormDialog } from "@/components/admin/form-dialog";
 import { CheckboxInput, SelectInput, TextInput } from "@/components/forms/inputs";
@@ -36,6 +36,8 @@ import {
 } from "./actions";
 
 type EntityOption = { id: string; code: string; nameEn: string; nameAr: string; countryCode: string; timezone: string };
+/** Active warehouses a store may ship online orders from (same legal entity only). */
+export type WarehouseOption = { id: string; code: string; nameEn: string; nameAr: string; legalEntityId: string };
 type CountryOption = { code: string; nameEn: string; nameAr: string };
 
 function FormFooter({ submitting, onCancel }: { submitting: boolean; onCancel: () => void }) {
@@ -339,19 +341,24 @@ function StoreForm({
   id,
   defaults,
   entities,
+  warehouses,
   onDone,
 }: {
   id?: string;
   defaults: StoreValues;
   entities: EntityOption[];
+  warehouses: WarehouseOption[];
   onDone: () => void;
 }) {
   const t = useTranslations("organization");
+  const common = useTranslations("common");
+  const locale = useLocale();
   const form = useForm<StoreValues>({
     resolver: formResolver(id ? (storeUpdateSchema as unknown as typeof storeCreateSchema) : storeCreateSchema),
     defaultValues: defaults,
   });
   const submit = useActionSubmit(form.setError);
+  const legalEntityId = useWatch({ control: form.control, name: "legalEntityId" });
   const onSubmit = form.handleSubmit(async (values) => {
     const result = id
       ? await submit(() => updateStoreAction(id, values), t("saved"))
@@ -375,6 +382,20 @@ function StoreForm({
             />
             <TextInput form={form} name="phone" label={t("phone")} type="tel" dir="ltr" />
             <TextInput form={form} name="email" label={t("email")} type="email" dir="ltr" />
+            <SelectInput
+              form={form}
+              name="fulfilmentWarehouseId"
+              label={t("fulfilmentWarehouse")}
+              description={t("fulfilmentWarehouseHint")}
+              placeholder={common("none")}
+              className="sm:col-span-2"
+              options={warehouses
+                .filter((warehouse) => warehouse.legalEntityId === legalEntityId)
+                .map((warehouse) => ({
+                  value: warehouse.id,
+                  label: `${warehouse.code} · ${localized(locale, warehouse.nameAr, warehouse.nameEn)}`,
+                }))}
+            />
           </>
         }
       />
@@ -416,7 +437,7 @@ function WarehouseForm({
   );
 }
 
-export function NewStoreButton({ entities }: { entities: EntityOption[] }) {
+export function NewStoreButton({ entities, warehouses }: { entities: EntityOption[]; warehouses: WarehouseOption[] }) {
   const t = useTranslations("organization");
   const first = entities[0];
   return (
@@ -432,6 +453,7 @@ export function NewStoreButton({ entities }: { entities: EntityOption[] }) {
       {(close) => (
         <StoreForm
           entities={entities}
+          warehouses={warehouses}
           onDone={close}
           defaults={{
             code: "",
@@ -444,6 +466,7 @@ export function NewStoreButton({ entities }: { entities: EntityOption[] }) {
             city: "",
             phone: "",
             email: "",
+            fulfilmentWarehouseId: "",
           }}
         />
       )}
@@ -456,11 +479,13 @@ export function StoreRowActions({
   isActive,
   defaults,
   entities,
+  warehouses,
 }: {
   id: string;
   isActive: boolean;
   defaults: StoreValues;
   entities: EntityOption[];
+  warehouses: WarehouseOption[];
 }) {
   const t = useTranslations("organization");
   const common = useTranslations("common");
@@ -477,7 +502,9 @@ export function StoreRowActions({
         size="sm"
         wide
       >
-        {(close) => <StoreForm id={id} defaults={defaults} entities={entities} onDone={close} />}
+        {(close) => (
+          <StoreForm id={id} defaults={defaults} entities={entities} warehouses={warehouses} onDone={close} />
+        )}
       </FormDialog>
       <Toggle isActive={isActive} setActive={(active) => setStoreActiveAction(id, active)} />
     </div>

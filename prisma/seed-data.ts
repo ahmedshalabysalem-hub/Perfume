@@ -341,7 +341,7 @@ export const PRODUCTS: SeedProduct[] = [
         sku: "NS-DVT-100-T",
         sizeMl: "100",
         nameEn: "100 ml Tester",
-        nameAr: "١٠٠ مل (تستر)",
+        nameAr: "100 مل (تستر)",
         isTester: true,
         barcode: { kind: "internal", value: "PF0000000201" },
         prices: [{ country: "SA", amount: "360.00" }],
@@ -388,7 +388,7 @@ export const PRODUCTS: SeedProduct[] = [
     shortDescriptionAr: "أو دو بارفان ومعطر للجسم وعبوة سفر.",
     descriptionEn:
       "A gift box with Amber Nights eau de parfum (100 ml), matching body mist (75 ml) and a 10 ml travel spray.",
-    descriptionAr: "علبة هدايا تضم أو دو بارفان ليالي العنبر (١٠٠ مل) ومعطر جسم مطابق (٧٥ مل) وعبوة سفر ١٠ مل.",
+    descriptionAr: "علبة هدايا تضم أو دو بارفان ليالي العنبر (100 مل) ومعطر جسم مطابق (75 مل) وعبوة سفر 10 مل.",
     audience: "UNISEX",
     concentration: "EDP",
     family: "AMBER",
