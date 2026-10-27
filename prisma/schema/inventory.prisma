@@ -90,15 +90,16 @@ model StockBatch {
   createdById        String?                 @map("created_by_id") @db.Uuid
   updatedAt          DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  legalEntity     LegalEntity     @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
-  variant         ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Restrict)
-  supplier        Supplier?       @relation(fields: [supplierId, legalEntityId], references: [id, legalEntityId], onDelete: Restrict)
-  createdBy       User?           @relation("StockBatchCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  statusChangedBy User?           @relation("StockBatchStatusChanger", fields: [statusChangedById], references: [id], onDelete: Restrict)
-  verifiedBy      User?           @relation("StockBatchVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  legalEntity     LegalEntity        @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  variant         ProductVariant     @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  supplier        Supplier?          @relation(fields: [supplierId, legalEntityId], references: [id, legalEntityId], onDelete: Restrict)
+  createdBy       User?              @relation("StockBatchCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  statusChangedBy User?              @relation("StockBatchStatusChanger", fields: [statusChangedById], references: [id], onDelete: Restrict)
+  verifiedBy      User?              @relation("StockBatchVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
   balances        StockBalance[]
   movements       StockMovement[]
-  country         Country         @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  reservations    StockReservation[]
+  country         Country            @relation(fields: [countryCode], references: [code], onDelete: Restrict)
 
   @@unique([legalEntityId, variantId, lotNumber])
   @@unique([id, variantId])

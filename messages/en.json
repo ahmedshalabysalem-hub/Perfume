@@ -102,7 +102,8 @@
       "supplierVariant": "This variant is already linked to the supplier.",
       "supplierSku": "This supplier code is already used for another product.",
       "batchVersion": "This batch was changed by someone else. Reload the page and try again.",
-      "lotNumber": "Another batch of this variant already has this lot number."
+      "lotNumber": "Another batch of this variant already has this lot number.",
+      "orderVersion": "This order was changed by someone else. Reload the page and try again."
     },
     "invalidState": {
       "transition": "This status change is not allowed.",
@@ -132,7 +133,8 @@
       "expiryTrackingBlocked": "A batch of {sku} is recorded as expiry not applicable; expiry tracking cannot be switched on.",
       "expiryTracked": "{sku} tracks expiry, so \"not applicable\" is not allowed.",
       "expiryAlreadyRecorded": "An expiry date is already recorded for this batch; it can be corrected but not removed.",
-      "lotNumberFixed": "The lot number of this batch cannot change."
+      "lotNumberFixed": "The lot number of this batch cannot change.",
+      "reservedStockIneligible": "Some reserved units belong to a lot that can no longer be sold (quarantined, rejected or expired). Cancel the order or wait until the lot is released."
     },
     "approval": {
       "alreadyPending": "This record already has a pending approval request.",
@@ -153,6 +155,12 @@
       "expiryRequired": "This variant tracks expiry: enter the expiry date from the label.",
       "batchDetailsDiffer": "This lot is already recorded with different details. Correct the batch instead.",
       "supplierOtherCompany": "The supplier must belong to the batch's company."
+    },
+    "checkout": {
+      "cartChanged": "Some items in your cart changed. Review the highlighted items and try again.",
+      "unavailable": "Online ordering is not available in this market yet.",
+      "keyReused": "This checkout was already submitted with different details. Please review your order and submit it again.",
+      "marketChanged": "Your market changed in another tab. Reload the page to see this market's cart."
     }
   },
   "validation": {
@@ -206,7 +214,16 @@
     "labelDate": "Enter a date as YYYY-MM-DD, or YYYY-MM for month and year only.",
     "calendarDate": "Enter a full date as YYYY-MM-DD.",
     "expiryOutcomeDate": "Leave the date empty unless the outcome is a label date.",
-    "expiryAfterManufacture": "The expiry date must be after the manufacturing date."
+    "expiryAfterManufacture": "The expiry date must be after the manufacturing date.",
+    "quantityRange": "Choose a quantity between 1 and {max}.",
+    "duplicateLine": "Each product size can appear only once.",
+    "phoneSa": "Enter a Saudi mobile number, e.g. 05XXXXXXXX.",
+    "phoneEg": "Enter an Egyptian mobile number, e.g. 01XXXXXXXXX.",
+    "governorate": "Select a governorate.",
+    "postalCode": "Enter a 5-digit postal code.",
+    "buildingNumberSa": "Enter the 4-digit building number.",
+    "shortAddress": "Use the short address format: 4 letters and 4 digits, e.g. RRRD2929.",
+    "deliveryUnavailable": "We do not deliver to this country yet."
   },
   "auth": {
     "signInTitle": "Sign in to the back office",
@@ -724,15 +741,115 @@
       "availableIn": "Available in {country}",
       "notAvailableIn": "Not currently available in {country}",
       "tester": "Tester",
-      "orderingNotice": "Online checkout is not yet available. Prices shown are current retail prices in {country}, including VAT.",
-      "orderingNoticeExclusive": "Online checkout is not yet available. Prices shown are current retail prices in {country}, excluding VAT.",
+      "orderingNotice": "Prices shown are current retail prices in {country}, including VAT. No online payment is taken: our team reviews each order and contacts you to confirm delivery and payment.",
+      "orderingNoticeExclusive": "Prices shown are current retail prices in {country}, excluding VAT. No online payment is taken: our team reviews each order and contacts you to confirm delivery and payment.",
       "breadcrumbShop": "Shop",
-      "illustrationAlt": "Illustration of {name}"
+      "illustrationAlt": "Illustration of {name}",
+      "chooseSize": "Choose size"
     },
     "footer": {
       "about": "A demonstration storefront. Products and brands shown are fictional.",
       "rights": "© {year} Perfume House",
       "admin": "Staff sign-in"
+    },
+    "cart": {
+      "title": "Your cart",
+      "indicatorLabel": "Cart, {count, plural, =0 {empty} one {# item} other {# items}}",
+      "add": "Add to cart",
+      "added": "{name} added to your cart",
+      "viewCart": "View cart",
+      "maxReached": "You can order up to {max} of each item.",
+      "quantity": "Quantity",
+      "quantityFor": "Quantity of {name}",
+      "increase": "Increase quantity",
+      "decrease": "Decrease quantity",
+      "inStock": "In stock",
+      "outOfStock": "Out of stock",
+      "unavailableNow": "Currently unavailable",
+      "checkoutClosed": "Online ordering is not available in this market yet",
+      "emptyTitle": "Your cart is empty",
+      "emptyBody": "Browse our fragrances and add the ones you love.",
+      "continueShopping": "Continue shopping",
+      "itemsHeading": "Items in your cart",
+      "unitPrice": "{price} each",
+      "remove": "Remove",
+      "lineUnavailable": "No longer available in {country}. Remove it to continue.",
+      "lineOutOfStock": "Out of stock. Remove it to continue.",
+      "lineInsufficient": "Not enough stock for this quantity. Reduce the quantity to continue.",
+      "summary": "Order summary",
+      "subtotal": "Subtotal",
+      "shipping": "Delivery",
+      "shippingLater": "Confirmed by our team",
+      "pricesIncludeTax": "Prices include VAT.",
+      "pricesExcludeTax": "Prices exclude VAT.",
+      "fixProblems": "Some items need your attention before you can check out.",
+      "checkout": "Proceed to checkout",
+      "noPaymentNote": "No account and no online payment needed.",
+      "retry": "Try again"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "closed": "Online ordering is not available in this market yet.",
+      "emptyCart": "Your cart is empty, so there is nothing to check out.",
+      "contactHeading": "Contact details",
+      "name": "Full name",
+      "phone": "Mobile number",
+      "phoneHintSa": "Saudi mobile, e.g. 05XXXXXXXX. We call or message you about this order only.",
+      "phoneHintEg": "Egyptian mobile, e.g. 01XXXXXXXXX. We call or message you about this order only.",
+      "email": "Email (optional)",
+      "emailHint": "Used only to contact you about this order.",
+      "addressHeading": "Delivery address",
+      "deliverWithin": "We deliver within {country} only. To order for another country, switch the market at the top of the page.",
+      "chooseGovernorate": "Choose a governorate",
+      "address": {
+        "governorate": "Governorate",
+        "region": "Region",
+        "city": "City",
+        "district": "District",
+        "street": "Street",
+        "buildingNumber": "Building number",
+        "unit": "Apartment / unit",
+        "postalCode": "Postal code",
+        "shortAddress": "National short address",
+        "additional": "Landmark / additional directions"
+      },
+      "hints": {
+        "buildingNumberSa": "4 digits from the national address.",
+        "shortAddress": "4 letters and 4 digits, e.g. RRRD2929.",
+        "postalCode": "5 digits."
+      },
+      "deliveryNotes": "Delivery notes (optional)",
+      "paymentHeading": "Payment",
+      "paymentNotice": "No online payment is taken and no card details are requested. After you place the order, our team reviews it and contacts you to confirm the delivery fee and how to pay.",
+      "summaryHeading": "Your order",
+      "quantityShort": "Qty {quantity}",
+      "placeOrder": "Place order",
+      "placing": "Placing your order…",
+      "reviewNote": "Your order is reserved for you and reviewed by our team before delivery.",
+      "backToCart": "Back to cart",
+      "redirecting": "Order placed. Opening your confirmation…"
+    },
+    "confirmation": {
+      "title": "Thank you, we received your order",
+      "intro": "{name}, your order has been placed and is waiting for our team to review it.",
+      "orderDetails": "Order details",
+      "orderNumber": "Order number",
+      "keepNumber": "Keep this number to ask us about your order.",
+      "placedAt": "Placed",
+      "status": "Order status",
+      "payment": "Payment",
+      "nextHeading": "What happens next",
+      "nextBody": "Our team will review your order and contact you on the mobile number ending {phone} to confirm the delivery fee, delivery time and payment.",
+      "noPayment": "You have not been charged. Nothing is paid online.",
+      "itemsHeading": "Items",
+      "quantityTimesPrice": "{quantity} × {price}",
+      "total": "Total",
+      "deliveryHeading": "Delivery to",
+      "building": "Building {number}",
+      "contactHeading": "Questions?",
+      "contactBody": "Contact {store} and mention your order number.",
+      "missingTitle": "Order not found",
+      "missingBody": "This confirmation is only available in the browser that placed the order, for 30 days. If you need help, contact us with your order number."
     }
   },
   "stockStatus": {
@@ -1148,6 +1265,14 @@
       },
       "status": "User status changed",
       "update": "Staff user updated"
+    },
+    "orders": {
+      "order": {
+        "place": "Order placed",
+        "confirm": "Order confirmed",
+        "cancel": "Order cancelled",
+        "expire": "Order expired unreviewed"
+      }
     }
   },
   "permissionModules": {
@@ -1165,5 +1290,13 @@
     "procurement": "Procurement",
     "reports": "Reports",
     "sales": "Sales and orders"
+  },
+  "orderStatus": {
+    "PENDING_REVIEW": "Awaiting review",
+    "CONFIRMED": "Confirmed",
+    "CANCELLED": "Cancelled"
+  },
+  "paymentStatus": {
+    "UNPAID": "Not paid"
   }
 }

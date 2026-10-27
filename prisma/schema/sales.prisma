@@ -1,0 +1,219 @@
+// ─── Sales: storefront orders (ORD-001, ADR-025) ─────────────────────────────
+// A guest places an order on the online store of the visitor's market. The
+// order belongs to that store's legal entity and country and is priced in the
+// country's currency; nothing on it is taken from the browser. Prices, names
+// and the delivery address are snapshotted on the order. Stock is reserved on
+// the store's fulfilment warehouse when the order is placed (StockReservation)
+// and released when it is cancelled. Payment is a separate status; this phase
+// only knows UNPAID. CHECK constraints and triggers live in the migration SQL.
+
+enum OrderStatus {
+  /// Placed by the customer; staff have not reviewed it yet.
+  PENDING_REVIEW
+  /// Accepted by staff; the shipping fee and total are final.
+  CONFIRMED
+  /// Withdrawn by staff, or expired unreviewed. Final.
+  CANCELLED
+}
+
+/// Payment is tracked apart from the order status (PRD module 6). Later
+/// phases add verified states (PAY-001/002); nothing here marks an order paid.
+enum PaymentStatus {
+  UNPAID
+}
+
+enum OrderChannel {
+  ONLINE
+}
+
+enum StockReservationStatus {
+  ACTIVE
+  RELEASED
+}
+
+/// Last order number issued per country ("SA-000123"); one row per country.
+model OrderNumberCounter {
+  countryCode String   @id @map("country_code") @db.Char(2)
+  lastValue   Int      @default(0) @map("last_value")
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  country Country @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+
+  @@map("order_number_counters")
+}
+
+model Order {
+  id            String        @id @default(uuid(7)) @db.Uuid
+  /// Sequential per country, e.g. "SA-000123". Never used as an access key.
+  orderNumber   String        @unique @map("order_number") @db.VarChar(20)
+  channel       OrderChannel  @default(ONLINE)
+  storeId       String        @map("store_id") @db.Uuid
+  legalEntityId String        @map("legal_entity_id") @db.Uuid
+  countryCode   String        @map("country_code") @db.Char(2)
+  currencyCode  String        @map("currency_code") @db.Char(3)
+  /// Warehouse the order's stock is reserved in (the store's at placement).
+  warehouseId   String        @map("warehouse_id") @db.Uuid
+  status        OrderStatus   @default(PENDING_REVIEW)
+  paymentStatus PaymentStatus @default(UNPAID) @map("payment_status")
+  /// True for orders placed without a customer account (all of them for now).
+  isGuest       Boolean       @default(true) @map("is_guest")
+  /// Interface language at checkout, for later customer communication.
+  locale        String        @db.VarChar(5)
+
+  // Contact (snapshot; no customer account is created).
+  customerName  String  @map("customer_name") @db.VarChar(120)
+  /// E.164, e.g. "+966512345678".
+  customerPhone String  @map("customer_phone") @db.VarChar(20)
+  customerEmail String? @map("customer_email") @db.VarChar(254)
+
+  // Delivery address (snapshot). Always in the store's country.
+  shipCountryCode    String  @map("ship_country_code") @db.Char(2)
+  /// Egyptian governorate code; NULL in Saudi Arabia.
+  shipRegion         String? @map("ship_region") @db.VarChar(40)
+  shipCity           String  @map("ship_city") @db.VarChar(100)
+  shipDistrict       String? @map("ship_district") @db.VarChar(100)
+  shipStreet         String  @map("ship_street") @db.VarChar(200)
+  shipBuildingNumber String? @map("ship_building_number") @db.VarChar(20)
+  /// Floor / apartment.
+  shipUnit           String? @map("ship_unit") @db.VarChar(40)
+  shipPostalCode     String? @map("ship_postal_code") @db.VarChar(10)
+  /// Saudi National Address short address, e.g. "RRRD2929".
+  shipShortAddress   String? @map("ship_short_address") @db.VarChar(8)
+  shipAdditional     String? @map("ship_additional") @db.VarChar(200)
+  deliveryNotes      String? @map("delivery_notes") @db.VarChar(300)
+
+  // Amounts in the order currency, computed by the server.
+  itemCount        Int      @map("item_count")
+  subtotal         Decimal  @db.Decimal(14, 2)
+  /// NULL until staff set it when confirming (shipping is not configured yet).
+  shippingFee      Decimal? @map("shipping_fee") @db.Decimal(14, 2)
+  /// subtotal + shippingFee once the fee is known.
+  total            Decimal? @db.Decimal(14, 2)
+  /// The market's tax setting at placement: prices included VAT.
+  pricesIncludeTax Boolean  @map("prices_include_tax")
+
+  // Lifecycle.
+  placedAt      DateTime  @default(now()) @map("placed_at") @db.Timestamptz(3)
+  /// Unreviewed orders are cancelled automatically after this moment; NULL = never.
+  reviewDueAt   DateTime? @map("review_due_at") @db.Timestamptz(3)
+  confirmedAt   DateTime? @map("confirmed_at") @db.Timestamptz(3)
+  confirmedById String?   @map("confirmed_by_id") @db.Uuid
+  cancelledAt   DateTime? @map("cancelled_at") @db.Timestamptz(3)
+  /// NULL when cancelled by the system (review deadline passed).
+  cancelledById String?   @map("cancelled_by_id") @db.Uuid
+  cancelReason  String?   @map("cancel_reason") @db.VarChar(500)
+
+  /// Browser-chosen key of the checkout attempt; a retry returns this order.
+  idempotencyKey String   @map("idempotency_key") @db.VarChar(64)
+  /// SHA-256 of the normalised checkout request, to refuse a reused key.
+  requestHash    String   @map("request_hash") @db.Char(64)
+  /// Bumped on every change; guards staff screens against stale submits.
+  version        Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  store        Store               @relation(fields: [storeId, legalEntityId, countryCode], references: [id, legalEntityId, countryCode], onDelete: Restrict)
+  country      Country             @relation(fields: [countryCode, currencyCode], references: [code, currencyCode], onDelete: Restrict, onUpdate: Restrict)
+  warehouse    Warehouse           @relation(fields: [warehouseId, legalEntityId], references: [id, legalEntityId], onDelete: Restrict)
+  confirmedBy  User?               @relation("OrderConfirmer", fields: [confirmedById], references: [id], onDelete: Restrict)
+  cancelledBy  User?               @relation("OrderCanceller", fields: [cancelledById], references: [id], onDelete: Restrict)
+  items        OrderItem[]
+  reservations StockReservation[]
+  history      OrderStatusChange[]
+
+  @@unique([storeId, idempotencyKey])
+  @@index([countryCode, placedAt])
+  @@index([storeId, placedAt])
+  @@index([status, reviewDueAt])
+  @@index([customerPhone])
+  @@map("orders")
+}
+
+/// One line of an order with the catalogue facts as they were at placement.
+model OrderItem {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  orderId       String   @map("order_id") @db.Uuid
+  lineNo        Int      @map("line_no") @db.SmallInt
+  variantId     String   @map("variant_id") @db.Uuid
+  productId     String   @map("product_id") @db.Uuid
+  sku           String   @db.VarChar(64)
+  productNameEn String   @map("product_name_en") @db.VarChar(200)
+  productNameAr String   @map("product_name_ar") @db.VarChar(200)
+  brandNameEn   String   @map("brand_name_en") @db.VarChar(120)
+  brandNameAr   String   @map("brand_name_ar") @db.VarChar(120)
+  variantNameEn String?  @map("variant_name_en") @db.VarChar(120)
+  variantNameAr String?  @map("variant_name_ar") @db.VarChar(120)
+  sizeMl        Decimal? @map("size_ml") @db.Decimal(8, 2)
+  isTester      Boolean  @default(false) @map("is_tester")
+  quantity      Int
+  unitPrice     Decimal  @map("unit_price") @db.Decimal(14, 2)
+  lineTotal     Decimal  @map("line_total") @db.Decimal(14, 2)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order        Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  variant      ProductVariant     @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  product      Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+  reservations StockReservation[]
+
+  @@unique([orderId, lineNo])
+  @@unique([orderId, variantId])
+  @@unique([id, orderId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+/// Units of one stock balance held for one order line (INV-004 mechanism used
+/// by ORD-001). The sum of ACTIVE reservations of a balance equals its
+/// `reserved` column; only the reservations service writes either.
+model StockReservation {
+  id            String                 @id @default(uuid(7)) @db.Uuid
+  orderId       String                 @map("order_id") @db.Uuid
+  orderItemId   String                 @map("order_item_id") @db.Uuid
+  variantId     String                 @map("variant_id") @db.Uuid
+  warehouseId   String                 @map("warehouse_id") @db.Uuid
+  batchId       String?                @map("batch_id") @db.Uuid
+  quantity      Int
+  status        StockReservationStatus @default(ACTIVE)
+  createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  releasedAt    DateTime?              @map("released_at") @db.Timestamptz(3)
+  releaseReason String?                @map("release_reason") @db.VarChar(40)
+
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  orderItem OrderItem      @relation(fields: [orderItemId, orderId], references: [id, orderId], onDelete: Restrict)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  batch     StockBatch?    @relation(fields: [batchId, variantId], references: [id, variantId], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([variantId, warehouseId, status])
+  @@index([batchId, status])
+  @@map("stock_reservations")
+}
+
+/// Append-only status history of an order (also in the audit log).
+model OrderStatusChange {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  orderId     String       @map("order_id") @db.Uuid
+  fromStatus  OrderStatus? @map("from_status")
+  toStatus    OrderStatus  @map("to_status")
+  actorType   ActorType    @map("actor_type")
+  actorUserId String?      @map("actor_user_id") @db.Uuid
+  reason      String?      @db.VarChar(500)
+  occurredAt  DateTime     @default(now()) @map("occurred_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  actor User? @relation("OrderStatusActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, occurredAt])
+  @@map("order_status_changes")
+}
+
+/// Fixed-window request counters for public endpoints (checkout abuse guard).
+model RequestThrottle {
+  key         String   @id @db.VarChar(200)
+  windowStart DateTime @map("window_start") @db.Timestamptz(3)
+  hits        Int
+
+  @@index([windowStart])
+  @@map("request_throttles")
+}

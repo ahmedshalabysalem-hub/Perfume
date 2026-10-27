@@ -64,6 +64,7 @@ export const STORES = [
     timezone: "Asia/Riyadh",
     currencyCode: "SAR",
     city: null,
+    fulfilmentWarehouseCode: "SA-RUH-WH1",
   },
   {
     code: "SA-RUH-01",
@@ -84,6 +85,7 @@ export const STORES = [
     timezone: "Africa/Cairo",
     currencyCode: "EGP",
     city: null,
+    fulfilmentWarehouseCode: "EG-CAI-WH1",
   },
 ] as const;
 
@@ -95,6 +97,14 @@ export const WAREHOUSES = [
     nameAr: "مستودع الرياض الرئيسي",
     timezone: "Asia/Riyadh",
     city: "Riyadh",
+  },
+  {
+    code: "EG-CAI-WH1",
+    legalEntityCode: "DEMO-EG",
+    nameEn: "Cairo Warehouse",
+    nameAr: "مستودع القاهرة",
+    timezone: "Africa/Cairo",
+    city: "Cairo",
   },
 ] as const;
 

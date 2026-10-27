@@ -16,6 +16,8 @@ const envSchema = z.object({
   APP_TIME_ZONE: z.string().min(1).default("Asia/Riyadh"),
   STORAGE_DRIVER: z.enum(["local"]).default("local"),
   STORAGE_LOCAL_DIR: z.string().min(1).default("./storage/uploads"),
+  /** Hours a storefront order may wait for staff review before it is cancelled; 0 = never (ADR-025). */
+  ORDER_REVIEW_HOURS: z.coerce.number().int().min(0).max(720).default(48),
 });
 
 export type Env = z.infer<typeof envSchema>;

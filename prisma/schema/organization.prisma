@@ -59,6 +59,8 @@ model Country {
   approvalRequests ApprovalRequest[]
   suppliers        Supplier[]
   stockBatches     StockBatch[]
+  orders           Order[]
+  orderCounter     OrderNumberCounter?
 
   /// Target of product_prices(country_code, currency_code): a price is always
   /// in its market's currency.
@@ -104,29 +106,35 @@ model LegalEntity {
 }
 
 model Store {
-  id            String    @id @default(uuid(7)) @db.Uuid
-  code          String    @unique @db.VarChar(32)
-  legalEntityId String    @map("legal_entity_id") @db.Uuid
-  countryCode   String    @map("country_code") @db.Char(2)
-  type          StoreType
-  nameEn        String    @map("name_en") @db.VarChar(120)
-  nameAr        String    @map("name_ar") @db.VarChar(120)
-  timezone      String    @db.VarChar(64)
-  currencyCode  String    @map("currency_code") @db.Char(3)
-  addressLine1  String?   @map("address_line1") @db.VarChar(200)
-  city          String?   @db.VarChar(100)
-  phone         String?   @db.VarChar(32)
-  email         String?   @db.VarChar(254)
-  isActive      Boolean   @default(true) @map("is_active")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  code                  String    @unique @db.VarChar(32)
+  legalEntityId         String    @map("legal_entity_id") @db.Uuid
+  countryCode           String    @map("country_code") @db.Char(2)
+  type                  StoreType
+  nameEn                String    @map("name_en") @db.VarChar(120)
+  nameAr                String    @map("name_ar") @db.VarChar(120)
+  timezone              String    @db.VarChar(64)
+  currencyCode          String    @map("currency_code") @db.Char(3)
+  addressLine1          String?   @map("address_line1") @db.VarChar(200)
+  city                  String?   @db.VarChar(100)
+  phone                 String?   @db.VarChar(32)
+  email                 String?   @db.VarChar(254)
+  /// ONLINE stores: the warehouse that reserves and ships storefront orders
+  /// (same legal entity, composite FK). NULL = the store cannot take orders.
+  fulfilmentWarehouseId String?   @map("fulfilment_warehouse_id") @db.Uuid
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  legalEntity      LegalEntity       @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
-  country          Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
-  currency         Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  roleScopes       UserRole[]
-  approvalRequests ApprovalRequest[]
+  legalEntity         LegalEntity       @relation(fields: [legalEntityId, countryCode], references: [id, countryCode], onDelete: Restrict)
+  country             Country           @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+  currency            Currency          @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  fulfilmentWarehouse Warehouse?        @relation("StoreFulfilmentWarehouse", fields: [fulfilmentWarehouseId, legalEntityId], references: [id, legalEntityId], onDelete: Restrict)
+  roleScopes          UserRole[]
+  approvalRequests    ApprovalRequest[]
+  orders              Order[]
 
+  @@unique([id, legalEntityId, countryCode])
   @@index([legalEntityId])
   @@index([countryCode])
   @@map("stores")
@@ -151,9 +159,13 @@ model Warehouse {
   roleScopes       UserRole[]
   approvalRequests ApprovalRequest[]
 
-  stockBalances  StockBalance[]
-  stockMovements StockMovement[]
+  stockBalances     StockBalance[]
+  stockMovements    StockMovement[]
+  stockReservations StockReservation[]
+  orders            Order[]
+  fulfilsStores     Store[]            @relation("StoreFulfilmentWarehouse")
 
+  @@unique([id, legalEntityId])
   @@index([legalEntityId])
   @@index([countryCode])
   @@map("warehouses")

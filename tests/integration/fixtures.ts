@@ -5,6 +5,12 @@ import { actorUserSelect, buildActor, type UserActor } from "@/server/rbac/actor
 import { syncRbac } from "@/server/rbac/sync";
 
 const TABLES = [
+  "request_throttles",
+  "order_status_changes",
+  "stock_reservations",
+  "order_items",
+  "orders",
+  "order_number_counters",
   "audit_logs",
   "approval_actions",
   "approval_requests",

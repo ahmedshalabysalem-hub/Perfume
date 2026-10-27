@@ -218,14 +218,14 @@ const definitions = [
   },
 
   // Sales & customers (Phase 3+)
-  { key: "orders.view", module: "sales", en: "View orders", ar: "عرض الطلبات", available: false },
+  { key: "orders.view", module: "sales", en: "View orders", ar: "عرض الطلبات", available: true },
   { key: "orders.create", module: "sales", en: "Create orders", ar: "إنشاء الطلبات", available: false },
   {
     key: "orders.update",
     module: "sales",
     en: "Progress orders through fulfilment",
     ar: "متابعة تنفيذ الطلبات",
-    available: false,
+    available: true,
   },
   {
     key: "orders.cancel",
@@ -233,9 +233,15 @@ const definitions = [
     en: "Cancel orders",
     ar: "إلغاء الطلبات",
     sensitive: true,
-    available: false,
+    available: true,
   },
-  { key: "customers.view", module: "crm", en: "View customer profiles", ar: "عرض ملفات العملاء", available: false },
+  {
+    key: "customers.view",
+    module: "crm",
+    en: "View customer profiles and order contact details",
+    ar: "عرض ملفات العملاء وبيانات التواصل في الطلبات",
+    available: true,
+  },
   {
     key: "customers.manage",
     module: "crm",
