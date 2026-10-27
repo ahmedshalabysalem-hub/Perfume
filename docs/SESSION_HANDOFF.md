@@ -152,7 +152,9 @@ written in (English); timestamps display in `APP_TIME_ZONE` (Riyadh) for Egyptia
 
 `scripts/windows/start.cmd` and `stop.cmd` (logic in the `.ps1` files beside them, ASCII-only for
 Windows PowerShell 5.1, CRLF via `.gitattributes`) let Ahmed start the site with a double-click. The
-seed-once marker is `storage/.seeded` (already git-ignored). Docker mode is verified only by the Linux
+seed-once marker is `storage/.seeded` (already git-ignored). `update.cmd` (2026-10-27) pulls the
+latest code and restarts with `PERFUME_RESEED=1`. Every start also runs `prisma generate`, because a
+pulled schema change does not touch `package-lock.json`. Docker mode is verified only by the Linux
 compose job; the Windows CI job covers the native PostgreSQL path. Ahmed's Word guides live in the
 project files under `windows-setup/`.
 
