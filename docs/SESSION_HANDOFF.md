@@ -131,7 +131,8 @@ receipt posting and cost (financial consistency and inventory concurrency).
   live check that Σ active reservations = `reserved`. Residual risk for Ahmed: one client IP can
   still hold about 240 units per 15 minutes (8 orders × 30) with fresh phone numbers; a daily per-IP
   cap or a per-variant cap on held units would narrow it.
-- **Production setup:** set `TRUSTED_PROXY_HOPS` (usually 1) or storefront checkout is refused.
+- **Production setup:** set `TRUSTED_PROXY_HOPS` to exactly the number of reverse
+  proxies (usually 1; too high makes the client address forgeable) or storefront checkout is refused.
 - **Checks run (2026-10-27, after the review fixes):** lint, typecheck, prettier, `npm test` 306
   passed, Playwright 38 passed on a production build.
 - **Also fixed:** the seed's Arabic tester name and gift-set description used Arabic-Indic digits (ADR-009).
