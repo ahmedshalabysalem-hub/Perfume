@@ -103,8 +103,9 @@ jobs:
       - name: Update refuses local changes and changes nothing
         run: |
           Add-Content -Path README.md -Value "local edit"
-          $p = Start-Process cmd.exe -ArgumentList "/c", "scripts\windows\update.cmd" -RedirectStandardOutput update.log -RedirectStandardError update.err -PassThru -NoNewWindow -Wait
-          if ($p.ExitCode -eq 0) { throw "update.cmd accepted a working copy with local changes" }
+          cmd.exe /c "scripts\windows\update.cmd" > update.log 2> update.err
+          $code = $LASTEXITCODE
+          if ($code -eq 0) { throw "update.cmd accepted a working copy with local changes" }
           if ((Get-Content update.log -Raw) -notmatch "Nothing was updated") { throw "update.cmd did not explain the refusal" }
           if ((Get-Content README.md -Raw) -notmatch "local edit") { throw "update.cmd discarded a local change" }
           git checkout -- README.md
