@@ -167,17 +167,17 @@ restrictive CSP. S3-compatible storage is OPS-002 **(planned)**.
 
 ## 11. Security controls
 
-| Control                                                                            | Where                                              |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------- |
-| CSP with nonces, `strict-dynamic`, `frame-ancestors 'none'`                        | `src/proxy.ts`                                     |
-| `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS (prod) | `next.config.ts`                                   |
-| Server-side authorization on every read and write                                  | services, `src/server/rbac`                        |
-| Input validation (shared schemas, size limits)                                     | `src/lib/schemas`, services                        |
-| CSRF/origin checks, rate limiting, secure cookies                                  | Better Auth configuration                          |
-| Guest checkout: Server Action origin check, idempotency keys, DB rate limits       | `src/server/throttle.ts`, checkout service         |
-| Secrets only from environment, validated lazily                                    | `src/lib/env.ts`, `.env.example`                   |
-| No secrets or passwords in logs or audit entries                                   | `src/server/audit/redact.ts`, action error mapping |
-| Safe redirects after sign-in (same-origin admin paths only)                        | `src/lib/safe-redirect.ts`                         |
+| Control                                                                             | Where                                              |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------- |
+| CSP with nonces, `strict-dynamic`, `frame-ancestors 'none'`                         | `src/proxy.ts`                                     |
+| `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS (prod)  | `next.config.ts`                                   |
+| Server-side authorization on every read and write                                   | services, `src/server/rbac`                        |
+| Input validation (shared schemas, size limits)                                      | `src/lib/schemas`, services                        |
+| CSRF/origin checks, rate limiting, secure cookies                                   | Better Auth configuration                          |
+| Guest checkout: origin check, idempotency keys, DB rate limits, per-phone/unit caps | `src/server/throttle.ts`, checkout service         |
+| Secrets only from environment, validated lazily                                     | `src/lib/env.ts`, `.env.example`                   |
+| No secrets or passwords in logs or audit entries                                    | `src/server/audit/redact.ts`, action error mapping |
+| Safe redirects after sign-in (same-origin admin paths only)                         | `src/lib/safe-redirect.ts`                         |
 
 ## 12. Observability and operations
 

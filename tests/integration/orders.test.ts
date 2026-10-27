@@ -39,7 +39,7 @@ let keySeq = 0;
 const system = systemContext("orders-test");
 const today = () => localDateIn("Asia/Riyadh", new Date());
 
-function guestCtx(ip = "203.0.113.10"): ServiceContext {
+function guestCtx(ip: string | null = "203.0.113.10"): ServiceContext {
   return {
     actor: { kind: "system", label: "storefront.checkout" },
     meta: { correlationId: `guest-${crypto.randomUUID()}`, ipAddress: ip, userAgent: "vitest" },
@@ -206,6 +206,9 @@ const details = (overrides: Record<string, string> = {}) => ({
   postalCode: "12211",
   ...overrides,
 });
+
+/** A valid Saudi mobile number of its own, for tests that place several orders. */
+const nextPhone = () => `05${String(10_000_000 + ++keySeq).slice(-8)}`;
 
 const egDetails = (overrides: Record<string, string> = {}) => ({
   name: "Mona Ali",
@@ -607,7 +610,11 @@ describe("guest checkout", () => {
     await stock(1, { batchId: b.id });
     const outcomes = await Promise.allSettled(
       [1, 2, 3, 4].map((n) =>
-        placeOrder(guestCtx(`198.51.100.${n}`), "SA", order([{ variantId: oudId, quantity: 1 }])),
+        placeOrder(
+          guestCtx(`198.51.100.${n}`),
+          "SA",
+          order([{ variantId: oudId, quantity: 1 }], { details: details({ phone: nextPhone() }) }),
+        ),
       ),
     );
     expect(outcomes.filter((outcome) => outcome.status === "fulfilled")).toHaveLength(1);
@@ -637,15 +644,75 @@ describe("guest checkout", () => {
   });
 
   it("limits checkout attempts per client address", async () => {
-    await stock(10, { variantId: mistId });
-    for (let i = 0; i < 8; i += 1) {
-      await placeOrder(guestCtx("192.0.2.77"), "SA", order([{ variantId: mistId, quantity: 1 }]));
+    await stock(20, { variantId: mistId });
+    const one = () => order([{ variantId: mistId, quantity: 1 }], { details: details({ phone: nextPhone() }) });
+    const first = one();
+    await placeOrder(guestCtx("192.0.2.77"), "SA", first);
+    for (let i = 1; i < 8; i += 1) {
+      await placeOrder(guestCtx("192.0.2.77"), "SA", one());
     }
-    const limited = await errorOf(
-      placeOrder(guestCtx("192.0.2.77"), "SA", order([{ variantId: mistId, quantity: 1 }])),
-    );
+    const limited = await errorOf(placeOrder(guestCtx("192.0.2.77"), "SA", one()));
     expect(limited.code).toBe("RATE_LIMITED");
-    await placeOrder(guestCtx("192.0.2.78"), "SA", order([{ variantId: mistId, quantity: 1 }]));
+    // A retry of an order already placed is answered, not counted.
+    expect((await placeOrder(guestCtx("192.0.2.77"), "SA", first)).replayed).toBe(true);
+    await placeOrder(guestCtx("192.0.2.78"), "SA", one());
+    // An unknown address is not one shared bucket that would close checkout for everyone.
+    for (let i = 0; i < 9; i += 1) {
+      await placeOrder(guestCtx(null), "SA", one());
+    }
+  });
+
+  it("limits the orders one mobile number may have awaiting review", async () => {
+    await stock(10, { variantId: mistId });
+    const placed = [];
+    for (let i = 0; i < 3; i += 1) {
+      placed.push(await placeOrder(guestCtx(), "SA", order([{ variantId: mistId, quantity: 1 }])));
+    }
+    // The same number written another way is the same number.
+    const refused = await errorOf(
+      placeOrder(
+        guestCtx("198.51.100.200"),
+        "SA",
+        order([{ variantId: mistId, quantity: 1 }], { details: details({ phone: "+966 51 234 5678" }) }),
+      ),
+    );
+    expect(refused.messageKey).toBe("errors.checkout.tooManyOpenOrders");
+    expect(await reservedOf(mistId, null)).toBe(3);
+    await cancelOrder(f.saManager, { orderId: placed[0]!.orderId, version: 1, reason: "Duplicate" });
+    await placeOrder(guestCtx(), "SA", order([{ variantId: mistId, quantity: 1 }]));
+    await placeOrder(
+      guestCtx(),
+      "SA",
+      order([{ variantId: mistId, quantity: 1 }], { details: details({ phone: nextPhone() }) }),
+    );
+  });
+
+  it("caps the units one order may hold", async () => {
+    const extra = await db.productVariant.create({ data: { productId, sku: "ROI-50", trackBatches: false } });
+    const sample = await db.productVariant.create({ data: { productId, sku: "ROI-5", trackBatches: false } });
+    await db.productPrice.createMany({
+      data: [
+        { variantId: extra.id, countryCode: "SA", currencyCode: "SAR", amount: "80.00" },
+        { variantId: sample.id, countryCode: "SA", currencyCode: "SAR", amount: "9.00" },
+      ],
+    });
+    await stock(40, { variantId: mistId });
+    await stock(40, { variantId: extra.id });
+    await stock(5, { variantId: sample.id });
+    await stock(40, { variantId: oudId, batchId: (await batch()).id });
+    const thirty = [
+      { variantId: mistId, quantity: 10 },
+      { variantId: oudId, quantity: 10 },
+      { variantId: extra.id, quantity: 10 },
+    ];
+    expect(await priceCart(db, await saStore(), thirty)).toMatchObject({ overUnitLimit: false, canCheckout: true });
+    const thirtyOne = [...thirty, { variantId: sample.id, quantity: 1 }];
+    const over = await priceCart(db, await saStore(), thirtyOne);
+    expect(over).toMatchObject({ overUnitLimit: true, canCheckout: false });
+    const refused = await errorOf(placeOrder(guestCtx(), "SA", order(thirtyOne)));
+    expect(refused.code).toBe("VALIDATION");
+    expect(await db.order.count()).toBe(0);
+    await placeOrder(guestCtx(), "SA", order(thirty));
   });
 
   it("protects placed orders: no edits of the snapshot, no deletes, no backwards status", async () => {
@@ -801,6 +868,26 @@ describe("order administration", () => {
     expect(refused.messageKey).toBe("errors.invalidState.reservedStockIneligible");
     await cancelOrder(f.saManager, { orderId: placed.orderId, version: 1, reason: "Lot quarantined" });
     await expectReservationsConsistent();
+
+    // The released units follow their batch into quarantine, held by its inspection (DR-011)…
+    const onHand = async (status: "SELLABLE" | "QUARANTINED") =>
+      (
+        await db.stockBalance.findFirst({
+          where: { variantId: oudId, warehouseId: f.warehouseId, batchId: b.id, status },
+        })
+      )?.onHand ?? 0;
+    expect(await onHand("SELLABLE")).toBe(0);
+    expect(await onHand("QUARANTINED")).toBe(3);
+    // …so releasing the batch makes all of them sellable again.
+    const current = await db.stockBatch.findUniqueOrThrow({ where: { id: b.id } });
+    await changeBatchStatus(inv, {
+      batchId: b.id,
+      version: current.version,
+      status: "RELEASED",
+      reason: "Leak was the box",
+    });
+    expect(await onHand("SELLABLE")).toBe(3);
+    expect(await onHand("QUARANTINED")).toBe(0);
   });
 
   it("cancels orders left unreviewed past the deadline and releases their stock", async () => {
@@ -819,5 +906,37 @@ describe("order administration", () => {
     expect(await reservedOf(mistId, null)).toBe(1);
     expect(await auditEntries("orders.order.expire")).toHaveLength(1);
     await expectReservationsConsistent();
+  });
+
+  it("keeps expiring other orders when one of them cannot be expired", async () => {
+    const b = await batch();
+    await stock(1, { batchId: b.id });
+    const broken = await placeOrder(guestCtx(), "SA", order([{ variantId: oudId, quantity: 1 }]));
+    const healthy = await placeSaOrder(1);
+    await db.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe('ALTER TABLE "orders" DISABLE TRIGGER "orders_guard"');
+      await tx.$executeRaw`UPDATE "orders" SET "review_due_at" = now() - interval '2 minutes' WHERE "id" = ${broken.orderId}::uuid`;
+      await tx.$executeRaw`UPDATE "orders" SET "review_due_at" = now() - interval '1 minute' WHERE "id" = ${healthy.orderId}::uuid`;
+      await tx.$executeRawUnsafe('ALTER TABLE "orders" ENABLE TRIGGER "orders_guard"');
+      // The oldest order's reserved units have gone missing: releasing them fails.
+      await tx.$executeRaw`UPDATE "stock_balances" SET "reserved" = 0 WHERE "batch_id" = ${b.id}::uuid`;
+    });
+    expect(await expireOverdueOrders()).toBe(1);
+    expect((await db.order.findUniqueOrThrow({ where: { id: healthy.orderId } })).status).toBe("CANCELLED");
+    expect((await db.order.findUniqueOrThrow({ where: { id: broken.orderId } })).status).toBe("PENDING_REVIEW");
+  });
+
+  it("lets warehouse-scoped staff open the orders their list shows", async () => {
+    const placed = await placeSaOrder(1);
+    const picker = contextFor(
+      await createStaff("picker@test.local", "sales_staff", { type: "WAREHOUSE", warehouseId: f.warehouseId }),
+    );
+    expect((await listOrders(picker, {})).rows.map((row) => row.orderNumber)).toEqual([placed.orderNumber]);
+    expect((await getOrder(picker, placed.orderId)).orderNumber).toBe(placed.orderNumber);
+    const elsewhere = contextFor(
+      await createStaff("cairo@test.local", "sales_staff", { type: "WAREHOUSE", warehouseId: egWarehouseId }),
+    );
+    expect((await listOrders(elsewhere, {})).total).toBe(0);
+    expect((await errorOf(getOrder(elsewhere, placed.orderId))).code).toBe("NOT_FOUND");
   });
 });

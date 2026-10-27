@@ -125,7 +125,9 @@ Details and coverage map: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md).
 See [`.env.example`](.env.example) for every variable with comments. Required: `DATABASE_URL`,
 `APP_URL`, `BETTER_AUTH_SECRET`. Never commit `.env`; production secrets belong in the hosting
 provider's secret manager. `ORDER_REVIEW_HOURS` (default 48, `0` = never) is how long an online order
-may wait for staff review before it is cancelled and its reserved stock released (ADR-025).
+may wait for staff review before it is cancelled and its reserved stock released (ADR-025). Set
+`TRUSTED_PROXY_HOPS` to the number of reverse proxies in front of the app in production (usually 1);
+the default 0 ignores X-Forwarded-For, which a client can forge, so no client IP is recorded.
 
 Online ordering needs, per market, exactly one active ONLINE store with a fulfilment warehouse of the
 same legal entity (Organisation → Stores → Edit). The seed sets SA-ONLINE → SA-RUH-WH1 and

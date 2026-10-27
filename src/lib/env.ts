@@ -18,6 +18,12 @@ const envSchema = z.object({
   STORAGE_LOCAL_DIR: z.string().min(1).default("./storage/uploads"),
   /** Hours a storefront order may wait for staff review before it is cancelled; 0 = never (ADR-025). */
   ORDER_REVIEW_HOURS: z.coerce.number().int().min(0).max(720).default(48),
+  /**
+   * Reverse proxies in front of the app that append to X-Forwarded-For; the
+   * client IP is read at that hop. 0 = no proxy: the header is ignored and the
+   * client IP is unknown.
+   */
+  TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;

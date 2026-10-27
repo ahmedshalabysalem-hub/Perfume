@@ -160,6 +160,7 @@
       "cartChanged": "Some items in your cart changed. Review the highlighted items and try again.",
       "unavailable": "Online ordering is not available in this market yet.",
       "keyReused": "This checkout was already submitted with different details. Please review your order and submit it again.",
+      "tooManyOpenOrders": "This number already has orders awaiting review. Please wait for the store to contact you, or contact the store.",
       "marketChanged": "Your market changed in another tab. Reload the page to see this market's cart."
     }
   },
@@ -217,6 +218,7 @@
     "expiryAfterManufacture": "The expiry date must be after the manufacturing date.",
     "quantityRange": "Choose a quantity between 1 and {max}.",
     "duplicateLine": "Each product size can appear only once.",
+    "cartUnits": "One order can hold up to {max} items.",
     "phoneSa": "Enter a Saudi mobile number, e.g. 05XXXXXXXX.",
     "phoneEg": "Enter an Egyptian mobile number, e.g. 01XXXXXXXXX.",
     "governorate": "Select a governorate.",
@@ -787,6 +789,7 @@
       "pricesIncludeTax": "Prices include VAT.",
       "pricesExcludeTax": "Prices exclude VAT.",
       "fixProblems": "Some items need your attention before you can check out.",
+      "unitLimit": "One order can hold up to {max} items. For a larger order, please contact the store.",
       "checkout": "Proceed to checkout",
       "noPaymentNote": "No account and no online payment needed.",
       "retry": "Try again"

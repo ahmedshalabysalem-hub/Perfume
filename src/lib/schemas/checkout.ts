@@ -10,6 +10,16 @@ import { vmsg, z } from "@/lib/validation/zod";
 
 export const CART_MAX_LINES = 20;
 export const CART_MAX_QUANTITY = 10;
+/**
+ * Units one order may hold in total. An unpaid order reserves stock until it is
+ * reviewed, so a single order must not be able to take a whole shelf; larger
+ * purchases go through the store (ADR-025).
+ */
+export const CART_MAX_UNITS = 30;
+
+export function cartUnits(lines: ReadonlyArray<{ quantity: number }>): number {
+  return lines.reduce((sum, line) => sum + line.quantity, 0);
+}
 
 export const cartLineSchema = z.object({
   variantId: z.uuid({ error: vmsg("invalidReference") }),
@@ -247,7 +257,8 @@ export const placeOrderInputSchema = z.object({
     .max(CART_MAX_LINES)
     .refine((lines) => new Set(lines.map((line) => line.variantId)).size === lines.length, {
       error: vmsg("duplicateLine"),
-    }),
+    })
+    .refine((lines) => cartUnits(lines) <= CART_MAX_UNITS, { error: vmsg("cartUnits", { max: CART_MAX_UNITS }) }),
   details: checkoutFormSchema,
 });
 

@@ -1,6 +1,7 @@
 import "server-only";
 import { sanitizeCartLines, type CartLine } from "@/lib/cart";
 import { multiplyMoney, sumMoney } from "@/lib/money";
+import { CART_MAX_UNITS, cartUnits } from "@/lib/schemas/checkout";
 import type { DbClient } from "@/server/db";
 import { sellableQuantities } from "@/server/modules/inventory/reservations";
 import { resolveOnlineStore, type OnlineStore } from "./online-store";
@@ -46,7 +47,9 @@ export type PricedCart = {
   /** Sum of the purchasable (OK) lines. */
   subtotal: string;
   itemCount: number;
-  /** Every line is OK and the cart is not empty. */
+  /** More units than one order may hold (CART_MAX_UNITS). */
+  overUnitLimit: boolean;
+  /** Every line is OK, the cart is not empty and within the unit limit. */
   canCheckout: boolean;
 };
 
@@ -129,6 +132,7 @@ export async function priceCart(client: DbClient, store: OnlineStore, rawLines: 
     };
   });
   const purchasable = lines.filter((line) => line.status === "OK");
+  const overUnitLimit = cartUnits(cart) > CART_MAX_UNITS;
   return {
     lines,
     currencyCode: store.currencyCode,
@@ -139,7 +143,8 @@ export async function priceCart(client: DbClient, store: OnlineStore, rawLines: 
       store.minorUnits,
     ),
     itemCount: purchasable.reduce((sum, line) => sum + line.quantity, 0),
-    canCheckout: lines.length > 0 && purchasable.length === lines.length,
+    overUnitLimit,
+    canCheckout: lines.length > 0 && purchasable.length === lines.length && !overUnitLimit,
   };
 }
 

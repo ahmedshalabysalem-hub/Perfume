@@ -44,7 +44,7 @@ async function requireMarket(marketCode: unknown): Promise<string> {
 export async function priceCartAction(marketCode: string, lines: unknown): Promise<ActionResult<PricedCart>> {
   return runPublicAction("storefront.cart", async (ctx) => {
     const countryCode = await requireMarket(marketCode);
-    await consumeThrottle(CART_THROTTLE, ctx.meta.ipAddress ?? "unknown");
+    if (ctx.meta.ipAddress) await consumeThrottle(CART_THROTTLE, ctx.meta.ipAddress);
     const store = await resolveOnlineStore(db, countryCode);
     if (!store) throw new InvalidStateError("errors.checkout.unavailable");
     return priceCart(db, store, lines);

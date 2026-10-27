@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { addToCart, cartUnitCount, sanitizeCartLines, setCartQuantity } from "@/lib/cart";
+import { clientAddress } from "@/lib/client-ip";
 import { multiplyMoney, sumMoney } from "@/lib/money";
 import {
   ADDRESS_FIELDS,
   CART_MAX_LINES,
   CART_MAX_QUANTITY,
+  CART_MAX_UNITS,
   checkoutDetailsSchema,
   normalizeMobile,
   placeOrderInputSchema,
@@ -160,5 +162,37 @@ describe("checkout details", () => {
       placeOrderInputSchema.safeParse({ ...base, idempotencyKey: "short", lines: [{ variantId: A, quantity: 1 }] })
         .success,
     ).toBe(false);
+  });
+});
+
+describe("units per order", () => {
+  it("accepts up to CART_MAX_UNITS units in one order and refuses more", () => {
+    const ids = ["01", "02", "03", "04"].map((n) => `0190a1b2-0000-7000-8000-0000000000${n}`);
+    const lines = (quantities: number[]) => quantities.map((quantity, index) => ({ variantId: ids[index]!, quantity }));
+    const base = { idempotencyKey: "attempt-0123456789abcdef", locale: "en", details: {} };
+    expect(CART_MAX_UNITS).toBe(30);
+    expect(placeOrderInputSchema.safeParse({ ...base, lines: lines([10, 10, 10]) }).success).toBe(true);
+    expect(placeOrderInputSchema.safeParse({ ...base, lines: lines([10, 10, 10, 1]) }).success).toBe(false);
+  });
+});
+
+describe("client address behind trusted proxies", () => {
+  it("knows no address without a trusted proxy: the header is the client's own", () => {
+    expect(clientAddress("203.0.113.9", 0)).toBeNull();
+    expect(clientAddress(null, 1)).toBeNull();
+  });
+
+  it("reads the hop written by the outermost trusted proxy, never the forgeable entries left of it", () => {
+    // The client forged "1.2.3.4"; the one proxy appended the real peer.
+    expect(clientAddress("1.2.3.4, 198.51.100.7", 1)).toBe("198.51.100.7");
+    // Two proxies: a CDN appended the client, the load balancer appended the CDN.
+    expect(clientAddress("1.2.3.4, 198.51.100.7, 10.0.0.2", 2)).toBe("198.51.100.7");
+    expect(clientAddress("2001:db8::1", 1)).toBe("2001:db8::1");
+  });
+
+  it("refuses a header that did not pass through every proxy, or is not an address", () => {
+    expect(clientAddress("198.51.100.7", 2)).toBeNull();
+    expect(clientAddress("unknown", 1)).toBeNull();
+    expect(clientAddress(" , ", 1)).toBeNull();
   });
 });

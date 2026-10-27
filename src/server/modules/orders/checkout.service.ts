@@ -33,6 +33,13 @@ import { expireOverdueOrders } from "./orders.service";
 /** Orders per client address per window — generous for people, tight for scripts. */
 export const CHECKOUT_THROTTLE: ThrottleRule = { name: "checkout", limit: 8, windowSeconds: 15 * 60 };
 
+/**
+ * Orders one mobile number may have awaiting review at once. Unpaid orders
+ * hold stock, so a number cannot keep placing them; once staff confirm or
+ * cancel one (or it expires), the customer can order again.
+ */
+export const MAX_OPEN_ORDERS_PER_PHONE = 3;
+
 export type LineProblem = "UNAVAILABLE" | "OUT_OF_STOCK" | "INSUFFICIENT_STOCK" | "PRICE_CHANGED";
 
 /** The cart no longer matches what can be sold; field errors are `lines.<variantId>`: [problem]. */
@@ -81,7 +88,14 @@ export async function placeOrder(ctx: ServiceContext, countryCode: string, rawIn
   const store = await resolveOnlineStore(db, countryCode);
   if (!store) throw new InvalidStateError("errors.checkout.unavailable");
   const details = parseInput(checkoutDetailsSchema(store.countryCode), input.details);
-  await consumeThrottle(CHECKOUT_THROTTLE, ctx.meta.ipAddress ?? "unknown");
+  // A retry of an attempt already placed is not a new order: it is not counted.
+  const placedBefore = await db.order.findUnique({
+    where: { storeId_idempotencyKey: { storeId: store.storeId, idempotencyKey: input.idempotencyKey } },
+    select: { id: true },
+  });
+  // Without a trusted client address (TRUSTED_PROXY_HOPS) there is nothing to
+  // count per client — never one shared bucket; the per-phone limit still applies.
+  if (ctx.meta.ipAddress && !placedBefore) await consumeThrottle(CHECKOUT_THROTTLE, ctx.meta.ipAddress);
   // Release stock held by orders nobody reviewed in time before competing for it.
   await expireOverdueOrders().catch((error: unknown) => {
     console.error("[checkout] expiring overdue orders failed", error instanceof Error ? error.message : error);
@@ -105,6 +119,13 @@ export async function placeOrder(ctx: ServiceContext, countryCode: string, rawIn
         accessToken: orderAccessToken(existing.id),
         replayed: true,
       };
+    }
+
+    // Concurrent checkouts of one number wait here, so the count below is exact.
+    await lockPostingKey(tx, `checkout-phone:${details.phone}`);
+    const openOrders = await tx.order.count({ where: { customerPhone: details.phone, status: "PENDING_REVIEW" } });
+    if (openOrders >= MAX_OPEN_ORDERS_PER_PHONE) {
+      throw new InvalidStateError("errors.checkout.tooManyOpenOrders", { max: MAX_OPEN_ORDERS_PER_PHONE });
     }
 
     const variants = await loadSellableVariants(

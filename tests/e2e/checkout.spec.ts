@@ -24,9 +24,12 @@ async function addVariantFromProductPage(page: Page, slug: string, sizeLabel: Re
   await page.getByTestId("add-to-cart-button").click();
 }
 
-async function fillSaudiDetails(page: Page, name: string) {
+/** One mobile number per order: a number may only have a few orders awaiting review. */
+const nextPhone = () => `055${String(Date.now() + Math.floor(Math.random() * 1000)).slice(-7)}`;
+
+async function fillSaudiDetails(page: Page, name: string, phone = nextPhone()) {
   await page.locator("[data-field=name]").fill(name);
-  await page.locator("[data-field=phone]").fill("0551234567");
+  await page.locator("[data-field=phone]").fill(phone);
   await page.locator("[data-field=email]").fill("guest@example.com");
   await page.locator("[data-field=city]").fill("Riyadh");
   await page.locator("[data-field=district]").fill("Al Olaya");
@@ -232,7 +235,7 @@ test.describe("order administration", () => {
     await seedReleasedStock("QA-TRE-75", "SA-RUH-WH1", 2);
     await addVariantFromProductPage(page, "taif-rose-eau-de-parfum", /75/);
     await open(page, "/en/checkout");
-    await fillSaudiDetails(page, `Confirm Me ${Date.now()}`);
+    await fillSaudiDetails(page, `Confirm Me ${Date.now()}`, "0551234567");
     await page.getByTestId("place-order").click();
     await expect(page).toHaveURL(/confirmation\/SA-\d{6}$/);
     const number = (await page.getByTestId("order-number").textContent())!;

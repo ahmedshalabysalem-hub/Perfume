@@ -1,8 +1,10 @@
 import "server-only";
 import type { BatchInspectionStatus, BatchVerificationResult, ExpiryBasis } from "@/generated/prisma/enums";
 import { batchEligibility, compareFefo, localDateIn } from "@/lib/inventory/batches";
+import type { ServiceContext } from "@/server/context";
 import type { DbClient, Tx } from "@/server/db";
 import { NotFoundError } from "@/server/errors";
+import { postStockMovements, type StockMovementLine } from "./ledger";
 
 /**
  * Stock reservations (the INV-004 mechanism, first used by ORD-001, ADR-025).
@@ -165,15 +167,26 @@ export async function reserveStock(
 /**
  * Release every ACTIVE reservation of an order (cancellation or expiry).
  * Idempotent: an order without active reservations changes nothing.
+ *
+ * Units reserved from a batch that was quarantined or rejected meanwhile were
+ * left SELLABLE by that decision (it moves unreserved stock only); once
+ * released they follow the batch into QUARANTINED with an INSPECTION movement,
+ * exactly as the decision would have moved them, so the batch's inspection
+ * hold (DR-011) counts them and a later release restores them.
  */
-export async function releaseOrderReservations(tx: Tx, orderId: string, reason: string): Promise<number> {
+export async function releaseOrderReservations(
+  tx: Tx,
+  ctx: ServiceContext,
+  orderId: string,
+  reason: string,
+): Promise<number> {
   const active = await tx.stockReservation.findMany({
     where: { orderId, status: "ACTIVE" },
     select: { id: true, variantId: true, warehouseId: true, batchId: true, quantity: true },
   });
   if (active.length === 0) return 0;
   const batchIds = [...new Set(active.map((row) => row.batchId).filter((id): id is string => id !== null))];
-  await lockBatches(tx, batchIds);
+  const batches = await lockBatches(tx, batchIds);
   const ordered = [...active].sort(
     (a, b) =>
       a.warehouseId.localeCompare(b.warehouseId) ||
@@ -196,6 +209,26 @@ export async function releaseOrderReservations(tx: Tx, orderId: string, reason: 
     where: { id: { in: active.map((row) => row.id) }, status: "ACTIVE" },
     data: { status: "RELEASED", releasedAt: new Date(), releaseReason: reason.slice(0, 40) },
   });
+
+  const held: StockMovementLine[] = [];
+  for (const row of ordered) {
+    const batch = row.batchId ? batches.get(row.batchId) : undefined;
+    if (!batch || batch.inspection_status === "RELEASED") continue;
+    const base = { variantId: row.variantId, warehouseId: row.warehouseId, batchId: row.batchId };
+    held.push(
+      { ...base, status: "SELLABLE", quantity: -row.quantity },
+      { ...base, status: "QUARANTINED", quantity: row.quantity },
+    );
+  }
+  if (held.length > 0) {
+    await postStockMovements(tx, ctx, {
+      type: "INSPECTION",
+      idempotencyKey: `order:${orderId}:release-held`,
+      document: { type: "order", id: orderId },
+      reason: "Reserved units returned to their quarantined batch",
+      lines: held,
+    });
+  }
   return active.length;
 }
 

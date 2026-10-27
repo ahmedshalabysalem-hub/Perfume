@@ -122,8 +122,14 @@ receipt posting and cost (financial consistency and inventory concurrency).
   confirmed until the lot is resolved or the order is cancelled — INV-004 decides a re-allocation rule.
   CUST-001 can link guest orders to accounts; SHIP-001 replaces the manual fee; PAY-001 adds payment
   states. Production needs `npm run orders:expire` scheduled (OPS-003).
-- **Checks run (2026-10-27):** lint, typecheck, prettier, `npm test` 297 passed (unit 96, integration
-  incl. 27 order tests), Playwright 38 passed (7 new in `checkout.spec.ts`) on a production build.
+- **Independent review (2026-10-27):** fixed the High finding (trusted-hop client IP via
+  `TRUSTED_PROXY_HOPS`, at most 3 orders awaiting review per mobile number, at most 30 units per
+  order; the limits await Ahmed's confirmation), the Medium one (released units of a quarantined lot
+  return to QUARANTINED) and Lows 3–5. Open follow-ups: the per-country order counter serialises
+  checkouts of one country; no database tie between a reservation's warehouse and its order's; no
+  live check that Σ active reservations = `reserved`.
+- **Checks run (2026-10-27, after the review fixes):** lint, typecheck, prettier, `npm test` 305
+  passed, Playwright 38 passed on a production build.
 - **Also fixed:** the seed's Arabic tester name and gift-set description used Arabic-Indic digits (ADR-009).
 
 ## I18N-002 (parallel thread, localization gaps)

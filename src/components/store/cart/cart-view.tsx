@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, Skeleton } from "@/components/ui/primitives";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatMoney, multiplyMoney, sumMoney } from "@/lib/money";
+import { CART_MAX_UNITS } from "@/lib/schemas/checkout";
 import { cn } from "@/lib/utils";
 import type { PricedCartLine } from "@/server/modules/orders/cart.service";
 import { CartLineImage, LINE_PROBLEM_KEYS, useLineNames, type MarketInfo } from "./cart-line";
@@ -172,6 +173,11 @@ export function CartView({ market }: { market: MarketInfo }) {
         {hasProblems ? (
           <p className="text-sm text-destructive" data-testid="cart-blocked">
             {t("fixProblems")}
+          </p>
+        ) : null}
+        {priced?.overUnitLimit ? (
+          <p className="text-sm text-destructive" role="status" data-testid="cart-unit-limit">
+            {t("unitLimit", { max: CART_MAX_UNITS })}
           </p>
         ) : null}
         {canCheckout ? (

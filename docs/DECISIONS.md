@@ -426,7 +426,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   needs and leaves the rest to those tasks.
 - **Decision (2026-10-27, stock and status policy pending Ahmed's confirmation):**
   - **Cart:** kept in the browser per market (`localStorage`, variant ids and whole quantities only,
-    1–10 per line, at most 20 lines, 30 days). Every page that shows prices asks the server; prices,
+    1–10 per line, at most 20 lines and 30 units per order, 30 days). Every page that shows prices asks the server; prices,
     names, availability, totals and the company never come from the browser.
   - **Market → seller:** each market has exactly one active ONLINE store; the store's legal entity is
     the seller and `stores.fulfilment_warehouse_id` (same legal entity, composite foreign key) is where
@@ -444,18 +444,25 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     (total = subtotal + fee); there are no shipping zones yet (SHIP-001). An order still unreviewed
     after `ORDER_REVIEW_HOURS` (default 48, 0 = never) is cancelled automatically and its stock
     released, by `npm run orders:expire` and opportunistically at checkout and on the order list.
-    A reserved lot that became ineligible (quarantined, expired) blocks confirmation until resolved.
+    A reserved lot that became ineligible (quarantined, expired) blocks confirmation until resolved;
+    when such an order is cancelled, units of a quarantined or rejected lot move to QUARANTINED with an
+    INSPECTION movement, as the batch decision would have moved them (DR-011 counts them).
   - **Payment:** none. No card fields, no payment status other than `UNPAID`, no assumption of cash on
     delivery; PAY-001 adds methods and evidence-based payment states.
   - **Tax:** prices are shown as the market lists them (VAT-inclusive in SA and EG today) with that
     statement; no tax lines are computed until PRC-001 / INVC-001.
   - **Safety:** one idempotency key per checkout attempt (unique per store, request hash stored; a
-    retry returns the same order, a different request with the same key is refused); checkout limited
-    to 8 attempts per client address per 15 minutes and cart pricing to 120 per minute (database
-    counters); Server Actions' origin check is the CSRF defence. The confirmation page needs an HMAC
+    retry returns the same order, is not counted against limits, and a different request with the
+    same key is refused). Unpaid orders hold stock, so holding it is limited three ways (independent
+    review, 2026-10-27): at most 3 orders awaiting review per mobile number, at most 30 units per
+    order, and 8 checkout attempts per client address per 15 minutes (cart pricing 120 per minute;
+    database counters). The client address is read from X-Forwarded-For at the hop of the outermost
+    trusted proxy (`TRUSTED_PROXY_HOPS`), never from the client-supplied entries left of it; with no
+    trusted proxy it is unknown and only the per-phone and per-order limits apply (never one shared
+    bucket). Server Actions' origin check is the CSRF defence. The confirmation page needs an HMAC
     access token held in an httpOnly cookie for 30 days, so order numbers cannot be enumerated.
   - **Back office:** `orders.view`, `orders.update`, `orders.cancel` and `customers.view` become active.
-    Lists and pages are scoped by country, legal entity and store; contact details and the address are
+    Lists and pages are scoped by country, legal entity, store and fulfilment warehouse; contact details and the address are
     masked without `customers.view` at the order's scope.
 - **Alternatives:** server-side cart table (needs sessions for guests; nothing to gain until accounts
   exist); reserve only at staff confirmation (two customers can then buy the last unit); immediate

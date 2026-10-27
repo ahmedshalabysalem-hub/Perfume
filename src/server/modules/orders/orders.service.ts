@@ -29,8 +29,18 @@ import { parseId, parseInput } from "@/server/validation";
 
 export const ORDER_PAGE_SIZE = 50;
 
-function orderScope(order: { countryCode: string; legalEntityId: string; storeId: string }): ResourceScope {
-  return { countryCode: order.countryCode, legalEntityId: order.legalEntityId, storeId: order.storeId };
+function orderScope(order: {
+  countryCode: string;
+  legalEntityId: string;
+  storeId: string;
+  warehouseId: string;
+}): ResourceScope {
+  return {
+    countryCode: order.countryCode,
+    legalEntityId: order.legalEntityId,
+    storeId: order.storeId,
+    warehouseId: order.warehouseId,
+  };
 }
 
 function orderScopeWhere(ctx: ServiceContext): Prisma.OrderWhereInput {
@@ -98,6 +108,7 @@ export async function listOrders(ctx: ServiceContext, rawQuery: unknown) {
       countryCode: true,
       legalEntityId: true,
       storeId: true,
+      warehouseId: true,
       currencyCode: true,
       customerName: true,
       customerPhone: true,
@@ -267,7 +278,7 @@ export async function confirmOrder(ctx: ServiceContext, rawInput: unknown) {
   return db.$transaction(async (tx) => {
     const scopeRow = await tx.order.findUnique({
       where: { id: input.orderId },
-      select: { countryCode: true, legalEntityId: true, storeId: true },
+      select: { countryCode: true, legalEntityId: true, storeId: true, warehouseId: true },
     });
     if (!scopeRow || !can(ctx.actor, "orders.view", orderScope(scopeRow))) throw new NotFoundError("order");
     assertCan(ctx.actor, "orders.update", orderScope(scopeRow));
@@ -333,6 +344,7 @@ async function cancelLocked(
 ) {
   const released = await releaseOrderReservations(
     tx,
+    ctx,
     order.id,
     kind === "expired" ? "ORDER_EXPIRED" : "ORDER_CANCELLED",
   );
@@ -373,7 +385,7 @@ export async function cancelOrder(ctx: ServiceContext, rawInput: unknown) {
   return db.$transaction(async (tx) => {
     const scopeRow = await tx.order.findUnique({
       where: { id: input.orderId },
-      select: { countryCode: true, legalEntityId: true, storeId: true },
+      select: { countryCode: true, legalEntityId: true, storeId: true, warehouseId: true },
     });
     if (!scopeRow || !can(ctx.actor, "orders.view", orderScope(scopeRow))) throw new NotFoundError("order");
     assertCan(ctx.actor, "orders.cancel", orderScope(scopeRow));
@@ -400,19 +412,25 @@ export async function expireOverdueOrders(limit = 25): Promise<number> {
   let expired = 0;
   const ctx = systemContext("orders.expire");
   for (const { id } of due) {
-    const done = await db.$transaction(async (tx) => {
-      const rows = await tx.$queryRaw<Array<{ id: string }>>`
-        SELECT "id" FROM "orders"
-         WHERE "id" = ${id}::uuid AND "status" = 'PENDING_REVIEW' AND "review_due_at" <= now()
-           FOR UPDATE SKIP LOCKED`;
-      if (rows.length === 0) return false;
-      const order = await tx.order.findUniqueOrThrow({
-        where: { id },
-        select: { id: true, orderNumber: true, status: true },
+    // One order that cannot be expired must not hold up the ones after it.
+    const done = await db
+      .$transaction(async (tx) => {
+        const rows = await tx.$queryRaw<Array<{ id: string }>>`
+          SELECT "id" FROM "orders"
+           WHERE "id" = ${id}::uuid AND "status" = 'PENDING_REVIEW' AND "review_due_at" <= now()
+             FOR UPDATE SKIP LOCKED`;
+        if (rows.length === 0) return false;
+        const order = await tx.order.findUniqueOrThrow({
+          where: { id },
+          select: { id: true, orderNumber: true, status: true },
+        });
+        await cancelLocked(tx, ctx, order, "Not reviewed before the review deadline", "expired");
+        return true;
+      })
+      .catch((error: unknown) => {
+        console.error(`[orders] expiring order ${id} failed`, error instanceof Error ? error.message : error);
+        return false;
       });
-      await cancelLocked(tx, ctx, order, "Not reviewed before the review deadline", "expired");
-      return true;
-    });
     if (done) expired += 1;
   }
   return expired;
