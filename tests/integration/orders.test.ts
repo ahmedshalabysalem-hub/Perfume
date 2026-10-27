@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { addDays, localDateIn } from "@/lib/inventory/batches";
 import { systemContext, type ServiceContext } from "@/server/context";
 import { db } from "@/server/db";
@@ -659,6 +659,19 @@ describe("guest checkout", () => {
     // An unknown address is not one shared bucket that would close checkout for everyone.
     for (let i = 0; i < 9; i += 1) {
       await placeOrder(guestCtx(null), "SA", one());
+    }
+  });
+
+  it("refuses checkout in production while the client address is unknown", async () => {
+    await stock(2, { variantId: mistId });
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const refused = await errorOf(placeOrder(guestCtx(null), "SA", order([{ variantId: mistId, quantity: 1 }])));
+      expect(refused.messageKey).toBe("errors.checkout.temporarilyUnavailable");
+      expect(await db.order.count()).toBe(0);
+      await placeOrder(guestCtx(), "SA", order([{ variantId: mistId, quantity: 1 }]));
+    } finally {
+      vi.unstubAllEnvs();
     }
   });
 

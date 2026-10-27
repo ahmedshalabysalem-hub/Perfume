@@ -458,8 +458,9 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
     order, and 8 checkout attempts per client address per 15 minutes (cart pricing 120 per minute;
     database counters). The client address is read from X-Forwarded-For at the hop of the outermost
     trusted proxy (`TRUSTED_PROXY_HOPS`), never from the client-supplied entries left of it; with no
-    trusted proxy it is unknown and only the per-phone and per-order limits apply (never one shared
-    bucket). Server Actions' origin check is the CSRF defence. The confirmation page needs an HMAC
+    trusted proxy it is unknown: never one shared bucket, and in production checkout is refused
+    until `TRUSTED_PROXY_HOPS` is set (or `ALLOW_CHECKOUT_WITHOUT_CLIENT_IP=true` accepts the risk);
+    in development only the per-phone and per-order limits apply. Server Actions' origin check is the CSRF defence. The confirmation page needs an HMAC
     access token held in an httpOnly cookie for 30 days, so order numbers cannot be enumerated.
   - **Back office:** `orders.view`, `orders.update`, `orders.cancel` and `customers.view` become active.
     Lists and pages are scoped by country, legal entity, store and fulfilment warehouse; contact details and the address are

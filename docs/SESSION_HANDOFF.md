@@ -124,11 +124,15 @@ receipt posting and cost (financial consistency and inventory concurrency).
   states. Production needs `npm run orders:expire` scheduled (OPS-003).
 - **Independent review (2026-10-27):** fixed the High finding (trusted-hop client IP via
   `TRUSTED_PROXY_HOPS`, at most 3 orders awaiting review per mobile number, at most 30 units per
-  order; the limits await Ahmed's confirmation), the Medium one (released units of a quarantined lot
+  order, confirmed by Ahmed 2026-10-27; in production checkout is refused while the client IP is
+  unknown unless `ALLOW_CHECKOUT_WITHOUT_CLIENT_IP=true`), the Medium one (released units of a quarantined lot
   return to QUARANTINED) and Lows 3–5. Open follow-ups: the per-country order counter serialises
   checkouts of one country; no database tie between a reservation's warehouse and its order's; no
-  live check that Σ active reservations = `reserved`.
-- **Checks run (2026-10-27, after the review fixes):** lint, typecheck, prettier, `npm test` 305
+  live check that Σ active reservations = `reserved`. Residual risk for Ahmed: one client IP can
+  still hold about 240 units per 15 minutes (8 orders × 30) with fresh phone numbers; a daily per-IP
+  cap or a per-variant cap on held units would narrow it.
+- **Production setup:** set `TRUSTED_PROXY_HOPS` (usually 1) or storefront checkout is refused.
+- **Checks run (2026-10-27, after the review fixes):** lint, typecheck, prettier, `npm test` 306
   passed, Playwright 38 passed on a production build.
 - **Also fixed:** the seed's Arabic tester name and gift-set description used Arabic-Indic digits (ADR-009).
 

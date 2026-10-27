@@ -158,6 +158,7 @@
     },
     "checkout": {
       "cartChanged": "Some items in your cart changed. Review the highlighted items and try again.",
+      "temporarilyUnavailable": "Online ordering is temporarily unavailable. Please try again later.",
       "unavailable": "Online ordering is not available in this market yet.",
       "keyReused": "This checkout was already submitted with different details. Please review your order and submit it again.",
       "tooManyOpenOrders": "This number already has orders awaiting review. Please wait for the store to contact you, or contact the store.",

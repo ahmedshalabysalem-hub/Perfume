@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { env } from "@/lib/env";
+import { env, isProduction } from "@/lib/env";
 import { compareDecimalStrings, multiplyMoney, sumMoney } from "@/lib/money";
 import { checkoutDetailsSchema, placeOrderInputSchema, type CheckoutDetails } from "@/lib/schemas/checkout";
 import { recordAudit } from "@/server/audit/audit";
@@ -88,6 +88,14 @@ export async function placeOrder(ctx: ServiceContext, countryCode: string, rawIn
   const store = await resolveOnlineStore(db, countryCode);
   if (!store) throw new InvalidStateError("errors.checkout.unavailable");
   const details = parseInput(checkoutDetailsSchema(store.countryCode), input.details);
+  // Unpaid orders hold stock; in production they are only taken from a client
+  // the per-address limit can count, unless the operator opted out explicitly.
+  if (!ctx.meta.ipAddress && isProduction() && !env().ALLOW_CHECKOUT_WITHOUT_CLIENT_IP) {
+    console.error(
+      "[checkout] refused: client address unknown. Set TRUSTED_PROXY_HOPS to the reverse proxies in front of the app (or ALLOW_CHECKOUT_WITHOUT_CLIENT_IP=true).",
+    );
+    throw new InvalidStateError("errors.checkout.temporarilyUnavailable");
+  }
   // A retry of an attempt already placed is not a new order: it is not counted.
   const placedBefore = await db.order.findUnique({
     where: { storeId_idempotencyKey: { storeId: store.storeId, idempotencyKey: input.idempotencyKey } },

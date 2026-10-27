@@ -24,6 +24,12 @@ const envSchema = z.object({
    * client IP is unknown.
    */
   TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  /**
+   * In production a checkout without a known client IP is refused, so a
+   * missing TRUSTED_PROXY_HOPS cannot silently switch off the per-client
+   * limit. Set to true only to accept that risk deliberately.
+   */
+  ALLOW_CHECKOUT_WITHOUT_CLIENT_IP: booleanString.default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;
