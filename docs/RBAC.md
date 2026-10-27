@@ -112,6 +112,15 @@ The Customer role has none.
 | `inventory.batches.manage`   | ✓   |     |     |     | ✓   |     |     |     |     |     |     |
 | `suppliers.view`             | ✓   | ✓   |     |     | ✓   |     | ✓   | ✓   |     |     |     |
 | `suppliers.manage`           | ✓   |     |     |     |     |     | ✓   |     |     |     |     |
+| `orders.view`                | ✓   | ✓   |     | ✓   |     |     |     | ✓   |     | ✓   |     |
+| `orders.update`              | ✓   | ✓   |     | ✓   |     |     |     |     |     |     |     |
+| `orders.cancel`              | ✓   | ✓   |     |     |     |     |     |     |     |     |     |
+| `customers.view`             | ✓   | ✓   |     | ✓   |     |     |     |     |     | ✓   | ✓   |
+
+Orders (ORD-001, ADR-025) are scoped by the order's country, legal entity and store. `orders.update`
+confirms an order (setting the delivery fee) and `orders.cancel` cancels it. Without `customers.view` at
+the order's scope the mobile number is masked and the e-mail and address are hidden (an Accountant sees
+amounts and items only). A Cashier's `customers.view` has no screen yet.
 
 Because catalogue writes and the audit log are **global** targets, a Business or Catalogue Manager
 assigned at COUNTRY scope can view the catalogue and change only their country's prices and regulatory
@@ -123,8 +132,8 @@ references; they cannot create products, edit shared master data or read the aud
 | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | Inventory    | `inventory.receive` (IM, WS), `inventory.adjust.request` (IM, WS), `inventory.transfer` (IM), `inventory.count` (IM, WS) |
 | Procurement  | `purchases.view` (BM, IM, PS), `purchases.create` (PS), `purchases.approve` (BM)                                         |
-| Sales        | `orders.view` (BM, SS, AC, CS), `orders.create` (SS), `orders.update` (BM, SS), `orders.cancel` (BM)                     |
-| CRM          | `customers.view` (BM, SS, CS, CA), `customers.manage` (CS), `customers.export` (SA only)                                 |
+| Sales        | `orders.create` (SS) — staff-entered orders (ORD-002/POS)                                                                |
+| CRM          | `customers.manage` (CS), `customers.export` (SA only)                                                                    |
 | Payments     | `payments.verify` (AC), `payments.refund.request` (CS), `payments.refund.approve` (BM)                                   |
 | POS          | `pos.sell` (CA), `pos.session.manage` (BM), `pos.discount.override` (BM)                                                 |
 | Accounting   | `accounting.view` (AC), `accounting.post` (AC), `expenses.manage` (AC)                                                   |

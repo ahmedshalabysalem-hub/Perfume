@@ -30,6 +30,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 | ADR-022 | Task workflow: roles in one session, effort and review by risk       | Accepted | 2026-10-22 |
 | ADR-023 | Batches as a ledger dimension; inspection gates sellable stock       | Accepted | 2026-10-22 |
 | ADR-024 | Cost precision: 4 decimals stored, half-up rounding for display      | Accepted | 2026-10-22 |
+| ADR-025 | Guest cart and checkout: reserve at placement, review before payment | Proposed | 2026-10-27 |
 
 ---
 
@@ -94,7 +95,7 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
 
 ### ADR-007 — Code-defined permissions, system roles, scoped role assignments
 
-- **Decision:** 48 permissions (16 active, the rest reserved for later modules) and 12 system roles are
+- **Decision:** 48 permissions (25 active since ORD-001, the rest reserved for later modules) and 12 system roles are
   defined in code and synced to the database. Users hold role assignments with a scope: GLOBAL, COUNTRY,
   LEGAL_ENTITY, STORE or WAREHOUSE. Services call `assertCan(actor, permission, target)`; organisation-wide
   operations (brands, categories, users' global roles, audit log) require a GLOBAL grant. Users cannot
@@ -154,6 +155,8 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   active brands with an ACTIVE variant priced in that market are shown. There is no cart or checkout
   until ORD-001; product pages say so instead of showing inert buttons. Structured data omits stock
   availability until inventory exists.
+- **Superseded in part (2026-10-27) by ADR-025:** the cart and guest checkout now exist; the market
+  cookie and the "published and priced only" rule stand.
 
 ### ADR-015 — Arabic-aware search without an external engine
 
@@ -414,3 +417,50 @@ an upstream change). To change one, add a new entry that supersedes it. Status v
   lose precision); banker's rounding (less familiar to the business; can be adopted after review).
 - **Consequences:** PUR-002 and FIN-001 tests cover rounding on purchases, returns, landed costs, the
   average and journal balance.
+
+### ADR-025 — Guest cart and checkout: reserve at placement, review before payment
+
+- **Context:** ORD-001 asks for browse → cart → guest checkout → confirmation → order in the back office,
+  without accounts or online payment. Its board dependencies (INV-004 reservations, CUST-001 customers,
+  PRC-001 tax, SHIP-001 shipping) were not built; this decision builds the minimum of each that the flow
+  needs and leaves the rest to those tasks.
+- **Decision (2026-10-27, stock and status policy pending Ahmed's confirmation):**
+  - **Cart:** kept in the browser per market (`localStorage`, variant ids and whole quantities only,
+    1–10 per line, at most 20 lines, 30 days). Every page that shows prices asks the server; prices,
+    names, availability, totals and the company never come from the browser.
+  - **Market → seller:** each market has exactly one active ONLINE store; the store's legal entity is
+    the seller and `stores.fulfilment_warehouse_id` (same legal entity, composite foreign key) is where
+    its orders are reserved and shipped from. No store, or two, means checkout is unavailable there.
+  - **Order:** created as `PENDING_REVIEW` / `UNPAID`, guest, with the contact and delivery address and
+    every line's names, SKU and unit price snapshotted. Order numbers are per country (`SA-000001`)
+    from a counter row locked in the placing transaction. Placed details are immutable (trigger);
+    status moves only forward (PENDING_REVIEW → CONFIRMED | CANCELLED, CONFIRMED → CANCELLED).
+  - **Stock:** placing an order reserves the units in the same transaction, first-expiry-first-out from
+    eligible stock only (the INV-002 eligibility function), with the same row locks as the ledger.
+    Insufficient eligible stock refuses the whole order and creates nothing. Reserved units cannot be
+    sold, moved or reserved again (`on_hand - reserved` everywhere). Cancelling releases them once.
+    Stock is deducted at fulfilment (ORD-002), not here, so nothing is ever deducted twice.
+  - **Review:** staff confirm an order after contacting the customer and set the delivery fee then
+    (total = subtotal + fee); there are no shipping zones yet (SHIP-001). An order still unreviewed
+    after `ORDER_REVIEW_HOURS` (default 48, 0 = never) is cancelled automatically and its stock
+    released, by `npm run orders:expire` and opportunistically at checkout and on the order list.
+    A reserved lot that became ineligible (quarantined, expired) blocks confirmation until resolved.
+  - **Payment:** none. No card fields, no payment status other than `UNPAID`, no assumption of cash on
+    delivery; PAY-001 adds methods and evidence-based payment states.
+  - **Tax:** prices are shown as the market lists them (VAT-inclusive in SA and EG today) with that
+    statement; no tax lines are computed until PRC-001 / INVC-001.
+  - **Safety:** one idempotency key per checkout attempt (unique per store, request hash stored; a
+    retry returns the same order, a different request with the same key is refused); checkout limited
+    to 8 attempts per client address per 15 minutes and cart pricing to 120 per minute (database
+    counters); Server Actions' origin check is the CSRF defence. The confirmation page needs an HMAC
+    access token held in an httpOnly cookie for 30 days, so order numbers cannot be enumerated.
+  - **Back office:** `orders.view`, `orders.update`, `orders.cancel` and `customers.view` become active.
+    Lists and pages are scoped by country, legal entity and store; contact details and the address are
+    masked without `customers.view` at the order's scope.
+- **Alternatives:** server-side cart table (needs sessions for guests; nothing to gain until accounts
+  exist); reserve only at staff confirmation (two customers can then buy the last unit); immediate
+  deduction at placement (deducts stock for orders that may never be confirmed); flat delivery fee per
+  market (a business figure nobody has set yet).
+- **Consequences:** INV-004 is partly delivered (reservations for online orders); POS-001 and INV-003
+  must respect `reserved`. ORD-002 adds fulfilment, deduction and notifications; CUST-001 can link
+  guest orders to accounts later; SHIP-001 replaces the manual delivery fee.
