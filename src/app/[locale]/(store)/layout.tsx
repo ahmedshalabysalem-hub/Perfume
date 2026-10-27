@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
+import { CartIndicator } from "@/components/store/cart/cart-indicator";
 import { MarketSwitcher } from "@/components/store/market-switcher";
 import { Link } from "@/i18n/navigation";
 import { initLocale } from "@/i18n/params";
@@ -63,6 +64,7 @@ export default async function StoreLayout({ children, params }: LayoutProps<"/[l
               />
             ) : null}
             <LocaleSwitcher />
+            {market ? <CartIndicator market={market.code} /> : null}
           </div>
         </div>
       </header>

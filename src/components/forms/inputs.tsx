@@ -36,7 +36,7 @@ export function TextInput<T extends FieldValues>({
 }: BaseProps<T> & {
   type?: string;
   dir?: "ltr" | "rtl" | "auto";
-  inputMode?: "text" | "decimal" | "numeric" | "email" | "url" | "search";
+  inputMode?: "text" | "decimal" | "numeric" | "email" | "url" | "search" | "tel";
   placeholder?: string;
   autoComplete?: string;
 }) {

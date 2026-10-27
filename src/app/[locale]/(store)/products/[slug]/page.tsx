@@ -5,12 +5,15 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { cache } from "react";
+import { AddToCart } from "@/components/store/cart/add-to-cart";
 import { Price } from "@/components/store/price";
 import { ProductArt } from "@/components/store/product-art";
 import { Link } from "@/i18n/navigation";
 import { initLocale, metadataLocale } from "@/i18n/params";
 import { publicFileUrl } from "@/lib/files";
 import { cn, localized } from "@/lib/utils";
+import { db } from "@/server/db";
+import { cartAvailability } from "@/server/modules/orders/cart.service";
 import { getCurrentMarket, getStoreProduct } from "@/server/modules/storefront/storefront.service";
 
 const NOTE_LAYERS = ["TOP", "HEART", "BASE"] as const;
@@ -64,6 +67,19 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
     product.sellableVariants[0] ??
     product.variants[0] ??
     null;
+  const availability = market
+    ? await cartAvailability(
+        db,
+        market.code,
+        product.sellableVariants.map((variant) => variant.id),
+      )
+    : { checkoutOpen: false, inStock: new Set<string>() };
+  const selectedStatus =
+    !availability.checkoutOpen || !selected?.price
+      ? ("CLOSED" as const)
+      : availability.inStock.has(selected.id)
+        ? ("IN_STOCK" as const)
+        : ("OUT_OF_STOCK" as const);
   const name = localized(locale, product.nameAr, product.nameEn);
   const brandName = localized(locale, product.brand.nameAr, product.brand.nameEn);
   const countryName = market ? localized(locale, market.nameAr, market.nameEn) : "";
@@ -264,6 +280,31 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
                 })}
               </div>
             </fieldset>
+          ) : null}
+
+          {market && selected?.price ? (
+            <div className="grid gap-3">
+              <p
+                className={cn(
+                  "text-sm font-medium",
+                  selectedStatus === "IN_STOCK" ? "text-success" : "text-muted-foreground",
+                )}
+                data-testid="stock-status"
+              >
+                {selectedStatus === "IN_STOCK"
+                  ? t("cart.inStock")
+                  : selectedStatus === "OUT_OF_STOCK"
+                    ? t("cart.outOfStock")
+                    : t("cart.checkoutClosed")}
+              </p>
+              <AddToCart
+                key={selected.id}
+                market={market.code}
+                variantId={selected.id}
+                availability={selectedStatus}
+                name={`${name} · ${variantLabel(selected)}`}
+              />
+            </div>
           ) : null}
 
           {market ? (
