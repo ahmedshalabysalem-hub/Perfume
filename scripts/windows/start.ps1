@@ -1,6 +1,7 @@
 # Starts the Perfume site for local development on Windows: database, dependencies, migrations,
 # seed (first run only), development server, then opens the browser. Safe to run again.
 # Usage: double-click scripts\windows\start.cmd. Set PERFUME_CI=1 to skip the browser.
+# update.ps1 sets PERFUME_RESEED=1 so the seed runs again after new code (it keeps passwords).
 
 . (Join-Path $PSScriptRoot "common.ps1")
 
@@ -82,6 +83,11 @@ if (-not (Test-Path $installed) -or ((Get-Item "package-lock.json").LastWriteTim
   Say "Installing dependencies (npm ci), this takes a few minutes..."
   npm.cmd ci
   if ($LASTEXITCODE -ne 0) { Fail "npm ci failed. Read the messages above." }
+} else {
+  # npm ci generates the database client; without it, a pulled schema change would break the site.
+  Say "Preparing the database client..."
+  npm.cmd exec -- prisma generate
+  if ($LASTEXITCODE -ne 0) { Fail "prisma generate failed. Read the messages above." }
 }
 
 # A moved project folder leaves old absolute paths in the .next build cache: clear it once.
@@ -104,11 +110,12 @@ if ($LASTEXITCODE -ne 0) {
   Fail "Could not update the database. Read the messages above."
 }
 
-# 6. Demo data: first run only. The seed keeps existing passwords if it runs again.
+# 6. Demo data: first run, or after an update. The seed keeps existing passwords if it runs again.
 $seededMarker = Join-Path $Root "storage\.seeded"
-if (-not (Test-Path $seededMarker)) {
-  Say "Adding demo data (first run only)..."
-  if ([regex]::IsMatch($envText, '(?m)^SEED_ADMIN_PASSWORD=[ \t]*(""|)[ \t]*(?=\r?$)') -and -not $env:SEED_ADMIN_PASSWORD) {
+$firstSeed = -not (Test-Path $seededMarker)
+if ($firstSeed -or $env:PERFUME_RESEED) {
+  if ($firstSeed) { Say "Adding demo data (first run only)..." } else { Say "Updating demo data (existing data and passwords are kept)..." }
+  if ($firstSeed -and [regex]::IsMatch($envText, '(?m)^SEED_ADMIN_PASSWORD=[ \t]*(""|)[ \t]*(?=\r?$)') -and -not $env:SEED_ADMIN_PASSWORD) {
     Warn "SEED_ADMIN_PASSWORD is empty in .env: the demo password is generated and shown ONCE below. Write it down."
   }
   npm.cmd run db:seed
